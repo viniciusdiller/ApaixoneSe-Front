@@ -16,7 +16,7 @@ export function Hero({
       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/30 to-black/30" />
       <div className="relative z-10 px-4 text-primary-foreground">
         <p className="mb-4 text-sm uppercase tracking-[0.3em]">
-          Bem-vindo ao Templo do Surf
+          Bem-vindo ao Maracanã do Surf
         </p>
         <h1 className="font-display text-5xl font-bold uppercase md:text-7xl">
           {title}

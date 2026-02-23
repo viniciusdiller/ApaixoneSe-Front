@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search, Waves, X, Volume2, VolumeX } from "lucide-react";
+import { Menu, Waves, X, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 const navLinks = [
@@ -24,7 +24,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const monitorIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isLoopingRef = useRef(false);
+
   const pathname = usePathname();
   const isHome = pathname === "/";
 
@@ -38,10 +43,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   // Inicializa o áudio
   useEffect(() => {
     audioRef.current = new Audio("/sounds/ondas.mp3");
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.5;
+    audioRef.current.volume = 0;
+    audioRef.current.loop = false; // Desativamos o loop nativo para ter controle total
 
     return () => {
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -49,45 +56,113 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     };
   }, []);
 
-  const toggleAudio = () => {
-    // Se a referência do áudio for perdida (comum no recarregamento do Next.js), tenta recriar
-    if (!audioRef.current) {
-      audioRef.current = new Audio("/sounds/ondas.mp3");
-      audioRef.current.loop = true;
+  // Função poderosa de Fade baseada em tempo (usando Promises)
+  const fadeAudio = (targetVol: number, durationMs: number): Promise<void> => {
+    return new Promise((resolve) => {
+      if (!audioRef.current) return resolve();
+
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+
+      const startVol = audioRef.current.volume;
+      const steps = 30; // 30 quadros de transição para máxima suavidade
+      const stepTime = durationMs / steps;
+      const volStep = (targetVol - startVol) / steps;
+      let currentStep = 0;
+
+      fadeIntervalRef.current = setInterval(() => {
+        if (!audioRef.current) {
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          return resolve();
+        }
+
+        currentStep++;
+        let newVol = startVol + volStep * currentStep;
+
+        // Trava de segurança para o volume não passar de 1 ou cair abaixo de 0
+        newVol = Math.max(0, Math.min(newVol, 1));
+        audioRef.current.volume = newVol;
+
+        if (currentStep >= steps) {
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          audioRef.current.volume = targetVol;
+          resolve();
+        }
+      }, stepTime);
+    });
+  };
+
+  // Monitora o fim da música para criar um loop perfeito e suave
+  useEffect(() => {
+    if (!isPlaying) {
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
+      return;
     }
 
-    if (isPlaying) {
-      let vol = audioRef.current.volume;
-      const fadeOut = setInterval(() => {
-        if (vol > 0.05) {
-          vol -= 0.05;
-          audioRef.current!.volume = vol;
-        } else {
-          clearInterval(fadeOut);
-          audioRef.current!.pause();
-          setIsPlaying(false);
-        }
-      }, 50);
-    } else {
-      audioRef.current.volume = 0;
+    monitorIntervalRef.current = setInterval(() => {
+      const audio = audioRef.current;
+      if (!audio || !audio.duration || isLoopingRef.current) return;
 
+      const timeRemaining = audio.duration - audio.currentTime;
+
+      // Faltando 2 segundos, começa o Fade-Out
+      if (timeRemaining <= 2.0 && timeRemaining > 0) {
+        isLoopingRef.current = true;
+
+        fadeAudio(0, timeRemaining * 1000).then(() => {
+          if (!audioRef.current || !isPlaying) return;
+
+          // Ao zerar o volume, volta a música pro começo e faz Fade-In
+          audioRef.current.currentTime = 0;
+          audioRef.current
+            .play()
+            .then(() => {
+              fadeAudio(0.5, 1500).then(() => {
+                isLoopingRef.current = false;
+              });
+            })
+            .catch(() => {
+              isLoopingRef.current = false;
+            });
+        });
+      }
+    }, 300); // Checa a cada 300ms
+
+    return () => {
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
+    };
+  }, [isPlaying]);
+
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      setIsPlaying(false);
+      // Fade-Out de 1 segundo ao pausar
+      fadeAudio(0, 1000).then(() => {
+        audioRef.current?.pause();
+      });
+    } else {
+      setIsPlaying(true);
+      isLoopingRef.current = false;
+
+      // Se o usuário pausou pertinho do fim, reinicia do zero antes de tocar
+      if (
+        audioRef.current.duration &&
+        audioRef.current.duration - audioRef.current.currentTime <= 2
+      ) {
+        audioRef.current.currentTime = 0;
+      }
+
+      audioRef.current.volume = 0;
       audioRef.current
         .play()
         .then(() => {
-          setIsPlaying(true);
-          let vol = 0;
-          const fadeIn = setInterval(() => {
-            if (vol < 0.45) {
-              vol += 0.05;
-              audioRef.current!.volume = vol;
-            } else {
-              clearInterval(fadeIn);
-              audioRef.current!.volume = 0.5;
-            }
-          }, 50);
+          // Fade-In de 1.5 segundos ao dar play (bem suave)
+          fadeAudio(0.5, 1500);
         })
         .catch((error) => {
           console.error("Erro ao reproduzir o áudio:", error);
+          setIsPlaying(false);
           alert(
             "Não foi possível tocar o áudio. Verifique se o arquivo está na pasta 'public/sounds/ondas.mp3'.",
           );
@@ -158,6 +233,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             )}
           </button>
         </div>
+
         <div className="flex items-center gap-4 md:hidden">
           {/* Botão de Áudio Mobile */}
           <button
