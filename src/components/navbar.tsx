@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Search, Waves, X } from "lucide-react";
+import { Menu, Search, Waves, X, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 const navLinks = [
@@ -23,14 +23,77 @@ interface WeatherData {
 export function Navbar({ weather }: { weather?: WeatherData }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const pathname = usePathname();
   const isHome = pathname === "/";
 
+  // Monitora o scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Inicializa o áudio
+  useEffect(() => {
+    audioRef.current = new Audio("/sounds/ondas.mp3");
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.5;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const toggleAudio = () => {
+    // Se a referência do áudio for perdida (comum no recarregamento do Next.js), tenta recriar
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/sounds/ondas.mp3");
+      audioRef.current.loop = true;
+    }
+
+    if (isPlaying) {
+      let vol = audioRef.current.volume;
+      const fadeOut = setInterval(() => {
+        if (vol > 0.05) {
+          vol -= 0.05;
+          audioRef.current!.volume = vol;
+        } else {
+          clearInterval(fadeOut);
+          audioRef.current!.pause();
+          setIsPlaying(false);
+        }
+      }, 50);
+    } else {
+      audioRef.current.volume = 0;
+
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          let vol = 0;
+          const fadeIn = setInterval(() => {
+            if (vol < 0.45) {
+              vol += 0.05;
+              audioRef.current!.volume = vol;
+            } else {
+              clearInterval(fadeIn);
+              audioRef.current!.volume = 0.5;
+            }
+          }, 50);
+        })
+        .catch((error) => {
+          console.error("Erro ao reproduzir o áudio:", error);
+          alert(
+            "Não foi possível tocar o áudio. Verifique se o arquivo está na pasta 'public/sounds/ondas.mp3'.",
+          );
+        });
+    }
+  };
 
   const bgClass =
     scrolled || !isHome
@@ -46,12 +109,16 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           href="/"
           className="flex items-center gap-2 text-primary-foreground"
         >
-          <Waves className="h-8 w-8" />
+          <Waves className="h-10 w-10" />
           <div>
             <span className="font-display text-xl font-bold tracking-wide">
-              SAQUAREMA
+              APAIXONE-SE
             </span>
-            <span className="block text-[10px] font-sans uppercase tracking-[0.2em] opacity-80">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+              {" "}
+              Saquarema/rj - BR
+            </span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
               Capital Nacional do Surf
             </span>
           </div>
@@ -78,25 +145,45 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
             </div>
           )}
+
           <button
+            onClick={toggleAudio}
             className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
-            aria-label="Buscar"
+            aria-label="Alternar som das ondas"
           >
-            <Search className="h-5 w-5" />
+            {isPlaying ? (
+              <Volume2 className="h-5 w-5" />
+            ) : (
+              <VolumeX className="h-5 w-5" />
+            )}
           </button>
         </div>
+        <div className="flex items-center gap-4 md:hidden">
+          {/* Botão de Áudio Mobile */}
+          <button
+            onClick={toggleAudio}
+            className="text-primary-foreground"
+            aria-label="Alternar som das ondas"
+          >
+            {isPlaying ? (
+              <Volume2 className="h-6 w-6" />
+            ) : (
+              <VolumeX className="h-6 w-6" />
+            )}
+          </button>
 
-        <button
-          className="text-primary-foreground md:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Menu"
-        >
-          {mobileOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
+          <button
+            className="text-primary-foreground md:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menu"
+          >
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
       </nav>
 
       <AnimatePresence>

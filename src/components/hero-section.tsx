@@ -9,7 +9,7 @@ export function HeroSection() {
     <section className="relative h-screen w-full overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/images/hero-saquarema.jpeg)" }}
+        style={{ backgroundImage: "url(/images/teste1.jpeg)" }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-black/30" />
 
@@ -29,7 +29,9 @@ export function HeroSection() {
           transition={{ delay: 0.4 }}
           className="font-display text-5xl font-bold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-7xl lg:text-8xl"
         >
-          A Capital Nacional
+          APAIXONE-SE
+          <br />
+          PELA Capital Nacional
           <br />
           <span className="text-accent">do Surf</span>
         </motion.h1>
