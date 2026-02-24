@@ -20,7 +20,7 @@ export function HeroSection() {
           transition={{ delay: 0.2 }}
           className="mb-4 font-sans text-sm uppercase tracking-[0.3em] text-primary-foreground/80"
         >
-          Bem-vindo ao Templo do Surf
+          Bem-vindo ao Maracanã do Surf
         </motion.p>
 
         <motion.h1
