@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
   { label: "Gastronomia", to: "/gastronomia" },
+  { label: "Hospedagem", to: "" },
   { label: "Serviços Para o Turista", to: "/servicos" },
   { label: "Explore Saqua", to: "https://meidesaqua.saquarema.rj.gov.br/" },
 ];

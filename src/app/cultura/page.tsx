@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 const eventosCulturais = [
-  "Casa da Predra",
+  "Casa da Pedra",
   "Teatro Mario Lagos",
   "Museu do Sambaqui",
 ];
