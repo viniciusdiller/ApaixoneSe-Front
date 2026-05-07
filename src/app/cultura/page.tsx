@@ -1,12 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-
-const eventosCulturais = [
-  "Casa da Pedra",
-  "Teatro Mario Lagos",
-  "Museu do Sambaqui",
-];
+import { locaisCulturais } from "@/lib/data";
 
 export default function CulturaPage() {
   return (
@@ -32,18 +27,17 @@ export default function CulturaPage() {
           Lugares Culturais
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {eventosCulturais.map((evento, i) => (
+          {locaisCulturais.map((local, i) => (
             <motion.article
-              key={evento}
+              key={local.nome}
               initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               className="rounded-xl border border-border bg-card p-6"
             >
-              <h3 className="font-display text-2xl uppercase">{evento}</h3>
+              <h3 className="font-display text-2xl uppercase">{local.nome}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Programação com música, dança, gastronomia e valorização da
-                cultura local.
+                {local.descricao}
               </p>
             </motion.article>
           ))}
@@ -52,30 +46,39 @@ export default function CulturaPage() {
 
       <section className="bg-muted px-4 py-14">
         <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
-          <article className="rounded-xl border border-border bg-card p-6">
+          <article className="flex flex-col items-center justify-center text-center rounded-xl border border-border bg-card p-6">
             <h2 className="font-display text-3xl uppercase text-primary">
               História de Saquarema
             </h2>
-            <p className="mt-3 text-muted-foreground">
-              Das tradições caiçaras ao título de Capital Nacional do Surf,
-              Saquarema reúne patrimônio histórico, religiosidade e contato
-              intenso com o mar.
+            <p className="mt-5 text-muted-foreground ">
+              A história de Saquarema é escrita pelo constante encontro entre a
+              terra e o oceano. Das raízes milenares preservadas nos sambaquis e
+              a rica herança das pacatas vilas de pescadores, a cidade evoluiu
+              até ser eternizada mundialmente como a Capital Nacional do Surf.
+              Aqui, o patrimônio histórico abraça a religiosidade, simbolizada
+              pelo Círio mais antigo do Brasil e pela clássica Igreja de Nossa
+              Senhora de Nazareth. Seja pelas ondas perfeitas de Itaúna, pelo
+              legado musical do Templo do Rock ou pela energia de sua natureza,
+              Saquarema oferece uma verdadeira viagem no tempo em total sintonia
+              com o mar.
             </p>
           </article>
           <article className="rounded-xl border border-border bg-card p-6">
             <h2 className="font-display text-3xl uppercase text-primary">
               Destaques Visuais
             </h2>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
               {[
-                "/images/hero-saquarema.jpg",
-                "/images/volei-cbv.jpg",
-                "/images/templo-rock.jpg",
-                "/images/itauna-surf.jpg",
+                "/images/destaques-visuais/Esquadrilha-Fumaça.jpg",
+                "/images/destaques-visuais/WSL.jpg",
+                "/images/destaques-visuais/Miguel-Pupo.jpg",
+                "/images/destaques-visuais/Fusca.jpg",
+                "/images/hero-saquarema.jpeg",
+                "/images/destaques-visuais/Meca-Igreja.jpg",
               ].map((imagem) => (
                 <div
                   key={imagem}
-                  className="h-28 rounded-md bg-cover bg-center"
+                  className="h-48 rounded-md bg-cover bg-center"
                   style={{ backgroundImage: `url(${imagem})` }}
                 />
               ))}
