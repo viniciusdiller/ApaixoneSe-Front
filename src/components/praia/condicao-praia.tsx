@@ -1,7 +1,7 @@
 "use client";
 
 import { Compass, Thermometer, Waves, Wind, Loader2 } from "lucide-react";
-import { useWaveData } from "@/hooks/useWaveData";
+import { useWaveData } from "@/hooks/API-Marinha";
 import { ReactNode } from "react";
 
 export function BeachConditions({ lat, lng }: { lat: number; lng: number }) {

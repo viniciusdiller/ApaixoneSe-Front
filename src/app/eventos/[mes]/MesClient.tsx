@@ -20,8 +20,6 @@ export default function MesClient({ mesAtual }: { mesAtual: MesData }) {
   };
 
   return (
-    // AQUI: Envolvemos tudo em um motion.div que começa um pouco maior (scale 1.05)
-    // e diminui para o tamanho normal (scale 1), completando o zoom in da tela anterior.
     <motion.div
       initial={{ opacity: 0, scale: 1.05 }}
       animate={{ opacity: 1, scale: 1 }}

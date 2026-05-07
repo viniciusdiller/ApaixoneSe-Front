@@ -8,7 +8,7 @@ import {
   Waves,
   Wind,
 } from "lucide-react";
-import { useWaveData } from "@/hooks/useWaveData";
+import { useWaveData } from "@/hooks/API-Marinha";
 import { motion } from "framer-motion";
 import Link from "next/link";
 

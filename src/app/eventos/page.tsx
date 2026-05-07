@@ -6,7 +6,6 @@ import { motion, Variants } from "framer-motion";
 
 export default function EventosPage() {
   const router = useRouter();
-  // Estado para saber qual card foi clicado
   const [clickedCard, setClickedCard] = useState<string | null>(null);
 
   const meses = [
@@ -86,9 +85,8 @@ export default function EventosPage() {
   };
 
   const handleCardClick = (slug: string) => {
-    setClickedCard(slug); // Aciona a animação no card clicado
+    setClickedCard(slug);
 
-    // Aguarda 400ms (tempo do zoom) para mudar de página
     setTimeout(() => {
       router.push(`/eventos/${slug}`);
     }, 400);
@@ -123,10 +121,6 @@ export default function EventosPage() {
             <motion.div
               key={slug}
               variants={itemVariants}
-              // A MÁGICA ACONTECE AQUI:
-              // Se foi clicado -> Zoom gigante e some
-              // Se outro foi clicado -> Apenas some devagar
-              // Se nenhum foi clicado -> Fica normal
               animate={
                 clickedCard === slug
                   ? {

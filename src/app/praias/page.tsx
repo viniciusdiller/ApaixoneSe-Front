@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, Filter, MapPin, Waves } from "lucide-react";
 import { useMemo, useState } from "react";
-import { praias } from "@/lib/static-data";
-import { useWaveData } from "@/hooks/useWaveData";
+import { praias } from "@/lib/Dados-Praia";
+import { useWaveData } from "@/hooks/API-Marinha";
 
 const FILTER_OPTIONS = [
   { label: "Todas", value: "todas" },
@@ -83,6 +84,13 @@ export default function PraiasPage() {
                 className="group block overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-xl"
               >
                 <div className="relative h-48 overflow-hidden bg-primary/20">
+                  <Image
+                    src={praia.imagem}
+                    alt={praia.nome}
+                    width={20}
+                    height={20}
+                    className="h-full w-full object-cover"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <WaveBadge lat={praia.lat} lng={praia.lng} />
                   <div className="absolute bottom-3 left-3 flex items-center gap-1.5">

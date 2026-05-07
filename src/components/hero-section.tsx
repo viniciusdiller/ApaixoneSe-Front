@@ -9,7 +9,7 @@ export function HeroSection() {
     <section className="relative h-screen w-full overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/images/teste1.jpeg)" }}
+        style={{ backgroundImage: "url(/images/hero-saquarema.jpeg)" }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-black/30" />
 

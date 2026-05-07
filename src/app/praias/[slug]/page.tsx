@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CheckCircle, XCircle } from "lucide-react"; // Ícones de clima removidos daqui
-import { praias } from "@/lib/static-data";
+import { praias } from "@/lib/Dados-Praia";
 import { BeachConditions } from "@/components/praia/condicao-praia"; // <--- Importe o novo componente
 
 export function generateStaticParams() {

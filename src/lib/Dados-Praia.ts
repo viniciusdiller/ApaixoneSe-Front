@@ -22,6 +22,7 @@ export const praias = [
   {
     id: 1,
     nome: "Praia de Itaúna",
+    imagem: "/images/praias/Itauna.jpeg",
     slug: "itauna",
     descricao_curta: "Pico clássico da WSL com ondas de classe mundial.",
     descricao:
@@ -31,12 +32,13 @@ export const praias = [
     dificuldade: "avançado",
     estacionamento: true,
     quiosques: true,
-    lat: -22.9358, // Adicione isto
+    lat: -22.9358,
     lng: -42.4779,
   },
   {
     id: 2,
     nome: "Praia da Vila",
+    imagem: "/images/praias/Vila.jpg",
     slug: "vila",
     descricao_curta: "Faixa extensa de areia com excelente estrutura urbana.",
     descricao:
@@ -52,6 +54,7 @@ export const praias = [
   {
     id: 3,
     nome: "Praia de Jaconé",
+    imagem: "/images/praias/Jaconé.jpg",
     slug: "jacone",
     descricao_curta: "Natureza preservada e mar com energia para o surf.",
     descricao:

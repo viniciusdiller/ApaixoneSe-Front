@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -57,11 +58,12 @@ export function BentoGrid() {
               href={exp.link}
               className={`group relative min-h-[220px] overflow-hidden rounded-2xl ${exp.span}`}
             >
-              <img
+              <Image
                 src={exp.image}
                 alt={exp.title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                loading="lazy"
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                sizes="(max-width: 768px) 100vw, 25vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity group-hover:from-black/80" />
               <div className="absolute bottom-0 left-0 right-0 p-5">

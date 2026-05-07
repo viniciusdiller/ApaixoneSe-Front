@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { defaultWaveData, type WaveData } from "@/lib/static-data";
+import { defaultWaveData, type WaveData } from "@/lib/Dados-Praia";
 
 export function useWaveData({ lat, lng }: { lat?: number; lng?: number } = {}) {
   const [data, setData] = useState<WaveData | null>(null);

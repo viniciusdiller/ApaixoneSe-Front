@@ -1,4 +1,4 @@
-import { BentoGrid } from "@/components/bento-grid";
+import { BentoGrid } from "@/components/Experiencias-Únicas";
 import { HeroSection } from "@/components/hero-section";
 import { LiveSection } from "@/components/live-section";
 
