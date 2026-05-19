@@ -4,15 +4,24 @@
    CUSTOMIZAÇÃO DO GOOGLE TRANSLATE
    ========================================================================== */
 
-/* 1. Remove a barra cinza/preta de tradução do topo */
-iframe.goog-te-banner-frame {
+/* 1. REMOÇÃO NUCLEAR DA BARRA DO GOOGLE */
+/* Esconde o iframe clássico e as divs das versões mais novas da API */
+iframe.goog-te-banner-frame,
+.goog-te-banner-frame,
+.skiptranslate > iframe,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-ORHb-OEVmcd {
   display: none !important;
+  visibility: hidden !important;
+  height: 0px !important;
 }
 
-/* 2. Força o topo do site a não ser empurrado para baixo pelo Google */
-body {
-  position: static !important;
+/* 2. IMPEDE O GOOGLE DE EMPURRAR O SITE PARA BAIXO */
+/* O Google injeta top: 40px no body quando a tradução ativa. Isso bloqueia essa ação: */
+html, body {
   top: 0px !important;
+  margin-top: 0px !important;
+  min-height: 100vh !important;
 }
 
 /* 3. Remove os tooltips (caixas flutuantes que aparecem ao passar o mouse no texto traduzido) */
