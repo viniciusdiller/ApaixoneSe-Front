@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Waves, X, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { GoogleTranslate } from "./google-translate";
 
 const navLinks = [
   { label: "Praias", to: "/praias" },
@@ -212,54 +213,58 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             </li>
           ))}
         </ul>
+        <div className="flex items-center gap-3 md:gap-4">
+          
+          <GoogleTranslate />
 
-        <div className="hidden items-center gap-4 md:flex">
-          {weather?.temperature !== undefined && (
-            <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-              <span>☀ {weather.temperature}°C</span>
-              <span className="opacity-60">|</span>
-              <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
-            </div>
-          )}
-
-          <button
-            onClick={toggleAudio}
-            className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
-            aria-label="Alternar som das ondas"
-          >
-            {isPlaying ? (
-              <Volume2 className="h-5 w-5" />
-            ) : (
-              <VolumeX className="h-5 w-5" />
+          <div className="hidden items-center gap-4 md:flex">
+            {weather?.temperature !== undefined && (
+              <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
+                <span>☀ {weather.temperature}°C</span>
+                <span className="opacity-60">|</span>
+                <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
+              </div>
             )}
-          </button>
-        </div>
 
-        <div className="flex items-center gap-4 md:hidden">
-          {/* Botão de Áudio Mobile */}
-          <button
-            onClick={toggleAudio}
-            className="text-primary-foreground"
-            aria-label="Alternar som das ondas"
-          >
-            {isPlaying ? (
-              <Volume2 className="h-6 w-6" />
-            ) : (
-              <VolumeX className="h-6 w-6" />
-            )}
-          </button>
+            <button
+              onClick={toggleAudio}
+              className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              aria-label="Alternar som das ondas"
+            >
+              {isPlaying ? (
+                <Volume2 className="h-5 w-5" />
+              ) : (
+                <VolumeX className="h-5 w-5" />
+              )}
+            </button>
+          </div>
 
-          <button
-            className="text-primary-foreground md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
-          >
-            {mobileOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+          <div className="flex items-center gap-4 md:hidden">
+            {/* Botão de Áudio Mobile */}
+            <button
+              onClick={toggleAudio}
+              className="text-primary-foreground"
+              aria-label="Alternar som das ondas"
+            >
+              {isPlaying ? (
+                <Volume2 className="h-6 w-6" />
+              ) : (
+                <VolumeX className="h-6 w-6" />
+              )}
+            </button>
+
+            <button
+              className="text-primary-foreground md:hidden"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Menu"
+            >
+              {mobileOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </nav>
 

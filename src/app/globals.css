@@ -1,1 +1,73 @@
 @import "../styles/theme.css";
+
+/* ==========================================================================
+   CUSTOMIZAÇÃO DO GOOGLE TRANSLATE
+   ========================================================================== */
+
+/* 1. Remove a barra cinza/preta de tradução do topo */
+iframe.goog-te-banner-frame {
+  display: none !important;
+}
+
+/* 2. Força o topo do site a não ser empurrado para baixo pelo Google */
+body {
+  position: static !important;
+  top: 0px !important;
+}
+
+/* 3. Remove os tooltips (caixas flutuantes que aparecem ao passar o mouse no texto traduzido) */
+#goog-gt-tt, .goog-te-balloon-frame {
+  display: none !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* 4. Esconde o texto "Powered by Google" e a logo */
+.goog-te-gadget {
+  color: transparent !important;
+  font-size: 0px !important; /* Esconde o texto ao redor do select */
+}
+.goog-logo-link {
+  display: none !important;
+}
+
+/* 5. ESTILIZAÇÃO DO BOTÃO DROPDOWN (SELECT)
+   Deixando com o estilo parecido com a sua tag do clima (bg-primary-foreground/10) */
+.goog-te-combo {
+  background-color: rgba(255, 255, 255, 0.1) !important; /* Fundo translúcido */
+  color: #ffffff !important; /* Texto branco */
+  border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Borda suave */
+  border-radius: 9999px !important; /* Equivalente ao rounded-full */
+  padding: 6px 12px !important; /* Espaçamento interno */
+  font-size: 12px !important; /* text-xs */
+  font-weight: 500 !important; /* font-medium */
+  cursor: pointer !important;
+  outline: none !important;
+  font-family: inherit !important;
+  
+  /* Melhora a aparência no mobile e tira o visual feio padrão do navegador */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  /* Ícone de seta customizado para o select */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px top 50% !important;
+  background-size: 10px auto !important;
+  padding-right: 26px !important; /* Dá espaço para a setinha */
+}
+
+/* Estiliza as opções dentro do dropdown para que dê para ler 
+   (já que o fundo do botão original é transparente) */
+.goog-te-combo option {
+  background-color: #1a1a1a; /* Fundo escuro (ajuste para a cor da sua Navbar) */
+  color: #ffffff;
+}
+
+/* Remove a imagem inútil que às vezes o Google empurra do lado do select */
+.goog-te-gadget img {
+    display: none !important;
+}
