@@ -188,7 +188,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         >
           <Waves className="h-10 w-10" />
           <div>
-            <span className="font-display text-xl font-bold tracking-wide">
+            <span className="font-display text-xl font-bold tracking-wide notranslate">
               APAIXONE-SE
             </span>
             <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
