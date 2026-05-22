@@ -1,6 +1,9 @@
 // Configuração base da API
+// O backend roda em http://localhost:3307/api por padrão.
+// Para sobrescrever, defina NEXT_PUBLIC_API_URL no .env.local
+// Exemplo: NEXT_PUBLIC_API_URL=http://localhost:3307/api
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3307/api";
 
 export async function apiFetch<T>(
   path: string,
