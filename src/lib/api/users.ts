@@ -1,40 +1,32 @@
 import { apiFetch } from "./config";
-import type {
-  User,
-  RegisterUserDto,
-  LoginUserDto,
-  LoginResponse,
-} from "./types";
+import type { User } from "./types";
+
+export interface LoginPayload {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  access_token?: string;
+  token?: string;
+}
 
 export const usersApi = {
-  /** POST /users/register */
-  register: (dto: RegisterUserDto) =>
-    apiFetch<User>("/users/register", {
-      method: "POST",
-      body: JSON.stringify(dto),
-    }),
+  register: (data: Omit<User, "id">) =>
+    apiFetch<User>("/users/register", { method: "POST", body: JSON.stringify(data) }),
 
-  /** POST /users/login */
-  login: (dto: LoginUserDto) =>
-    apiFetch<LoginResponse>("/users/login", {
-      method: "POST",
-      body: JSON.stringify(dto),
-    }),
+  login: (data: LoginPayload) =>
+    apiFetch<LoginResponse>("/users/login", { method: "POST", body: JSON.stringify(data) }),
 
-  /** GET /users */
-  getAll: () => apiFetch<User[]>("/users"),
+  getAll: () =>
+    apiFetch<User[]>("/users"),
 
-  /** GET /users/:id */
-  getById: (id: number) => apiFetch<User>(`/users/${id}`),
+  getById: (id: number) =>
+    apiFetch<User>(`/users/${id}`),
 
-  /** PUT /users/:id */
-  update: (id: number, dto: Partial<RegisterUserDto>) =>
-    apiFetch<User>(`/users/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(dto),
-    }),
+  update: (id: number, data: Partial<User>) =>
+    apiFetch<User>(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 
-  /** DELETE /users/:id */
-  remove: (id: number) =>
+  delete: (id: number) =>
     apiFetch<void>(`/users/${id}`, { method: "DELETE" }),
 };

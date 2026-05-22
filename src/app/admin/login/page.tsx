@@ -7,7 +7,7 @@ import { setToken } from "@/lib/api/auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,14 +17,13 @@ export default function AdminLoginPage() {
     setError("");
     setLoading(true);
     try {
-      const data = await usersApi.login({ email, password });
-      // O backend retorna { access_token: string } ou { token: string }
+      const data = await usersApi.login({ username, password });
       const token = (data as any).access_token ?? (data as any).token;
       if (!token) throw new Error("Token não retornado pelo servidor.");
       setToken(token);
       router.push("/admin");
     } catch (err: any) {
-      let msg = "Credenciais inválidas.";
+      let msg = "Usuário ou senha inválidos.";
       try {
         const parsed = JSON.parse(err.message);
         msg = parsed.message ?? msg;
@@ -38,7 +37,6 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
-        {/* Logo / título */}
         <div className="text-center mb-8">
           <h1
             className="text-3xl font-bold tracking-tight"
@@ -54,17 +52,17 @@ export default function AdminLoginPage() {
           className="bg-card border border-border rounded-xl p-8 shadow-sm space-y-5"
         >
           <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium">
-              E-mail
+            <label htmlFor="username" className="text-sm font-medium">
+              Usuário
             </label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@email.com"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="seu_usuario"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary,#c8a96e)] transition"
             />
           </div>

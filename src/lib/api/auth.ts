@@ -1,23 +1,24 @@
 /**
- * Store de autenticação em memória.
- * Não usa localStorage (bloqueado em iframes de sandbox).
- * O token é perdido ao recarregar a página — comportamento intencional para o admin.
+ * Store de autenticação com persistência em localStorage.
  */
 
-let _token: string | null = null;
+const TOKEN_KEY = "admin_token";
 
 export function getToken(): string | null {
-  return _token;
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function setToken(token: string): void {
-  _token = token;
+  if (typeof window === "undefined") return;
+  localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function clearToken(): void {
-  _token = null;
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 export function isAuthenticated(): boolean {
-  return _token !== null;
+  return getToken() !== null;
 }
