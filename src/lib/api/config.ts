@@ -1,17 +1,27 @@
+import { getToken } from "./auth";
+
 // Configuração base da API
-// O backend roda em http://localhost:3307/api por padrão.
+// O backend roda em http://localhost:3307 por padrão (sem prefixo /api).
 // Para sobrescrever, defina NEXT_PUBLIC_API_URL no .env.local
-// Exemplo: NEXT_PUBLIC_API_URL=http://localhost:3307/api
+// Exemplo: NEXT_PUBLIC_API_URL=http://localhost:3307
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3307/api";
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3307";
 
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
+  const token = getToken();
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options?.headers,
+  };
+
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
+    headers,
   });
 
   if (!res.ok) {
