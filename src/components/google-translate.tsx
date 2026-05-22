@@ -1,11 +1,9 @@
-// src/components/google-translate.tsx
 "use client";
 
 import Script from "next/script";
 import { Globe, ChevronDown } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
-// 1. Adicionámos o Alemão (de) e o Francês (fr) na lista
 const LANGUAGES = [
   { code: "pt", name: "Português", short: "PT" },
   { code: "en", name: "English", short: "EN" },

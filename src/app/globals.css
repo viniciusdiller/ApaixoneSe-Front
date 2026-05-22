@@ -1,11 +1,8 @@
 @import "../styles/theme.css";
 
-/* ==========================================================================
-   CUSTOMIZAÇÃO DO GOOGLE TRANSLATE
-   ========================================================================== */
 
-/* 1. REMOÇÃO NUCLEAR DA BARRA DO GOOGLE */
-/* Esconde o iframe clássico e as divs das versões mais novas da API */
+/*REMOÇÃO DA BARRA DO GOOGLE*/
+
 iframe.goog-te-banner-frame,
 .goog-te-banner-frame,
 .skiptranslate > iframe,
@@ -16,15 +13,14 @@ iframe.goog-te-banner-frame,
   height: 0px !important;
 }
 
-/* 2. IMPEDE O GOOGLE DE EMPURRAR O SITE PARA BAIXO */
-/* O Google injeta top: 40px no body quando a tradução ativa. Isso bloqueia essa ação: */
+/*IMPEDE O GOOGLE DE EMPURRAR O SITE PARA BAIXO*/
 html, body {
   top: 0px !important;
   margin-top: 0px !important;
   min-height: 100vh !important;
 }
 
-/* 3. Remove os tooltips (caixas flutuantes que aparecem ao passar o mouse no texto traduzido) */
+/* Remove os tooltips (caixas flutuantes que aparecem ao passar o mouse no texto traduzido) */
 #goog-gt-tt, .goog-te-balloon-frame {
   display: none !important;
 }
@@ -33,25 +29,24 @@ html, body {
   box-shadow: none !important;
 }
 
-/* 4. Esconde o texto "Powered by Google" e a logo */
+/* Esconde o texto "Powered by Google" e a logo */
 .goog-te-gadget {
   color: transparent !important;
-  font-size: 0px !important; /* Esconde o texto ao redor do select */
+  font-size: 0px !important;
 }
 .goog-logo-link {
   display: none !important;
 }
 
-/* 5. ESTILIZAÇÃO DO BOTÃO DROPDOWN (SELECT)
-   Deixando com o estilo parecido com a sua tag do clima (bg-primary-foreground/10) */
+/*ESTILIZAÇÃO DO BOTÃO DROPDOWN */
 .goog-te-combo {
-  background-color: rgba(255, 255, 255, 0.1) !important; /* Fundo translúcido */
-  color: #ffffff !important; /* Texto branco */
-  border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Borda suave */
-  border-radius: 9999px !important; /* Equivalente ao rounded-full */
-  padding: 6px 12px !important; /* Espaçamento interno */
-  font-size: 12px !important; /* text-xs */
-  font-weight: 500 !important; /* font-medium */
+  background-color: rgba(255, 255, 255, 0.1) !important; 
+  color: #ffffff !important; 
+  border: 1px solid rgba(255, 255, 255, 0.2) !important; 
+  border-radius: 9999px !important; 
+  padding: 6px 12px !important; 
+  font-size: 12px !important; 
+  font-weight: 500 !important; 
   cursor: pointer !important;
   outline: none !important;
   font-family: inherit !important;
@@ -66,13 +61,12 @@ html, body {
   background-repeat: no-repeat !important;
   background-position: right 10px top 50% !important;
   background-size: 10px auto !important;
-  padding-right: 26px !important; /* Dá espaço para a setinha */
+  padding-right: 26px !important;
 }
 
-/* Estiliza as opções dentro do dropdown para que dê para ler 
-   (já que o fundo do botão original é transparente) */
+
 .goog-te-combo option {
-  background-color: #1a1a1a; /* Fundo escuro (ajuste para a cor da sua Navbar) */
+  background-color: #1a1a1a; 
   color: #ffffff;
 }
 

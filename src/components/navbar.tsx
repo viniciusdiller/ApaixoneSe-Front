@@ -35,18 +35,16 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  // Monitora o scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Inicializa o áudio
   useEffect(() => {
     audioRef.current = new Audio("/sounds/ondas.mp3");
     audioRef.current.volume = 0;
-    audioRef.current.loop = false; // Desativamos o loop nativo para ter controle total
+    audioRef.current.loop = false; 
 
     return () => {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
@@ -58,7 +56,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     };
   }, []);
 
-  // Função poderosa de Fade baseada em tempo (usando Promises)
   const fadeAudio = (targetVol: number, durationMs: number): Promise<void> => {
     return new Promise((resolve) => {
       if (!audioRef.current) return resolve();
@@ -66,7 +63,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
       const startVol = audioRef.current.volume;
-      const steps = 30; // 30 quadros de transição para máxima suavidade
+      const steps = 30; 
       const stepTime = durationMs / steps;
       const volStep = (targetVol - startVol) / steps;
       let currentStep = 0;
@@ -80,7 +77,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         currentStep++;
         let newVol = startVol + volStep * currentStep;
 
-        // Trava de segurança para o volume não passar de 1 ou cair abaixo de 0
         newVol = Math.max(0, Math.min(newVol, 1));
         audioRef.current.volume = newVol;
 
@@ -93,7 +89,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     });
   };
 
-  // Monitora o fim da música para criar um loop perfeito e suave
   useEffect(() => {
     if (!isPlaying) {
       if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
@@ -106,14 +101,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
       const timeRemaining = audio.duration - audio.currentTime;
 
-      // Faltando 2 segundos, começa o Fade-Out
       if (timeRemaining <= 2.0 && timeRemaining > 0) {
         isLoopingRef.current = true;
 
         fadeAudio(0, timeRemaining * 1000).then(() => {
           if (!audioRef.current || !isPlaying) return;
 
-          // Ao zerar o volume, volta a música pro começo e faz Fade-In
           audioRef.current.currentTime = 0;
           audioRef.current
             .play()
@@ -127,7 +120,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             });
         });
       }
-    }, 300); // Checa a cada 300ms
+    }, 300); 
 
     return () => {
       if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
@@ -147,7 +140,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       setIsPlaying(true);
       isLoopingRef.current = false;
 
-      // Se o usuário pausou pertinho do fim, reinicia do zero antes de tocar
       if (
         audioRef.current.duration &&
         audioRef.current.duration - audioRef.current.currentTime <= 2
@@ -183,12 +175,8 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     >
       <nav className="container mx-auto flex items-center justify-between px-4">
         
-        {/* ========================================== */}
-        {/* LADO ESQUERDO: Menu Hamburguer (Mobile) + Logo */}
-        {/* ========================================== */}
         <div className="flex items-center gap-4 md:gap-0">
           
-          {/* Botão Menu Hamburguer (Foi movido pra cá e só aparece no celular) */}
           <button
             className="text-primary-foreground md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -205,7 +193,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             href="/"
             className="flex items-center gap-2 text-primary-foreground"
           >
-            {/* Ícone de ondas com "hidden md:block" (some no celular e aparece no PC) */}
             <Waves className="hidden h-10 w-10 md:block" />
             <div>
               <span className="font-display text-xl font-bold tracking-wide notranslate">
@@ -222,9 +209,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           </Link>
         </div>
 
-        {/* ========================================== */}
-        {/* CENTRO: Links Desktop */}
-        {/* ========================================== */}
         <ul className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <li key={link.to}>
@@ -238,14 +222,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           ))}
         </ul>
 
-        {/* ========================================== */}
-        {/* LADO DIREITO: Tradutor + Áudio + Clima */}
-        {/* ========================================== */}
         <div className="flex items-center gap-3 md:gap-4">
           
           <GoogleTranslate />
 
-          {/* Botão de Áudio Mobile (Fica sozinho do lado direito no celular) */}
           <button
             onClick={toggleAudio}
             className="text-primary-foreground md:hidden"
@@ -258,7 +238,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             )}
           </button>
 
-          {/* Ferramentas Exclusivas do Desktop (Clima e Áudio Desktop) */}
           <div className="hidden items-center gap-4 md:flex">
             {weather?.temperature !== undefined && (
               <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
@@ -283,9 +262,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         </div>
       </nav>
 
-      {/* ========================================== */}
-      {/* MENU MOBILE (DROPDOWN TELA CHEIA) */}
-      {/* ========================================== */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
