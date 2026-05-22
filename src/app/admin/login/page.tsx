@@ -7,8 +7,8 @@ import { setToken } from "@/lib/api/auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [identificador, setIdentificador] = useState("");
+  const [senha, setSenha] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
     setError("");
     setLoading(true);
     try {
-      const data = await usersApi.login({ username, password });
+      const data = await usersApi.login({ identificador, senha });
       const token = (data as any).access_token ?? (data as any).token;
       if (!token) throw new Error("Token não retornado pelo servidor.");
       setToken(token);
@@ -26,7 +26,9 @@ export default function AdminLoginPage() {
       let msg = "Usuário ou senha inválidos.";
       try {
         const parsed = JSON.parse(err.message);
-        msg = parsed.message ?? msg;
+        msg = Array.isArray(parsed.message)
+          ? parsed.message.join(" ")
+          : parsed.message ?? msg;
       } catch {}
       setError(msg);
     } finally {
@@ -52,32 +54,32 @@ export default function AdminLoginPage() {
           className="bg-card border border-border rounded-xl p-8 shadow-sm space-y-5"
         >
           <div className="space-y-1">
-            <label htmlFor="username" className="text-sm font-medium">
+            <label htmlFor="identificador" className="text-sm font-medium">
               Usuário
             </label>
             <input
-              id="username"
+              id="identificador"
               type="text"
               required
               autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={identificador}
+              onChange={(e) => setIdentificador(e.target.value)}
               placeholder="seu_usuario"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary,#c8a96e)] transition"
             />
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="password" className="text-sm font-medium">
+            <label htmlFor="senha" className="text-sm font-medium">
               Senha
             </label>
             <input
-              id="password"
+              id="senha"
               type="password"
               required
               autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
               placeholder="••••••••"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary,#c8a96e)] transition"
             />

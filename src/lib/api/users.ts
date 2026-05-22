@@ -2,8 +2,8 @@ import { apiFetch } from "./config";
 import type { User } from "./types";
 
 export interface LoginPayload {
-  username: string;
-  password: string;
+  identificador: string;
+  senha: string;
 }
 
 export interface LoginResponse {
