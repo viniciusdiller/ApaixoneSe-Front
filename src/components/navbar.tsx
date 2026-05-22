@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Waves, X, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { GoogleTranslate } from "./google-translate";
 
 const navLinks = [
   { label: "Praias", to: "/praias" },
@@ -34,18 +35,16 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
-  // Monitora o scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Inicializa o áudio
   useEffect(() => {
     audioRef.current = new Audio("/sounds/ondas.mp3");
     audioRef.current.volume = 0;
-    audioRef.current.loop = false; // Desativamos o loop nativo para ter controle total
+    audioRef.current.loop = false; 
 
     return () => {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
@@ -57,7 +56,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     };
   }, []);
 
-  // Função poderosa de Fade baseada em tempo (usando Promises)
   const fadeAudio = (targetVol: number, durationMs: number): Promise<void> => {
     return new Promise((resolve) => {
       if (!audioRef.current) return resolve();
@@ -65,7 +63,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
       const startVol = audioRef.current.volume;
-      const steps = 30; // 30 quadros de transição para máxima suavidade
+      const steps = 30; 
       const stepTime = durationMs / steps;
       const volStep = (targetVol - startVol) / steps;
       let currentStep = 0;
@@ -79,7 +77,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         currentStep++;
         let newVol = startVol + volStep * currentStep;
 
-        // Trava de segurança para o volume não passar de 1 ou cair abaixo de 0
         newVol = Math.max(0, Math.min(newVol, 1));
         audioRef.current.volume = newVol;
 
@@ -92,7 +89,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     });
   };
 
-  // Monitora o fim da música para criar um loop perfeito e suave
   useEffect(() => {
     if (!isPlaying) {
       if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
@@ -105,14 +101,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
       const timeRemaining = audio.duration - audio.currentTime;
 
-      // Faltando 2 segundos, começa o Fade-Out
       if (timeRemaining <= 2.0 && timeRemaining > 0) {
         isLoopingRef.current = true;
 
         fadeAudio(0, timeRemaining * 1000).then(() => {
           if (!audioRef.current || !isPlaying) return;
 
-          // Ao zerar o volume, volta a música pro começo e faz Fade-In
           audioRef.current.currentTime = 0;
           audioRef.current
             .play()
@@ -126,7 +120,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             });
         });
       }
-    }, 300); // Checa a cada 300ms
+    }, 300); 
 
     return () => {
       if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
@@ -146,7 +140,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       setIsPlaying(true);
       isLoopingRef.current = false;
 
-      // Se o usuário pausou pertinho do fim, reinicia do zero antes de tocar
       if (
         audioRef.current.duration &&
         audioRef.current.duration - audioRef.current.currentTime <= 2
@@ -181,24 +174,40 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}
     >
       <nav className="container mx-auto flex items-center justify-between px-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-primary-foreground"
-        >
-          <Waves className="h-10 w-10" />
-          <div>
-            <span className="font-display text-xl font-bold tracking-wide">
-              APAIXONE-SE
-            </span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-              {" "}
-              Saquarema/rj - BR
-            </span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-              Capital Nacional do Surf
-            </span>
-          </div>
-        </Link>
+        
+        <div className="flex items-center gap-4 md:gap-0">
+          
+          <button
+            className="text-primary-foreground md:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menu"
+          >
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-primary-foreground"
+          >
+            <Waves className="hidden h-10 w-10 md:block" />
+            <div>
+              <span className="font-display text-xl font-bold tracking-wide notranslate">
+                APAIXONE-SE
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+                {" "}
+                Saquarema/rj - BR
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+                Capital Nacional do Surf
+              </span>
+            </div>
+          </Link>
+        </div>
 
         <ul className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
@@ -213,33 +222,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           ))}
         </ul>
 
-        <div className="hidden items-center gap-4 md:flex">
-          {weather?.temperature !== undefined && (
-            <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-              <span>☀ {weather.temperature}°C</span>
-              <span className="opacity-60">|</span>
-              <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
-            </div>
-          )}
+        <div className="flex items-center gap-3 md:gap-4">
+          
+          <GoogleTranslate />
 
           <button
             onClick={toggleAudio}
-            className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
-            aria-label="Alternar som das ondas"
-          >
-            {isPlaying ? (
-              <Volume2 className="h-5 w-5" />
-            ) : (
-              <VolumeX className="h-5 w-5" />
-            )}
-          </button>
-        </div>
-
-        <div className="flex items-center gap-4 md:hidden">
-          {/* Botão de Áudio Mobile */}
-          <button
-            onClick={toggleAudio}
-            className="text-primary-foreground"
+            className="text-primary-foreground md:hidden"
             aria-label="Alternar som das ondas"
           >
             {isPlaying ? (
@@ -249,17 +238,27 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             )}
           </button>
 
-          <button
-            className="text-primary-foreground md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
-          >
-            {mobileOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
+          <div className="hidden items-center gap-4 md:flex">
+            {weather?.temperature !== undefined && (
+              <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
+                <span>☀ {weather.temperature}°C</span>
+                <span className="opacity-60">|</span>
+                <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
+              </div>
             )}
-          </button>
+
+            <button
+              onClick={toggleAudio}
+              className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              aria-label="Alternar som das ondas"
+            >
+              {isPlaying ? (
+                <Volume2 className="h-5 w-5" />
+              ) : (
+                <VolumeX className="h-5 w-5" />
+              )}
+            </button>
+          </div>
         </div>
       </nav>
 
