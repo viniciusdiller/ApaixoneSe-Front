@@ -5,10 +5,13 @@ import Script from "next/script";
 import { Globe, ChevronDown } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
+// 1. Adicionámos o Alemão (de) e o Francês (fr) na lista
 const LANGUAGES = [
   { code: "pt", name: "Português", short: "PT" },
   { code: "en", name: "English", short: "EN" },
   { code: "es", name: "Español", short: "ES" },
+  { code: "de", name: "Deutsch", short: "DE" },
+  { code: "fr", name: "Français", short: "FR" },
 ];
 
 export function GoogleTranslate() {
@@ -65,7 +68,6 @@ export function GoogleTranslate() {
 
       <div className="relative notranslate" ref={dropdownRef}>
         
-        {/* BOTÃO PRINCIPAL (ESTILO PÍLULA TRANSLÚCIDA) */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center bg-primary-foreground/10 backdrop-blur-md rounded-full px-3 py-1.5 min-h-[32px] border border-primary-foreground/20 transition-all duration-300 hover:bg-primary-foreground/20 text-primary-foreground ${
@@ -77,9 +79,8 @@ export function GoogleTranslate() {
           <ChevronDown className={`w-3 h-3 opacity-80 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
         </button>
 
-        {/* MENU DROPDOWN (ESTILO VIDRO) */}
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-36 bg-black/40 backdrop-blur-lg rounded-xl shadow-2xl border border-primary-foreground/10 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute right-0 top-full mt-2 w-36 bg-black/90 backdrop-blur-xl rounded-xl shadow-2xl border border-primary-foreground/20 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
             <div className="py-1 flex flex-col">
               {LANGUAGES.map((lang) => (
                 <button
@@ -111,7 +112,8 @@ export function GoogleTranslate() {
           function googleTranslateElementInit() {
             new window.google.translate.TranslateElement({
               pageLanguage: 'pt',
-              includedLanguages: 'en,es,pt',
+              // 2. Adicionámos 'de' e 'fr' na lista de idiomas que o Google deve preparar
+              includedLanguages: 'de,en,es,fr,pt',
               layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
               autoDisplay: false,
             }, 'google_translate_element');
