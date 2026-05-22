@@ -182,25 +182,49 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}
     >
       <nav className="container mx-auto flex items-center justify-between px-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-primary-foreground"
-        >
-          <Waves className="h-10 w-10" />
-          <div>
-            <span className="font-display text-xl font-bold tracking-wide notranslate">
-              APAIXONE-SE
-            </span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-              {" "}
-              Saquarema/rj - BR
-            </span>
-            <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-              Capital Nacional do Surf
-            </span>
-          </div>
-        </Link>
+        
+        {/* ========================================== */}
+        {/* LADO ESQUERDO: Menu Hamburguer (Mobile) + Logo */}
+        {/* ========================================== */}
+        <div className="flex items-center gap-4 md:gap-0">
+          
+          {/* Botão Menu Hamburguer (Foi movido pra cá e só aparece no celular) */}
+          <button
+            className="text-primary-foreground md:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menu"
+          >
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
 
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-primary-foreground"
+          >
+            {/* Ícone de ondas com "hidden md:block" (some no celular e aparece no PC) */}
+            <Waves className="hidden h-10 w-10 md:block" />
+            <div>
+              <span className="font-display text-xl font-bold tracking-wide notranslate">
+                APAIXONE-SE
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+                {" "}
+                Saquarema/rj - BR
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+                Capital Nacional do Surf
+              </span>
+            </div>
+          </Link>
+        </div>
+
+        {/* ========================================== */}
+        {/* CENTRO: Links Desktop */}
+        {/* ========================================== */}
         <ul className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <li key={link.to}>
@@ -213,10 +237,28 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             </li>
           ))}
         </ul>
+
+        {/* ========================================== */}
+        {/* LADO DIREITO: Tradutor + Áudio + Clima */}
+        {/* ========================================== */}
         <div className="flex items-center gap-3 md:gap-4">
           
           <GoogleTranslate />
 
+          {/* Botão de Áudio Mobile (Fica sozinho do lado direito no celular) */}
+          <button
+            onClick={toggleAudio}
+            className="text-primary-foreground md:hidden"
+            aria-label="Alternar som das ondas"
+          >
+            {isPlaying ? (
+              <Volume2 className="h-6 w-6" />
+            ) : (
+              <VolumeX className="h-6 w-6" />
+            )}
+          </button>
+
+          {/* Ferramentas Exclusivas do Desktop (Clima e Áudio Desktop) */}
           <div className="hidden items-center gap-4 md:flex">
             {weather?.temperature !== undefined && (
               <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
@@ -238,36 +280,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               )}
             </button>
           </div>
-
-          <div className="flex items-center gap-4 md:hidden">
-            {/* Botão de Áudio Mobile */}
-            <button
-              onClick={toggleAudio}
-              className="text-primary-foreground"
-              aria-label="Alternar som das ondas"
-            >
-              {isPlaying ? (
-                <Volume2 className="h-6 w-6" />
-              ) : (
-                <VolumeX className="h-6 w-6" />
-              )}
-            </button>
-
-            <button
-              className="text-primary-foreground md:hidden"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menu"
-            >
-              {mobileOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
         </div>
       </nav>
 
+      {/* ========================================== */}
+      {/* MENU MOBILE (DROPDOWN TELA CHEIA) */}
+      {/* ========================================== */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
