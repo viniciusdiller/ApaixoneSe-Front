@@ -3,24 +3,41 @@
 import { Pencil, Trash2 } from "lucide-react";
 
 export interface Column<T> {
-  key: keyof T | string;
+  key: string;
   label: string;
-  render?: (row: T) => React.ReactNode;
+  /** Recebe (valor da célula, row completa) */
+  render?: (value: unknown, row: T) => React.ReactNode;
 }
 
-interface AdminTableProps<T extends { id: number }> {
+interface AdminTableProps<T extends { id: string | number }> {
   columns: Column<T>[];
   data: T[];
+  loading?: boolean;
   onEdit?: (row: T) => void;
   onDelete?: (row: T) => void;
 }
 
-export function AdminTable<T extends { id: number }>({
+function safeCell(value: unknown): React.ReactNode {
+  if (value === null || value === undefined) return <span className="text-muted-foreground">&mdash;</span>;
+  if (typeof value === "object") return <span className="text-muted-foreground text-xs">[objeto]</span>;
+  return String(value);
+}
+
+export function AdminTable<T extends { id: string | number }>({
   columns,
   data,
+  loading,
   onEdit,
   onDelete,
 }: AdminTableProps<T>) {
+  if (loading) {
+    return (
+      <div className="rounded-lg border border-border bg-card py-16 text-center text-sm text-muted-foreground">
+        Carregando...
+      </div>
+    );
+  }
+
   if (data.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card py-16 text-center text-sm text-muted-foreground">
@@ -36,7 +53,7 @@ export function AdminTable<T extends { id: number }>({
           <tr>
             {columns.map((col) => (
               <th
-                key={String(col.key)}
+                key={col.key}
                 className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 {col.label}
@@ -52,13 +69,14 @@ export function AdminTable<T extends { id: number }>({
         <tbody className="divide-y divide-border">
           {data.map((row) => (
             <tr key={row.id} className="transition-colors hover:bg-muted/40">
-              {columns.map((col) => (
-                <td key={String(col.key)} className="px-4 py-3 text-foreground">
-                  {col.render
-                    ? col.render(row)
-                    : String((row as Record<string, unknown>)[String(col.key)] ?? "")}
-                </td>
-              ))}
+              {columns.map((col) => {
+                const value = (row as Record<string, unknown>)[col.key];
+                return (
+                  <td key={col.key} className="px-4 py-3 text-foreground">
+                    {col.render ? col.render(value, row) : safeCell(value)}
+                  </td>
+                );
+              })}
               {(onEdit || onDelete) && (
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
