@@ -14,7 +14,7 @@ export type TipoServicoTurista =
   | "GUIA_TURISMO"
   | "AGENCIA_TURISMO"
   | "ESPORTE_LAZER"
-  | "LOCADORA_VEICULOS";
+  | "LOCADORA";
 
 export type StatusEstabelecimento = "PENDENTE" | "APROVADO" | "REJEITADO";
 
@@ -56,8 +56,9 @@ export interface LoginUserDto {
   senha: string;
 }
 
+/** Backend retorna { token, user } — NÃO access_token */
 export interface LoginResponse {
-  access_token: string;
+  token: string;
   user: User;
 }
 
@@ -90,7 +91,7 @@ export interface Evento {
   id: string;
   titulo: string;
   descricao: string;
-  data: string; // ISO DateTime
+  data: string;
   local: string;
   createdAt?: string;
   updatedAt?: string;
@@ -99,7 +100,7 @@ export interface Evento {
 export interface CreateEventoDto {
   titulo: string;
   descricao: string;
-  data: string; // ISO DateTime
+  data: string;
   local: string;
 }
 
@@ -226,8 +227,8 @@ export interface UpdateServicoTuristaDto
 export interface PlanoViagem {
   id: string;
   titulo: string;
-  dataInicio: string; // ISO DateTime
-  dataFim: string; // ISO DateTime
+  dataInicio: string;
+  dataFim: string;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email">;
   itens?: ItemPlanoViagem[];
@@ -237,27 +238,21 @@ export interface PlanoViagem {
 
 export interface CreatePlanoViagemDto {
   titulo: string;
-  dataInicio: string; // ISO DateTime
-  dataFim: string; // ISO DateTime
+  dataInicio: string;
+  dataFim: string;
   usuarioId: string;
 }
 
 export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
 
 // ─── Item Plano Viagem ────────────────────────────────────────────────────
-/**
- * Representa um item dentro de um roteiro de viagem.
- * Natureza polimórfica: apenas UM dos IDs opcionais deve ser preenchido por item.
- * O backend pode popular os objetos relacionados na resposta.
- */
 export interface ItemPlanoViagem {
   id: string;
-  dataHoraAgendada: string; // ISO DateTime
+  dataHoraAgendada: string;
   anotacao?: string | null;
   planoViagemId: string;
   planoViagem?: Pick<PlanoViagem, "id" | "titulo">;
 
-  // Relações polimórficas — apenas uma preenchida por item
   gastronomiaId?: string | null;
   gastronomia?: Pick<Gastronomia, "id" | "nome" | "endereco" | "logoUrl"> | null;
 
@@ -281,10 +276,9 @@ export interface ItemPlanoViagem {
 }
 
 export interface CreateItemPlanoViagemDto {
-  dataHoraAgendada: string; // ISO DateTime
+  dataHoraAgendada: string;
   anotacao?: string;
   planoViagemId: string;
-  // Preencher apenas UM:
   gastronomiaId?: string;
   hospedagemId?: string;
   eventoId?: string;
@@ -296,7 +290,7 @@ export interface CreateItemPlanoViagemDto {
 export interface Cat {
   id: string;
   texto: string;
-  arquivoUrl: string; // PDF ou imagem
+  arquivoUrl: string;
   createdAt?: string;
   updatedAt?: string;
 }

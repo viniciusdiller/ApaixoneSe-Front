@@ -18,12 +18,13 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       const data = await usersApi.login({ identificador, senha });
-      const token = (data as any).access_token ?? (data as any).token;
-      if (!token) throw new Error("Token não retornado pelo servidor.");
+      // Backend retorna { token, user } — campo exato: "token"
+      const token = data.token;
+      if (!token) throw new Error("Token n\u00e3o retornado pelo servidor.");
       setToken(token);
       router.push("/admin");
     } catch (err: any) {
-      let msg = "Usuário ou senha inválidos.";
+      let msg = "Usu\u00e1rio ou senha inv\u00e1lidos.";
       try {
         const parsed = JSON.parse(err.message);
         msg = Array.isArray(parsed.message)
@@ -55,7 +56,7 @@ export default function AdminLoginPage() {
         >
           <div className="space-y-1">
             <label htmlFor="identificador" className="text-sm font-medium">
-              Usuário
+              Usu\u00e1rio
             </label>
             <input
               id="identificador"
@@ -80,7 +81,7 @@ export default function AdminLoginPage() {
               autoComplete="current-password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              placeholder="••••••••"
+              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary,#c8a96e)] transition"
             />
           </div>
@@ -97,13 +98,13 @@ export default function AdminLoginPage() {
             className="w-full py-2 rounded-lg text-sm font-semibold transition disabled:opacity-60"
             style={{ background: "var(--primary, #c8a96e)", color: "#fff" }}
           >
-            {loading ? "Entrando…" : "Entrar"}
+            {loading ? "Entrando\u2026" : "Entrar"}
           </button>
         </form>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           <a href="/" className="underline underline-offset-2 hover:text-foreground transition">
-            ← Voltar ao site
+            \u2190 Voltar ao site
           </a>
         </p>
       </div>
