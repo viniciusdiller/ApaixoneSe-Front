@@ -1,25 +1,38 @@
+import { getToken } from "./auth";
+
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:6969";
 
 /**
  * Wrapper central para todas as chamadas à API.
- * - Detecta FormData automaticamente e omite o Content-Type
- *   (o browser define o boundary do multipart sozinho).
- * - Para payloads JSON, serializa e define Content-Type: application/json.
+ * - Injeta automaticamente o header Authorization: Bearer <token> quando
+ *   há um token salvo (admin logado).
+ * - Detecta FormData e omite Content-Type (o browser define o boundary).
+ * - Para JSON, serializa e define Content-Type: application/json.
  */
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
   const isFormData = options.body instanceof FormData;
+  const token = getToken();
 
-  const headers: HeadersInit = isFormData
-    ? {} // deixa o browser setar multipart/form-data com boundary
-    : { "Content-Type": "application/json", ...(options.headers ?? {}) };
+  const baseHeaders: Record<string, string> = {};
+
+  if (token) {
+    baseHeaders["Authorization"] = `Bearer ${token}`;
+  }
+
+  if (!isFormData) {
+    baseHeaders["Content-Type"] = "application/json";
+  }
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
-    headers,
+    headers: {
+      ...baseHeaders,
+      ...(options.headers ?? {}),
+    },
   });
 
   if (!res.ok) {
