@@ -7,7 +7,7 @@ interface AdminModalProps {
   title: string;
   open: boolean;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit?: () => void;
   saving?: boolean;
   children: React.ReactNode;
 }
@@ -48,24 +48,26 @@ export function AdminModal({ title, open, onClose, onSubmit, saving, children }:
           <div className="flex flex-col gap-4">{children}</div>
         </div>
 
-        {/* Footer com botões */}
-        <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={saving}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
-          >
-            {saving ? "Salvando..." : "Salvar"}
-          </button>
-        </div>
+        {/* Footer com botões — só renderiza se onSubmit for passado */}
+        {onSubmit && (
+          <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={saving}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saving ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

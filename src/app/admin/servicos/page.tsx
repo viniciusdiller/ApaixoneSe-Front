@@ -2,197 +2,149 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { servicoTuristaApi, type ServicoTurista } from "@/lib/api";
-import { AdminTable } from "@/components/admin/AdminTable";
+import { servicoTuristaApi } from "@/lib/api";
+import type { ServicoTurista, CreateServicoTuristaDto, TipoServicoTurista, TipoRoteiro } from "@/lib/api";
+import { AdminTable, type Column } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
-import { FileUploadField } from "@/components/admin/FileUploadField";
-import { MediaPreview } from "@/components/admin/MediaPreview";
+import { LoadingGrid } from "@/components/ui/LoadingGrid";
 
-const TIPOS = ["AGENCIA_TURISMO", "GUIA_TURISMO", "ESPORTE_LAZER", "LOCADORA_VEICULOS"];
-const ROTEIROS = ["A_PE", "ESPORTE_E_AVENTURA", "DE_PRAIAS", "CULTURAL", "RELIGIOSO", "RURAL", "ECOLOGICO"];
+const TIPOS: { value: TipoServicoTurista; label: string }[] = [
+  { value: "GUIA_TURISMO", label: "Guia de Turismo" },
+  { value: "AGENCIA_TURISMO", label: "Agência de Turismo" },
+  { value: "ESPORTE_LAZER", label: "Esporte e Lazer" },
+  { value: "LOCADORA_VEICULOS", label: "Locadora de Veículos" },
+];
 
-const labelCls = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-const selectCls = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
+const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
+  { value: "A_PE", label: "A Pé" },
+  { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
+  { value: "DE_PRAIAS", label: "De Praias" },
+  { value: "CULTURAL", label: "Cultural" },
+  { value: "RELIGIOSO", label: "Religioso" },
+  { value: "RURAL", label: "Rural" },
+  { value: "ECOLOGICO", label: "Ecológico" },
+];
 
-export default function ServicosAdminPage() {
+const emptyForm = (): CreateServicoTuristaDto => ({
+  tipo: "GUIA_TURISMO",
+  nome: "",
+  telefone: "",
+  usuarioId: "",
+  instagram: "",
+  descricao: "",
+  endereco: "",
+  cnpj: "",
+  idiomas: "",
+});
+
+export default function AdminServicosPage() {
   const [items, setItems] = useState<ServicoTurista[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<ServicoTurista | null>(null);
+  const [form, setForm] = useState<CreateServicoTuristaDto>(emptyForm());
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState({
-    tipo: "AGENCIA_TURISMO",
-    nome: "", telefone: "", instagram: "", endereco: "",
-    descricao: "", cnpj: "", roteiro: "", idiomas: "",
-  });
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [fotoFile, setFotoFile] = useState<File | null>(null);
-
-  async function load() {
-    setLoading(true);
-    try { setItems(await servicoTuristaApi.getAll()); } finally { setLoading(false); }
-  }
-  useEffect(() => { load(); }, []);
+  const load = () => { setLoading(true); servicoTuristaApi.getAll().then(setItems).finally(() => setLoading(false)); };
+  useEffect(load, []);
 
   function openCreate() {
-    setEditing(null);
-    setForm({ tipo: "AGENCIA_TURISMO", nome: "", telefone: "", instagram: "", endereco: "", descricao: "", cnpj: "", roteiro: "", idiomas: "" });
-    setLogoFile(null); setFotoFile(null);
-    setModalOpen(true);
+    setEditing(null); setForm(emptyForm()); setModalOpen(true);
   }
 
   function openEdit(item: ServicoTurista) {
     setEditing(item);
     setForm({
-      tipo: item.tipo ?? "AGENCIA_TURISMO",
+      tipo: item.tipo,
       nome: item.nome ?? "",
       telefone: item.telefone ?? "",
+      usuarioId: item.usuarioId ?? "",
       instagram: item.instagram ?? "",
+      descricao: item.descricao ?? "",
       endereco: item.endereco ?? "",
-      descricao: (item as any).descricao ?? "",
-      cnpj: (item as any).cnpj ?? "",
-      roteiro: (item as any).roteiro ?? "",
-      idiomas: (item as any).idiomas ?? "",
+      cnpj: item.cnpj ?? "",
+      roteiro: item.roteiro ?? undefined,
+      idiomas: item.idiomas ?? "",
     });
-    setLogoFile(null); setFotoFile(null);
     setModalOpen(true);
   }
 
   async function handleSubmit() {
     setSaving(true);
     try {
-      // Monta FormData manualmente para ter controle total sobre quais
-      // campos são incluídos — evita o || undefined que descartava valores.
-      const fd = new FormData();
-      fd.append("tipo", form.tipo);
-      fd.append("nome", form.nome);
-      fd.append("telefone", form.telefone);
-      if (form.instagram) fd.append("instagram", form.instagram);
-      if (form.endereco)  fd.append("endereco",  form.endereco);
-
-      // Campos condicionais por tipo
-      if (form.tipo === "AGENCIA_TURISMO" || form.tipo === "ESPORTE_LAZER") {
-        fd.append("descricao", form.descricao);
-      }
-      if (form.tipo === "GUIA_TURISMO") {
-        fd.append("cnpj",    form.cnpj);
-        fd.append("roteiro", form.roteiro);
-        fd.append("idiomas", form.idiomas);
-      }
-
-      if (logoFile) fd.append("logo", logoFile);
-      if (fotoFile) fd.append("foto", fotoFile);
-
-      if (editing) await servicoTuristaApi.update(editing.id, fd);
-      else         await servicoTuristaApi.create(fd);
-
-      setModalOpen(false);
-      load();
-    } catch (e) {
-      alert("Erro ao salvar: " + (e as Error).message);
-    } finally {
-      setSaving(false);
-    }
+      if (editing) await servicoTuristaApi.update(editing.id, form);
+      else await servicoTuristaApi.create(form);
+      setModalOpen(false); load();
+    } catch (e) { alert("Erro ao salvar: " + (e as Error).message); }
+    finally { setSaving(false); }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Excluir este serviço?")) return;
-    await servicoTuristaApi.delete(id);
-    load();
+  async function handleDelete(item: ServicoTurista) {
+    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    await servicoTuristaApi.remove(item.id); load();
   }
 
-  const columns = [
-    { key: "id",       label: "ID" },
-    { key: "tipo",     label: "Tipo" },
-    { key: "nome",     label: "Nome" },
+  const set = (k: keyof CreateServicoTuristaDto) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm((prev) => ({ ...prev, [k]: e.target.value }));
+
+  const columns: Column<ServicoTurista>[] = [
+    { key: "id", label: "ID" },
+    { key: "tipo", label: "Tipo", render: (v) => TIPOS.find(t => t.value === (v as string))?.label ?? String(v) },
+    { key: "nome", label: "Nome" },
     { key: "telefone", label: "Telefone" },
-    { key: "cnpj",    label: "CNPJ",    render: (v: string) => v ?? "—" },
-    { key: "roteiro", label: "Roteiro", render: (v: string) => v ?? "—" },
-    { key: "idiomas", label: "Idiomas", render: (v: string) => v ?? "—" },
-    { key: "logoUrl", label: "Logo",    render: (v: string) => <MediaPreview url={v} label="Logo" /> },
-    { key: "fotoUrl", label: "Foto",    render: (v: string) => <MediaPreview url={v} label="Foto" /> },
+    { key: "status", label: "Status" },
     {
       key: "actions", label: "",
       render: (_: unknown, row: ServicoTurista) => (
         <div className="flex gap-2">
           <button onClick={() => openEdit(row)} className="rounded p-1 hover:bg-muted"><Pencil className="h-4 w-4" /></button>
-          <button onClick={() => handleDelete(row.id)} className="rounded p-1 hover:bg-muted text-destructive"><Trash2 className="h-4 w-4" /></button>
+          <button onClick={() => handleDelete(row)} className="rounded p-1 hover:bg-muted text-destructive"><Trash2 className="h-4 w-4" /></button>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Serviços Turísticos</h1>
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">Serviços ao Turista</h1>
+          <p className="text-sm text-muted-foreground">{items.length} registros</p>
+        </div>
         <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" /> Novo Serviço
         </button>
       </div>
 
-      <AdminTable columns={columns} data={items} loading={loading} />
+      {loading ? <LoadingGrid count={3} /> : <AdminTable<ServicoTurista> columns={columns} data={items} />}
 
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit} saving={saving}
         title={editing ? "Editar Serviço" : "Novo Serviço"}>
-
-        <div className="flex flex-col gap-1">
-          <label className={labelCls}>Tipo *</label>
-          <select
-            value={form.tipo}
-            onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
-            className={selectCls}
-          >
-            {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
+        <div className="space-y-1">
+          <label className="text-sm font-medium">Tipo *</label>
+          <select value={form.tipo} onChange={set("tipo")}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
+            {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
         </div>
-
-        <AdminFormField label="Nome *" value={form.nome}
-          onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-        <AdminFormField label="Telefone *" value={form.telefone}
-          onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
-        <AdminFormField label="Instagram" value={form.instagram}
-          onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
-        <AdminFormField label="Endereço" value={form.endereco}
-          onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} />
-
-        {(form.tipo === "AGENCIA_TURISMO" || form.tipo === "ESPORTE_LAZER") && (
-          <AdminFormField label="Descrição *" multiline value={form.descricao}
-            onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
-        )}
-
-        {form.tipo === "GUIA_TURISMO" && (
-          <>
-            <AdminFormField label="CNPJ *" value={form.cnpj}
-              onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
-            <div className="flex flex-col gap-1">
-              <label className={labelCls}>Roteiro *</label>
-              <select
-                value={form.roteiro}
-                onChange={e => setForm(f => ({ ...f, roteiro: e.target.value }))}
-                className={selectCls}
-              >
-                <option value="">Selecione...</option>
-                {ROTEIROS.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-            </div>
-            <AdminFormField label="Idiomas *" placeholder="Ex: Português, Inglês"
-              value={form.idiomas} onChange={e => setForm(f => ({ ...f, idiomas: e.target.value }))} />
-          </>
-        )}
-
-        <div className="grid grid-cols-2 gap-4">
-          <FileUploadField label="Logo" accept="image"
-            currentUrl={(editing as any)?.logoUrl ?? ""}
-            onFileChange={(_, file) => setLogoFile(file)}
-            onClear={() => setLogoFile(null)} />
-          <FileUploadField label="Foto" accept="image"
-            currentUrl={(editing as any)?.fotoUrl ?? ""}
-            onFileChange={(_, file) => setFotoFile(file)}
-            onClear={() => setFotoFile(null)} />
+        <AdminFormField label="Nome *" value={form.nome ?? ""} onChange={set("nome")} />
+        <AdminFormField label="Telefone *" value={form.telefone ?? ""} onChange={set("telefone")} />
+        <AdminFormField label="ID do Usuário *" value={form.usuarioId ?? ""} onChange={set("usuarioId")} />
+        <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
+        <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
+        <AdminFormField label="Endereço" value={form.endereco ?? ""} onChange={set("endereco")} />
+        <AdminFormField label="CNPJ" value={form.cnpj ?? ""} onChange={set("cnpj")} />
+        <AdminFormField label="Idiomas" value={form.idiomas ?? ""} onChange={set("idiomas")} />
+        <div className="space-y-1">
+          <label className="text-sm font-medium">Roteiro (opcional)</label>
+          <select value={form.roteiro ?? ""} onChange={set("roteiro")}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
+            <option value="">— nenhum —</option>
+            {ROTEIROS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
         </div>
       </AdminModal>
     </div>

@@ -31,9 +31,13 @@ export default function AdminEventosPage() {
     try {
       modal.editing ? await eventosApi.update(modal.editing.id, form) : await eventosApi.create(form);
       closeModal(); load();
-    } catch (err: any) {
-      try { const p = JSON.parse(err.message); setError(Array.isArray(p.message) ? p.message.join(" ") : p.message); }
-      catch { setError("Erro ao salvar."); }
+    } catch (err: unknown) {
+      try {
+        const p = JSON.parse((err as Error).message);
+        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
+      } catch {
+        setError("Erro ao salvar.");
+      }
     } finally { setSaving(false); }
   };
 
@@ -59,11 +63,11 @@ export default function AdminEventosPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable data={items} columns={[
-          { key: "id", label: "ID", render: (r) => <span className="font-mono text-xs">{String(r.id).slice(0, 8)}…</span> },
+        <AdminTable<Evento> data={items} columns={[
+          { key: "id", label: "ID", render: (_, row) => <span className="font-mono text-xs">{String(row.id).slice(0, 8)}…</span> },
           { key: "titulo", label: "Título" },
           { key: "local", label: "Local" },
-          { key: "data", label: "Data", render: (r) => new Date(r.data).toLocaleDateString("pt-BR") },
+          { key: "data", label: "Data", render: (_, row) => new Date(row.data).toLocaleDateString("pt-BR") },
         ]} onEdit={openEdit} onDelete={handleDelete} />
       )}
 

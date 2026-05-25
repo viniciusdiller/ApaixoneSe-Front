@@ -9,7 +9,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus } from "lucide-react";
 
-const empty: CreatePlanoViagemDto = { titulo: "", descricao: "" };
+const empty: CreatePlanoViagemDto = { titulo: "", dataInicio: "", dataFim: "", usuarioId: "" };
 
 export default function AdminPlanosPage() {
   const [items, setItems] = useState<PlanoViagem[]>([]);
@@ -22,7 +22,15 @@ export default function AdminPlanosPage() {
   useEffect(load, []);
 
   const openCreate = () => { setForm(empty); setModal({ open: true, editing: null }); };
-  const openEdit = (item: PlanoViagem) => { setForm({ titulo: item.titulo, descricao: item.descricao }); setModal({ open: true, editing: item }); };
+  const openEdit = (item: PlanoViagem) => {
+    setForm({
+      titulo: item.titulo,
+      dataInicio: item.dataInicio?.slice(0, 10) ?? "",
+      dataFim: item.dataFim?.slice(0, 10) ?? "",
+      usuarioId: item.usuarioId,
+    });
+    setModal({ open: true, editing: item });
+  };
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -54,13 +62,14 @@ export default function AdminPlanosPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable
+        <AdminTable<PlanoViagem>
           data={items}
           columns={[
             { key: "id", label: "ID" },
             { key: "titulo", label: "Título" },
-            { key: "descricao", label: "Descrição", render: (r) => <span className="line-clamp-1 max-w-xs">{r.descricao ?? "—"}</span> },
-            { key: "createdAt", label: "Criado em", render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("pt-BR") : "—" },
+            { key: "dataInicio", label: "Início", render: (_, row) => row.dataInicio ? new Date(row.dataInicio).toLocaleDateString("pt-BR") : "—" },
+            { key: "dataFim", label: "Fim", render: (_, row) => row.dataFim ? new Date(row.dataFim).toLocaleDateString("pt-BR") : "—" },
+            { key: "createdAt", label: "Criado em", render: (_, row) => row.createdAt ? new Date(row.createdAt).toLocaleDateString("pt-BR") : "—" },
           ]}
           onEdit={openEdit}
           onDelete={handleDelete}
@@ -70,7 +79,11 @@ export default function AdminPlanosPage() {
       <AdminModal title={modal.editing ? "Editar Plano" : "Novo Plano"} open={modal.open} onClose={closeModal}>
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField label="Título" value={form.titulo} onChange={set("titulo")} required />
-          <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
+          <AdminFormField label="ID do Usuário" value={form.usuarioId} onChange={set("usuarioId")} required />
+          <div className="grid grid-cols-2 gap-3">
+            <AdminFormField label="Data Início" value={form.dataInicio} onChange={set("dataInicio")} type="date" required />
+            <AdminFormField label="Data Fim" value={form.dataFim} onChange={set("dataFim")} type="date" required />
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={closeModal} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>
             <button type="submit" disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">{saving ? "Salvando..." : "Salvar"}</button>

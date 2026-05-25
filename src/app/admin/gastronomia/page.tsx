@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { gastronomiaApi, type Gastronomia } from "@/lib/api";
-import { AdminTable } from "@/components/admin/AdminTable";
+import { AdminTable, type Column } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
@@ -67,24 +67,24 @@ export default function GastronomiaAdminPage() {
     finally { setSaving(false); }
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(item: Gastronomia) {
     if (!confirm("Excluir este item?")) return;
-    await gastronomiaApi.delete(id); load();
+    await gastronomiaApi.remove(item.id); load();
   }
 
-  const columns = [
+  const columns: Column<Gastronomia>[] = [
     { key: "id", label: "ID" },
     { key: "nome", label: "Nome" },
     { key: "telefone", label: "Telefone" },
     { key: "cnpj", label: "CNPJ" },
-    { key: "logo", label: "Logo", render: (v: string) => <MediaPreview url={v} label="Logo" /> },
-    { key: "documentoPdf", label: "PDF", render: (v: string) => <MediaPreview url={v} label="Documento" isPdf /> },
+    { key: "logoUrl", label: "Logo", render: (v) => <MediaPreview url={v as string} label="Logo" /> },
+    { key: "documentoPdfUrl", label: "PDF", render: (v) => <MediaPreview url={v as string} label="Documento" isPdf /> },
     {
       key: "actions", label: "",
       render: (_: unknown, row: Gastronomia) => (
         <div className="flex gap-2">
           <button onClick={() => openEdit(row)} className="rounded p-1 hover:bg-muted"><Pencil className="h-4 w-4" /></button>
-          <button onClick={() => handleDelete(row.id)} className="rounded p-1 hover:bg-muted text-destructive"><Trash2 className="h-4 w-4" /></button>
+          <button onClick={() => handleDelete(row)} className="rounded p-1 hover:bg-muted text-destructive"><Trash2 className="h-4 w-4" /></button>
         </div>
       ),
     },
@@ -99,7 +99,7 @@ export default function GastronomiaAdminPage() {
         </button>
       </div>
 
-      <AdminTable columns={columns} data={items} loading={loading} />
+      <AdminTable<Gastronomia> columns={columns} data={items} loading={loading} />
 
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit} saving={saving}

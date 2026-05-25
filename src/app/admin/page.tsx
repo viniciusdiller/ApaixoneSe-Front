@@ -13,14 +13,14 @@ import {
 } from "@/lib/api";
 import { Users, Calendar, Utensils, BedDouble, Wrench, MapPin, BookOpen, Tag } from "lucide-react";
 
-interface StatCard {
+interface StatCardProps {
   label: string;
   count: number | string;
   icon: React.ReactNode;
   color: string;
 }
 
-function StatCard({ label, count, icon, color }: StatCard) {
+function StatCard({ label, count, icon, color }: StatCardProps) {
   return (
     <div className={`flex items-center gap-4 rounded-lg border border-border bg-card p-5 shadow-sm`}>
       <div className={`flex h-12 w-12 items-center justify-center rounded-full ${color}`}>
@@ -35,7 +35,16 @@ function StatCard({ label, count, icon, color }: StatCard) {
 }
 
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<{
+    users: number | string;
+    atividades: number | string;
+    eventos: number | string;
+    gastronomia: number | string;
+    hospedagem: number | string;
+    servicos: number | string;
+    planos: number | string;
+    cats: number | string;
+  }>({
     users: "...",
     atividades: "...",
     eventos: "...",

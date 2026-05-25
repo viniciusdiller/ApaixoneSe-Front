@@ -31,9 +31,13 @@ export default function AdminCategoriasPage() {
     try {
       modal.editing ? await catApi.update(modal.editing.id, form) : await catApi.create(form);
       closeModal(); load();
-    } catch (err: any) {
-      try { const p = JSON.parse(err.message); setError(Array.isArray(p.message) ? p.message.join(" ") : p.message); }
-      catch { setError("Erro ao salvar."); }
+    } catch (err: unknown) {
+      try {
+        const p = JSON.parse((err as Error).message);
+        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
+      } catch {
+        setError("Erro ao salvar.");
+      }
     } finally { setSaving(false); }
   };
 
@@ -59,10 +63,10 @@ export default function AdminCategoriasPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable data={items} columns={[
-          { key: "id", label: "ID", render: (r) => <span className="font-mono text-xs">{String(r.id).slice(0, 8)}…</span> },
-          { key: "texto", label: "Texto", render: (r) => <span className="line-clamp-2 max-w-sm text-sm">{r.texto}</span> },
-          { key: "arquivoUrl", label: "Arquivo", render: (r) => <a href={r.arquivoUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 text-xs">Ver arquivo</a> },
+        <AdminTable<Cat> data={items} columns={[
+          { key: "id", label: "ID", render: (_, row) => <span className="font-mono text-xs">{String(row.id).slice(0, 8)}…</span> },
+          { key: "texto", label: "Texto", render: (_, row) => <span className="line-clamp-2 max-w-sm text-sm">{row.texto}</span> },
+          { key: "arquivoUrl", label: "Arquivo", render: (_, row) => <a href={row.arquivoUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 text-xs">Ver arquivo</a> },
         ]} onEdit={openEdit} onDelete={handleDelete} />
       )}
 

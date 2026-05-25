@@ -5,7 +5,6 @@ import { usersApi } from "@/lib/api";
 import type { User } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Trash2 } from "lucide-react";
 
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,7 +22,7 @@ export default function AdminUsuariosPage() {
 
   const handleDelete = async (user: User) => {
     if (!confirm(`Excluir usuário "${user.nome}"?`)) return;
-    await usersApi.remove(user.id);
+    await usersApi.delete(user.id);
     load();
   };
 
@@ -43,7 +42,7 @@ export default function AdminUsuariosPage() {
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
-        <AdminTable
+        <AdminTable<User>
           data={users}
           columns={[
             { key: "usuario", label: "Usuario" },
@@ -52,9 +51,9 @@ export default function AdminUsuariosPage() {
             {
               key: "createdAt",
               label: "Criado em",
-              render: (r) =>
-                r.createdAt
-                  ? new Date(r.createdAt).toLocaleDateString("pt-BR")
+              render: (_, row) =>
+                row.createdAt
+                  ? new Date(row.createdAt).toLocaleDateString("pt-BR")
                   : "—",
             },
           ]}

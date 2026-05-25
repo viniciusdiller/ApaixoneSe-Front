@@ -34,7 +34,14 @@ export default function AdminAtividadesPage() {
 
   const openCreate = () => { setForm(empty); setError(""); setModal({ open: true, editing: null }); };
   const openEdit = (item: Atividade) => {
-    setForm({ titulo: item.titulo, descricao: item.descricao, local: item.local, roteiro: item.roteiro, latitude: item.latitude, longitude: item.longitude });
+    setForm({
+      titulo: item.titulo,
+      descricao: item.descricao,
+      local: item.local,
+      roteiro: item.roteiro,
+      latitude: item.latitude ?? undefined,
+      longitude: item.longitude ?? undefined,
+    });
     setError(""); setModal({ open: true, editing: item });
   };
   const closeModal = () => setModal({ open: false, editing: null });
@@ -44,9 +51,13 @@ export default function AdminAtividadesPage() {
     try {
       modal.editing ? await atividadesApi.update(modal.editing.id, form) : await atividadesApi.create(form);
       closeModal(); load();
-    } catch (err: any) {
-      try { const p = JSON.parse(err.message); setError(Array.isArray(p.message) ? p.message.join(" ") : p.message); }
-      catch { setError("Erro ao salvar."); }
+    } catch (err: unknown) {
+      try {
+        const p = JSON.parse((err as Error).message);
+        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
+      } catch {
+        setError("Erro ao salvar.");
+      }
     } finally { setSaving(false); }
   };
 
@@ -72,11 +83,11 @@ export default function AdminAtividadesPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable data={items} columns={[
-          { key: "id", label: "ID", render: (r) => <span className="font-mono text-xs">{String(r.id).slice(0, 8)}…</span> },
+        <AdminTable<Atividade> data={items} columns={[
+          { key: "id", label: "ID", render: (_, row) => <span className="font-mono text-xs">{String(row.id).slice(0, 8)}…</span> },
           { key: "titulo", label: "Título" },
           { key: "local", label: "Local" },
-          { key: "roteiro", label: "Roteiro", render: (r) => ROTEIROS.find(x => x.value === r.roteiro)?.label ?? r.roteiro },
+          { key: "roteiro", label: "Roteiro", render: (_, row) => ROTEIROS.find(x => x.value === row.roteiro)?.label ?? row.roteiro },
         ]} onEdit={openEdit} onDelete={handleDelete} />
       )}
 
