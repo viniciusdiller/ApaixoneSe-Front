@@ -2,28 +2,24 @@
 
 import { useState } from "react";
 import { FileText, ZoomIn, X } from "lucide-react";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 interface MediaPreviewProps {
   url: string;
   label?: string;
-  /** Se true, trata como PDF e exibe badge em vez de imagem */
   isPdf?: boolean;
 }
 
-/**
- * Exibe um thumbnail clicável.
- * - Imagem → abre lightbox com a imagem em tamanho grande
- * - PDF   → badge que abre o arquivo em nova aba
- */
 export function MediaPreview({ url, label = "Arquivo", isPdf = false }: MediaPreviewProps) {
   const [open, setOpen] = useState(false);
+  const safe = safeMediaUrl(url);
 
-  if (!url) return <span className="text-xs text-muted-foreground">—</span>;
+  if (!safe) return <span className="text-xs text-muted-foreground">—</span>;
 
   if (isPdf) {
     return (
       <a
-        href={url}
+        href={safe}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/20 transition"
@@ -46,7 +42,7 @@ export function MediaPreview({ url, label = "Arquivo", isPdf = false }: MediaPre
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={url}
+          src={safe}
           alt={label}
           width={48}
           height={48}
@@ -58,7 +54,6 @@ export function MediaPreview({ url, label = "Arquivo", isPdf = false }: MediaPre
         </span>
       </button>
 
-      {/* Lightbox */}
       {open && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4"
@@ -81,7 +76,7 @@ export function MediaPreview({ url, label = "Arquivo", isPdf = false }: MediaPre
             </button>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={url}
+              src={safe}
               alt={label}
               className="max-h-[85vh] max-w-[85vw] rounded-lg object-contain shadow-2xl"
             />

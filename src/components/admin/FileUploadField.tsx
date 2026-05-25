@@ -2,16 +2,14 @@
 
 import { useRef, useState } from "react";
 import { Upload, X, FileText, Image as ImageIcon } from "lucide-react";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 type Accept = "image" | "pdf" | "any";
 
 interface FileUploadFieldProps {
   label: string;
-  /** URL atual (já salva no servidor). Usado para mostrar preview ao editar. */
   currentUrl?: string;
-  /** Chamado com a URL local (blob) gerada pelo FileReader para envio ao backend. */
   onFileChange: (localUrl: string, file: File) => void;
-  /** Limpa o campo */
   onClear?: () => void;
   accept?: Accept;
   required?: boolean;
@@ -24,13 +22,6 @@ const ACCEPT_MAP: Record<Accept, string> = {
   any: "image/*,application/pdf",
 };
 
-/**
- * Campo de upload com:
- * - Drag-and-drop ou clique para selecionar arquivo
- * - Preview local imediato (image) ou badge PDF
- * - Botão de limpar
- * - Ao editar, exibe a URL já salva como preview
- */
 export function FileUploadField({
   label,
   currentUrl = "",
@@ -45,10 +36,12 @@ export function FileUploadField({
   const [localPreview, setLocalPreview] = useState<string>("");
   const [localName, setLocalName] = useState<string>("");
 
-  const previewUrl = localPreview || currentUrl;
+  // Para preview: prefere blob local; se não houver, usa a URL do servidor (encodada)
+  const serverPreview = safeMediaUrl(currentUrl);
+  const previewUrl = localPreview || serverPreview;
   const isPdf =
     localName.toLowerCase().endsWith(".pdf") ||
-    (currentUrl && currentUrl.toLowerCase().endsWith(".pdf"));
+    currentUrl.toLowerCase().includes(".pdf");
 
   function handleFile(file: File) {
     setLocalName(file.name);
@@ -86,7 +79,6 @@ export function FileUploadField({
         {label}{required && " *"}
       </label>
 
-      {/* Preview area */}
       {previewUrl ? (
         <div className="relative flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-3">
           {isPdf ? (
@@ -109,7 +101,7 @@ export function FileUploadField({
           )}
           <div className="flex-1 min-w-0">
             <p className="truncate text-sm text-foreground">
-              {localName || previewUrl.split("/").pop()}
+              {localName || currentUrl.split("/").pop()}
             </p>
             <button
               type="button"
@@ -129,7 +121,6 @@ export function FileUploadField({
           </button>
         </div>
       ) : (
-        /* Drop zone */
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
