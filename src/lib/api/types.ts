@@ -13,7 +13,7 @@ export interface RegisterUserDto {
 }
 
 export interface LoginUserDto {
-  email: string;
+  identificador: string;
   senha: string;
 }
 
@@ -25,18 +25,20 @@ export interface LoginResponse {
 // ─── Atividades ───────────────────────────────────────────────────────────
 export interface Atividade {
   id: number;
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
+  local: string;
   roteiro?: string;
-  imagem?: string;
+  foto?: string;
   createdAt?: string;
 }
 
 export interface CreateAtividadeDto {
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
+  local: string;
   roteiro?: string;
-  imagem?: string;
+  foto?: string;
 }
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
@@ -44,20 +46,20 @@ export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
 // ─── Eventos ──────────────────────────────────────────────────────────────
 export interface Evento {
   id: number;
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   data: string;
-  local?: string;
-  imagem?: string;
+  local: string;
+  foto?: string;
   createdAt?: string;
 }
 
 export interface CreateEventoDto {
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   data: string;
-  local?: string;
-  imagem?: string;
+  local: string;
+  foto?: string;
 }
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;
@@ -65,20 +67,20 @@ export type UpdateEventoDto = Partial<CreateEventoDto>;
 // ─── Gastronomia ──────────────────────────────────────────────────────────
 export interface Gastronomia {
   id: number;
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   tipo?: string;
-  endereco?: string;
-  imagem?: string;
+  local: string;
+  foto?: string;
   createdAt?: string;
 }
 
 export interface CreateGastronomiaDto {
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   tipo?: string;
-  endereco?: string;
-  imagem?: string;
+  local: string;
+  foto?: string;
 }
 
 export type UpdateGastronomiaDto = Partial<CreateGastronomiaDto>;
@@ -86,21 +88,21 @@ export type UpdateGastronomiaDto = Partial<CreateGastronomiaDto>;
 // ─── Hospedagem ───────────────────────────────────────────────────────────
 export interface Hospedagem {
   id: number;
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   tipo?: string;
-  endereco?: string;
-  imagem?: string;
+  local: string;
+  foto?: string;
   preco?: number;
   createdAt?: string;
 }
 
 export interface CreateHospedagemDto {
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   tipo?: string;
-  endereco?: string;
-  imagem?: string;
+  local: string;
+  foto?: string;
   preco?: number;
 }
 
@@ -109,20 +111,20 @@ export type UpdateHospedagemDto = Partial<CreateHospedagemDto>;
 // ─── Serviço Turista ──────────────────────────────────────────────────────
 export interface ServicoTurista {
   id: number;
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   categoria?: string;
   contato?: string;
-  imagem?: string;
+  foto?: string;
   createdAt?: string;
 }
 
 export interface CreateServicoTuristaDto {
-  nome: string;
-  descricao: string;
+  titulo: string;
+  descricao?: string;
   categoria?: string;
   contato?: string;
-  imagem?: string;
+  foto?: string;
 }
 
 export type UpdateServicoTuristaDto = Partial<CreateServicoTuristaDto>;
