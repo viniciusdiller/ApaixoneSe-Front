@@ -13,7 +13,10 @@ export default function AdminUsuariosPage() {
 
   const load = () => {
     setLoading(true);
-    usersApi.getAll().then(setUsers).finally(() => setLoading(false));
+    usersApi
+      .getAll()
+      .then(setUsers)
+      .finally(() => setLoading(false));
   };
 
   useEffect(load, []);
@@ -28,22 +31,31 @@ export default function AdminUsuariosPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">Usuários</h1>
-          <p className="text-sm text-muted-foreground">{users.length} registros</p>
+          <h1 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">
+            Usuários
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {users.length} registros
+          </p>
         </div>
       </div>
 
-      {loading ? <LoadingGrid count={3} /> : (
+      {loading ? (
+        <LoadingGrid count={3} />
+      ) : (
         <AdminTable
           data={users}
           columns={[
-            { key: "id", label: "ID" },
+            { key: "usuario", label: "Usuario" },
             { key: "nome", label: "Nome" },
             { key: "email", label: "E-mail" },
             {
               key: "createdAt",
               label: "Criado em",
-              render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("pt-BR") : "—",
+              render: (r) =>
+                r.createdAt
+                  ? new Date(r.createdAt).toLocaleDateString("pt-BR")
+                  : "—",
             },
           ]}
           onDelete={handleDelete}
