@@ -11,7 +11,10 @@ import { MediaPreview } from "@/components/admin/MediaPreview";
 import { buildFormData } from "@/lib/buildFormData";
 
 const TIPOS = ["AGENCIA_TURISMO", "GUIA_TURISMO", "ESPORTE_LAZER", "LOCADORA"];
-const ROTEIROS = ["HISTORICO", "NATUREZA", "GASTRONOMICO", "AVENTURA", "CULTURAL"];
+const ROTEIROS = ["A_PE", "ESPORTE_E_AVENTURA", "DE_PRAIAS", "CULTURAL", "RELIGIOSO", "RURAL", "ECOLOGICO"];
+
+const labelSelect = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
+const inputSelect = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
 
 export default function ServicosAdminPage() {
   const [items, setItems] = useState<ServicoTurista[]>([]);
@@ -110,14 +113,14 @@ export default function ServicosAdminPage() {
         onSubmit={handleSubmit} saving={saving}
         title={editing ? "Editar Serviço" : "Novo Serviço"}>
 
-        <AdminFormField label="Tipo *"
-          value={form.tipo}
-          onChange={e => setForm(f => ({ ...f, tipo: (e.target as HTMLSelectElement).value }))}
-          as="select" />
-        {/* select manual pois AdminFormField não suporta <select> */}
-        <div className="-mt-3">
-          <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
+        {/* Tipo — apenas o select, sem AdminFormField duplicado */}
+        <div className="flex flex-col gap-1">
+          <label className={labelSelect}>Tipo *</label>
+          <select
+            value={form.tipo}
+            onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
+            className={inputSelect}
+          >
             {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
@@ -141,9 +144,12 @@ export default function ServicosAdminPage() {
             <AdminFormField label="CNPJ *" value={form.cnpj}
               onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Roteiro *</label>
-              <select value={form.roteiro} onChange={e => setForm(f => ({ ...f, roteiro: e.target.value }))}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
+              <label className={labelSelect}>Roteiro *</label>
+              <select
+                value={form.roteiro}
+                onChange={e => setForm(f => ({ ...f, roteiro: e.target.value }))}
+                className={inputSelect}
+              >
                 <option value="">Selecione...</option>
                 {ROTEIROS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
