@@ -4,8 +4,7 @@ import { getToken } from "./auth";
 // O backend roda em http://localhost:3307 por padrão (sem prefixo /api).
 // Para sobrescrever, defina NEXT_PUBLIC_API_URL no .env.local
 // Exemplo: NEXT_PUBLIC_API_URL=http://localhost:3307
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3307";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function apiFetch<T>(
   path: string,
