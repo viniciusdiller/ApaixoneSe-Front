@@ -10,11 +10,11 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { buildFormData } from "@/lib/buildFormData";
 
-const TIPOS = ["AGENCIA_TURISMO", "GUIA_TURISMO", "ESPORTE_LAZER", "LOCADORA"];
+const TIPOS = ["AGENCIA_TURISMO", "GUIA_TURISMO", "ESPORTE_LAZER", "LOCADORA_VEICULOS"];
 const ROTEIROS = ["A_PE", "ESPORTE_E_AVENTURA", "DE_PRAIAS", "CULTURAL", "RELIGIOSO", "RURAL", "ECOLOGICO"];
 
-const labelSelect = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-const inputSelect = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
+const labelCls = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
+const selectCls = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
 
 export default function ServicosAdminPage() {
   const [items, setItems] = useState<ServicoTurista[]>([]);
@@ -113,13 +113,12 @@ export default function ServicosAdminPage() {
         onSubmit={handleSubmit} saving={saving}
         title={editing ? "Editar Serviço" : "Novo Serviço"}>
 
-        {/* Tipo — apenas o select, sem AdminFormField duplicado */}
         <div className="flex flex-col gap-1">
-          <label className={labelSelect}>Tipo *</label>
+          <label className={labelCls}>Tipo *</label>
           <select
             value={form.tipo}
             onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
-            className={inputSelect}
+            className={selectCls}
           >
             {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
@@ -144,11 +143,11 @@ export default function ServicosAdminPage() {
             <AdminFormField label="CNPJ *" value={form.cnpj}
               onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
             <div className="flex flex-col gap-1">
-              <label className={labelSelect}>Roteiro *</label>
+              <label className={labelCls}>Roteiro *</label>
               <select
                 value={form.roteiro}
                 onChange={e => setForm(f => ({ ...f, roteiro: e.target.value }))}
-                className={inputSelect}
+                className={selectCls}
               >
                 <option value="">Selecione...</option>
                 {ROTEIROS.map(r => <option key={r} value={r}>{r}</option>)}

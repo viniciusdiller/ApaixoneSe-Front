@@ -14,7 +14,7 @@ export type TipoServicoTurista =
   | "GUIA_TURISMO"
   | "AGENCIA_TURISMO"
   | "ESPORTE_LAZER"
-  | "LOCADORA";
+  | "LOCADORA_VEICULOS";
 
 export type StatusEstabelecimento = "PENDENTE" | "APROVADO" | "REJEITADO";
 
@@ -56,7 +56,7 @@ export interface LoginUserDto {
   senha: string;
 }
 
-/** Backend retorna { token, user } — NÃO access_token */
+/** Backend retorna { token, user } */
 export interface LoginResponse {
   token: string;
   user: User;
@@ -266,10 +266,7 @@ export interface ItemPlanoViagem {
   atividade?: Pick<Atividade, "id" | "titulo" | "local" | "roteiro"> | null;
 
   servicoTuristaId?: string | null;
-  servicoTurista?: Pick<
-    ServicoTurista,
-    "id" | "nome" | "tipo" | "logoUrl"
-  > | null;
+  servicoTurista?: Pick<ServicoTurista, "id" | "nome" | "tipo" | "logoUrl"> | null;
 
   createdAt?: string;
   updatedAt?: string;
