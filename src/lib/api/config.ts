@@ -1,22 +1,21 @@
-import { getToken } from "./auth";
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:6969";
 
-// Configuração base da API
-// O backend roda em http://localhost:3307 por padrão (sem prefixo /api).
-// Para sobrescrever, defina NEXT_PUBLIC_API_URL no .env.local
-// Exemplo: NEXT_PUBLIC_API_URL=http://localhost:3307
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
+/**
+ * Wrapper central para todas as chamadas à API.
+ * - Detecta FormData automaticamente e omite o Content-Type
+ *   (o browser define o boundary do multipart sozinho).
+ * - Para payloads JSON, serializa e define Content-Type: application/json.
+ */
 export async function apiFetch<T>(
   path: string,
-  options?: RequestInit,
+  options: RequestInit = {}
 ): Promise<T> {
-  const token = getToken();
+  const isFormData = options.body instanceof FormData;
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options?.headers,
-  };
+  const headers: HeadersInit = isFormData
+    ? {} // deixa o browser setar multipart/form-data com boundary
+    : { "Content-Type": "application/json", ...(options.headers ?? {}) };
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -25,11 +24,9 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const error = await res.text();
-    throw new Error(error || `Erro ${res.status}`);
+    throw new Error(error || `HTTP ${res.status}`);
   }
 
-  // 204 No Content
-  if (res.status === 204) return undefined as T;
-
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : ({} as T);
 }

@@ -8,8 +8,11 @@ type Accept = "image" | "pdf" | "any";
 
 interface FileUploadFieldProps {
   label: string;
+  /** URL já salva no servidor (edição de registro existente) */
   currentUrl?: string;
-  onFileChange: (localUrl: string, file: File) => void;
+  /** Chamado com (previewUrl: string, file: File) quando um arquivo é selecionado */
+  onFileChange: (previewUrl: string, file: File) => void;
+  /** Chamado quando o usuário limpa o campo */
   onClear?: () => void;
   accept?: Accept;
   required?: boolean;
@@ -33,25 +36,22 @@ export function FileUploadField({
 }: FileUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  // Preview local (object URL gerado a partir do File selecionado)
   const [localPreview, setLocalPreview] = useState<string>("");
   const [localName, setLocalName] = useState<string>("");
 
-  // Para preview: prefere blob local; se não houver, usa a URL do servidor (encodada)
   const serverPreview = safeMediaUrl(currentUrl);
   const previewUrl = localPreview || serverPreview;
   const isPdf =
     localName.toLowerCase().endsWith(".pdf") ||
-    currentUrl.toLowerCase().includes(".pdf");
+    currentUrl.toLowerCase().endsWith(".pdf");
 
   function handleFile(file: File) {
     setLocalName(file.name);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const url = e.target?.result as string;
-      setLocalPreview(url);
-      onFileChange(url, file);
-    };
-    reader.readAsDataURL(file);
+    // Usa object URL para preview — leve e não envia base64 ao backend
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
+    onFileChange(objectUrl, file);
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -67,6 +67,7 @@ export function FileUploadField({
   }
 
   function handleClear() {
+    if (localPreview) URL.revokeObjectURL(localPreview);
     setLocalPreview("");
     setLocalName("");
     if (inputRef.current) inputRef.current.value = "";
