@@ -1,15 +1,39 @@
+// ─── Enums ────────────────────────────────────────────────────────────────
+export type Perfil = "USUARIO" | "PARCEIRO" | "ADMIN";
+
+export type TipoRoteiro =
+  | "A_PE"
+  | "ESPORTE_E_AVENTURA"
+  | "DE_PRAIAS"
+  | "CULTURAL"
+  | "RELIGIOSO"
+  | "RURAL"
+  | "ECOLOGICO";
+
+export type TipoServicoTurista =
+  | "GUIA_TURISMO"
+  | "AGENCIA_TURISMO"
+  | "ESPORTE_LAZER"
+  | "LOCADORA_VEICULOS";
+
+export type StatusEstabelecimento = "PENDENTE" | "APROVADO" | "REJEITADO";
+
 // ─── Users ────────────────────────────────────────────────────────────────
 export interface User {
-  id: number;
+  id: string;
   nome: string;
+  usuario: string;
   email: string;
+  perfil: Perfil;
   createdAt?: string;
 }
 
 export interface RegisterUserDto {
   nome: string;
+  usuario: string;
   email: string;
   senha: string;
+  perfil?: Perfil;
 }
 
 export interface LoginUserDto {
@@ -24,155 +48,206 @@ export interface LoginResponse {
 
 // ─── Atividades ───────────────────────────────────────────────────────────
 export interface Atividade {
-  id: number;
+  id: string;
   titulo: string;
-  descricao?: string;
+  descricao: string;
   local: string;
-  roteiro?: string;
-  foto?: string;
+  latitude?: number;
+  longitude?: number;
+  roteiro: TipoRoteiro;
   createdAt?: string;
 }
 
 export interface CreateAtividadeDto {
   titulo: string;
-  descricao?: string;
+  descricao: string;
   local: string;
-  roteiro?: string;
-  foto?: string;
+  latitude?: number;
+  longitude?: number;
+  roteiro: TipoRoteiro;
 }
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
 
 // ─── Eventos ──────────────────────────────────────────────────────────────
 export interface Evento {
-  id: number;
+  id: string;
   titulo: string;
-  descricao?: string;
-  data: string;
+  descricao: string;
+  data: string; // ISO DateTime
   local: string;
-  foto?: string;
   createdAt?: string;
 }
 
 export interface CreateEventoDto {
   titulo: string;
-  descricao?: string;
-  data: string;
+  descricao: string;
+  data: string; // ISO DateTime
   local: string;
-  foto?: string;
 }
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;
 
 // ─── Gastronomia ──────────────────────────────────────────────────────────
 export interface Gastronomia {
-  id: number;
-  titulo: string;
-  descricao?: string;
-  tipo?: string;
-  local: string;
-  foto?: string;
+  id: string;
+  nome: string;
+  telefone: string;
+  instagram?: string;
+  endereco: string;
+  especialidade?: string;
+  cnpj: string;
+  responsavelNome: string;
+  responsavelCpf: string;
+  documentoPdfUrl: string;
+  logoUrl: string;
+  status: StatusEstabelecimento;
+  usuarioId: string;
   createdAt?: string;
 }
 
 export interface CreateGastronomiaDto {
-  titulo: string;
-  descricao?: string;
-  tipo?: string;
-  local: string;
-  foto?: string;
+  nome: string;
+  telefone: string;
+  instagram?: string;
+  endereco: string;
+  especialidade?: string;
+  cnpj: string;
+  responsavelNome: string;
+  responsavelCpf: string;
+  documentoPdfUrl: string;
+  logoUrl: string;
+  usuarioId: string;
 }
 
 export type UpdateGastronomiaDto = Partial<CreateGastronomiaDto>;
 
 // ─── Hospedagem ───────────────────────────────────────────────────────────
 export interface Hospedagem {
-  id: number;
-  titulo: string;
-  descricao?: string;
-  tipo?: string;
-  local: string;
-  foto?: string;
-  preco?: number;
+  id: string;
+  nome: string;
+  telefone: string;
+  instagram?: string;
+  endereco: string;
+  textoDiferencial: string;
+  cnpj: string;
+  responsavelNome: string;
+  responsavelCpf: string;
+  documentoPdfUrl: string;
+  logoUrl: string;
+  status: StatusEstabelecimento;
+  usuarioId: string;
   createdAt?: string;
 }
 
 export interface CreateHospedagemDto {
-  titulo: string;
-  descricao?: string;
-  tipo?: string;
-  local: string;
-  foto?: string;
-  preco?: number;
+  nome: string;
+  telefone: string;
+  instagram?: string;
+  endereco: string;
+  textoDiferencial: string;
+  cnpj: string;
+  responsavelNome: string;
+  responsavelCpf: string;
+  documentoPdfUrl: string;
+  logoUrl: string;
+  usuarioId: string;
 }
 
 export type UpdateHospedagemDto = Partial<CreateHospedagemDto>;
 
 // ─── Serviço Turista ──────────────────────────────────────────────────────
 export interface ServicoTurista {
-  id: number;
-  titulo: string;
+  id: string;
+  tipo: TipoServicoTurista;
+  nome: string;
+  telefone: string;
+  instagram?: string;
   descricao?: string;
-  categoria?: string;
-  contato?: string;
-  foto?: string;
+  endereco?: string;
+  cnpj?: string;
+  roteiro?: TipoRoteiro;
+  idiomas?: string;
+  logoUrl?: string;
+  fotoUrl?: string;
+  status: StatusEstabelecimento;
+  usuarioId: string;
   createdAt?: string;
 }
 
 export interface CreateServicoTuristaDto {
-  titulo: string;
+  tipo: TipoServicoTurista;
+  nome: string;
+  telefone: string;
+  instagram?: string;
   descricao?: string;
-  categoria?: string;
-  contato?: string;
-  foto?: string;
+  endereco?: string;
+  cnpj?: string;
+  roteiro?: TipoRoteiro;
+  idiomas?: string;
+  logoUrl?: string;
+  fotoUrl?: string;
+  usuarioId: string;
 }
 
 export type UpdateServicoTuristaDto = Partial<CreateServicoTuristaDto>;
 
 // ─── Plano de Viagem ──────────────────────────────────────────────────────
 export interface PlanoViagem {
-  id: number;
+  id: string;
   titulo: string;
-  descricao?: string;
-  userId?: number;
+  dataInicio: string;
+  dataFim: string;
+  usuarioId: string;
   itens?: ItemPlanoViagem[];
   createdAt?: string;
 }
 
 export interface CreatePlanoViagemDto {
   titulo: string;
-  descricao?: string;
-  userId?: number;
+  dataInicio: string;
+  dataFim: string;
+  usuarioId: string;
 }
 
 export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
 
 // ─── Item Plano Viagem ────────────────────────────────────────────────────
 export interface ItemPlanoViagem {
-  id: number;
-  planoId: number;
-  referenciaId: number;
-  tipo: string;
+  id: string;
+  dataHoraAgendada: string;
+  anotacao?: string;
+  planoViagemId: string;
+  gastronomiaId?: string;
+  hospedagemId?: string;
+  eventoId?: string;
+  atividadeId?: string;
+  servicoTuristaId?: string;
   createdAt?: string;
 }
 
 export interface CreateItemPlanoViagemDto {
-  planoId: number;
-  referenciaId: number;
-  tipo: string;
+  dataHoraAgendada: string;
+  anotacao?: string;
+  planoViagemId: string;
+  gastronomiaId?: string;
+  hospedagemId?: string;
+  eventoId?: string;
+  atividadeId?: string;
+  servicoTuristaId?: string;
 }
 
-// ─── Cat (categoria) ──────────────────────────────────────────────────────
+// ─── Cat ──────────────────────────────────────────────────────────────────
 export interface Cat {
-  id: number;
-  nome: string;
-  descricao?: string;
+  id: string;
+  texto: string;
+  arquivoUrl: string;
   createdAt?: string;
 }
 
 export interface CreateCatDto {
-  nome: string;
-  descricao?: string;
+  texto: string;
+  arquivoUrl: string;
 }
 
 export type UpdateCatDto = Partial<CreateCatDto>;

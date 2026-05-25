@@ -1,32 +1,21 @@
 import { apiFetch } from "./config";
-import type { User } from "./types";
+import type { User, RegisterUserDto, LoginResponse } from "./types";
 
 export interface LoginPayload {
   identificador: string;
   senha: string;
 }
 
-export interface LoginResponse {
-  access_token?: string;
-  token?: string;
-}
-
 export const usersApi = {
-  register: (data: Omit<User, "id">) =>
+  register: (data: RegisterUserDto) =>
     apiFetch<User>("/users/register", { method: "POST", body: JSON.stringify(data) }),
 
   login: (data: LoginPayload) =>
     apiFetch<LoginResponse>("/users/login", { method: "POST", body: JSON.stringify(data) }),
 
-  getAll: () =>
-    apiFetch<User[]>("/users"),
-
-  getById: (id: number) =>
-    apiFetch<User>(`/users/${id}`),
-
-  update: (id: number, data: Partial<User>) =>
+  getAll: () => apiFetch<User[]>("/users"),
+  getById: (id: string) => apiFetch<User>(`/users/${id}`),
+  update: (id: string, data: Partial<RegisterUserDto>) =>
     apiFetch<User>(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-
-  delete: (id: number) =>
-    apiFetch<void>(`/users/${id}`, { method: "DELETE" }),
+  delete: (id: string) => apiFetch<void>(`/users/${id}`, { method: "DELETE" }),
 };
