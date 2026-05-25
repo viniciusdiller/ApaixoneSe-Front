@@ -18,6 +18,20 @@ export type TipoServicoTurista =
 
 export type StatusEstabelecimento = "PENDENTE" | "APROVADO" | "REJEITADO";
 
+export type Mes =
+  | "JANEIRO"
+  | "FEVEREIRO"
+  | "MARCO"
+  | "ABRIL"
+  | "MAIO"
+  | "JUNHO"
+  | "JULHO"
+  | "AGOSTO"
+  | "SETEMBRO"
+  | "OUTUBRO"
+  | "NOVEMBRO"
+  | "DEZEMBRO";
+
 // ─── Users ────────────────────────────────────────────────────────────────
 export interface User {
   id: string;
@@ -26,6 +40,7 @@ export interface User {
   email: string;
   perfil: Perfil;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface RegisterUserDto {
@@ -52,10 +67,11 @@ export interface Atividade {
   titulo: string;
   descricao: string;
   local: string;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | null;
+  longitude?: number | null;
   roteiro: TipoRoteiro;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateAtividadeDto {
@@ -77,6 +93,7 @@ export interface Evento {
   data: string; // ISO DateTime
   local: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateEventoDto {
@@ -93,9 +110,9 @@ export interface Gastronomia {
   id: string;
   nome: string;
   telefone: string;
-  instagram?: string;
+  instagram?: string | null;
   endereco: string;
-  especialidade?: string;
+  especialidade?: string | null;
   cnpj: string;
   responsavelNome: string;
   responsavelCpf: string;
@@ -103,7 +120,9 @@ export interface Gastronomia {
   logoUrl: string;
   status: StatusEstabelecimento;
   usuarioId: string;
+  usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateGastronomiaDto {
@@ -120,14 +139,16 @@ export interface CreateGastronomiaDto {
   usuarioId: string;
 }
 
-export type UpdateGastronomiaDto = Partial<CreateGastronomiaDto>;
+export interface UpdateGastronomiaDto extends Partial<CreateGastronomiaDto> {
+  status?: StatusEstabelecimento;
+}
 
 // ─── Hospedagem ───────────────────────────────────────────────────────────
 export interface Hospedagem {
   id: string;
   nome: string;
   telefone: string;
-  instagram?: string;
+  instagram?: string | null;
   endereco: string;
   textoDiferencial: string;
   cnpj: string;
@@ -137,7 +158,9 @@ export interface Hospedagem {
   logoUrl: string;
   status: StatusEstabelecimento;
   usuarioId: string;
+  usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateHospedagemDto {
@@ -154,7 +177,9 @@ export interface CreateHospedagemDto {
   usuarioId: string;
 }
 
-export type UpdateHospedagemDto = Partial<CreateHospedagemDto>;
+export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
+  status?: StatusEstabelecimento;
+}
 
 // ─── Serviço Turista ──────────────────────────────────────────────────────
 export interface ServicoTurista {
@@ -162,17 +187,19 @@ export interface ServicoTurista {
   tipo: TipoServicoTurista;
   nome: string;
   telefone: string;
-  instagram?: string;
-  descricao?: string;
-  endereco?: string;
-  cnpj?: string;
-  roteiro?: TipoRoteiro;
-  idiomas?: string;
-  logoUrl?: string;
-  fotoUrl?: string;
+  instagram?: string | null;
+  descricao?: string | null;
+  endereco?: string | null;
+  cnpj?: string | null;
+  roteiro?: TipoRoteiro | null;
+  idiomas?: string | null;
+  logoUrl?: string | null;
+  fotoUrl?: string | null;
   status: StatusEstabelecimento;
   usuarioId: string;
+  usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateServicoTuristaDto {
@@ -190,46 +217,74 @@ export interface CreateServicoTuristaDto {
   usuarioId: string;
 }
 
-export type UpdateServicoTuristaDto = Partial<CreateServicoTuristaDto>;
+export interface UpdateServicoTuristaDto
+  extends Partial<CreateServicoTuristaDto> {
+  status?: StatusEstabelecimento;
+}
 
 // ─── Plano de Viagem ──────────────────────────────────────────────────────
 export interface PlanoViagem {
   id: string;
   titulo: string;
-  dataInicio: string;
-  dataFim: string;
+  dataInicio: string; // ISO DateTime
+  dataFim: string; // ISO DateTime
   usuarioId: string;
+  usuario?: Pick<User, "id" | "nome" | "email">;
   itens?: ItemPlanoViagem[];
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreatePlanoViagemDto {
   titulo: string;
-  dataInicio: string;
-  dataFim: string;
+  dataInicio: string; // ISO DateTime
+  dataFim: string; // ISO DateTime
   usuarioId: string;
 }
 
 export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
 
 // ─── Item Plano Viagem ────────────────────────────────────────────────────
+/**
+ * Representa um item dentro de um roteiro de viagem.
+ * Natureza polimórfica: apenas UM dos IDs opcionais deve ser preenchido por item.
+ * O backend pode popular os objetos relacionados na resposta.
+ */
 export interface ItemPlanoViagem {
   id: string;
-  dataHoraAgendada: string;
-  anotacao?: string;
+  dataHoraAgendada: string; // ISO DateTime
+  anotacao?: string | null;
   planoViagemId: string;
-  gastronomiaId?: string;
-  hospedagemId?: string;
-  eventoId?: string;
-  atividadeId?: string;
-  servicoTuristaId?: string;
+  planoViagem?: Pick<PlanoViagem, "id" | "titulo">;
+
+  // Relações polimórficas — apenas uma preenchida por item
+  gastronomiaId?: string | null;
+  gastronomia?: Pick<Gastronomia, "id" | "nome" | "endereco" | "logoUrl"> | null;
+
+  hospedagemId?: string | null;
+  hospedagem?: Pick<Hospedagem, "id" | "nome" | "endereco" | "logoUrl"> | null;
+
+  eventoId?: string | null;
+  evento?: Pick<Evento, "id" | "titulo" | "data" | "local"> | null;
+
+  atividadeId?: string | null;
+  atividade?: Pick<Atividade, "id" | "titulo" | "local" | "roteiro"> | null;
+
+  servicoTuristaId?: string | null;
+  servicoTurista?: Pick<
+    ServicoTurista,
+    "id" | "nome" | "tipo" | "logoUrl"
+  > | null;
+
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateItemPlanoViagemDto {
-  dataHoraAgendada: string;
+  dataHoraAgendada: string; // ISO DateTime
   anotacao?: string;
   planoViagemId: string;
+  // Preencher apenas UM:
   gastronomiaId?: string;
   hospedagemId?: string;
   eventoId?: string;
@@ -241,8 +296,9 @@ export interface CreateItemPlanoViagemDto {
 export interface Cat {
   id: string;
   texto: string;
-  arquivoUrl: string;
+  arquivoUrl: string; // PDF ou imagem
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateCatDto {
