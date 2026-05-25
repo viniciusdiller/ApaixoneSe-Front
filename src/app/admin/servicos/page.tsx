@@ -20,19 +20,11 @@ export default function ServicosAdminPage() {
   const [editing, setEditing] = useState<ServicoTurista | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Campos de texto
   const [form, setForm] = useState({
     tipo: "AGENCIA_TURISMO",
-    nome: "",
-    telefone: "",
-    instagram: "",
-    endereco: "",
-    descricao: "",
-    cnpj: "",
-    roteiro: "",
-    idiomas: "",
+    nome: "", telefone: "", instagram: "", endereco: "",
+    descricao: "", cnpj: "", roteiro: "", idiomas: "",
   });
-  // Arquivos (File objects)
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
 
@@ -45,8 +37,7 @@ export default function ServicosAdminPage() {
   function openCreate() {
     setEditing(null);
     setForm({ tipo: "AGENCIA_TURISMO", nome: "", telefone: "", instagram: "", endereco: "", descricao: "", cnpj: "", roteiro: "", idiomas: "" });
-    setLogoFile(null);
-    setFotoFile(null);
+    setLogoFile(null); setFotoFile(null);
     setModalOpen(true);
   }
 
@@ -54,57 +45,36 @@ export default function ServicosAdminPage() {
     setEditing(item);
     setForm({
       tipo: item.tipo ?? "AGENCIA_TURISMO",
-      nome: item.nome ?? "",
-      telefone: item.telefone ?? "",
-      instagram: item.instagram ?? "",
-      endereco: item.endereco ?? "",
-      descricao: (item as any).descricao ?? "",
-      cnpj: (item as any).cnpj ?? "",
-      roteiro: (item as any).roteiro ?? "",
-      idiomas: (item as any).idiomas ?? "",
+      nome: item.nome ?? "", telefone: item.telefone ?? "",
+      instagram: item.instagram ?? "", endereco: item.endereco ?? "",
+      descricao: (item as any).descricao ?? "", cnpj: (item as any).cnpj ?? "",
+      roteiro: (item as any).roteiro ?? "", idiomas: (item as any).idiomas ?? "",
     });
-    setLogoFile(null);
-    setFotoFile(null);
+    setLogoFile(null); setFotoFile(null);
     setModalOpen(true);
   }
 
   async function handleSubmit() {
     setSaving(true);
     try {
-      // Monta FormData com os campos corretos do backend
       const fd = buildFormData({
-        tipo: form.tipo,
-        nome: form.nome,
-        telefone: form.telefone,
-        instagram: form.instagram || undefined,
-        endereco: form.endereco || undefined,
-        descricao: form.descricao || undefined,
-        cnpj: form.cnpj || undefined,
-        roteiro: form.roteiro || undefined,
-        idiomas: form.idiomas || undefined,
-        // Arquivos: chaves exatas do DTO do backend
+        tipo: form.tipo, nome: form.nome, telefone: form.telefone,
+        instagram: form.instagram || undefined, endereco: form.endereco || undefined,
+        descricao: form.descricao || undefined, cnpj: form.cnpj || undefined,
+        roteiro: form.roteiro || undefined, idiomas: form.idiomas || undefined,
         ...(logoFile ? { logo: logoFile } : {}),
         ...(fotoFile ? { foto: fotoFile } : {}),
       });
-
-      if (editing) {
-        await servicoTuristaApi.update(editing.id, fd as any);
-      } else {
-        await servicoTuristaApi.create(fd as any);
-      }
-      setModalOpen(false);
-      load();
-    } catch (e) {
-      alert("Erro ao salvar: " + (e as Error).message);
-    } finally {
-      setSaving(false);
-    }
+      if (editing) await servicoTuristaApi.update(editing.id, fd as any);
+      else await servicoTuristaApi.create(fd as any);
+      setModalOpen(false); load();
+    } catch (e) { alert("Erro ao salvar: " + (e as Error).message); }
+    finally { setSaving(false); }
   }
 
   async function handleDelete(id: number) {
     if (!confirm("Excluir este serviço?")) return;
-    await servicoTuristaApi.delete(id);
-    load();
+    await servicoTuristaApi.delete(id); load();
   }
 
   const columns = [
@@ -112,19 +82,10 @@ export default function ServicosAdminPage() {
     { key: "tipo", label: "Tipo" },
     { key: "nome", label: "Nome" },
     { key: "telefone", label: "Telefone" },
+    { key: "logo", label: "Logo", render: (v: string) => <MediaPreview url={v} label="Logo" /> },
+    { key: "foto", label: "Foto", render: (v: string) => <MediaPreview url={v} label="Foto" /> },
     {
-      key: "logo",
-      label: "Logo",
-      render: (v: string) => <MediaPreview url={v} label="Logo" />,
-    },
-    {
-      key: "foto",
-      label: "Foto",
-      render: (v: string) => <MediaPreview url={v} label="Foto" />,
-    },
-    {
-      key: "actions",
-      label: "",
+      key: "actions", label: "",
       render: (_: unknown, row: ServicoTurista) => (
         <div className="flex gap-2">
           <button onClick={() => openEdit(row)} className="rounded p-1 hover:bg-muted"><Pencil className="h-4 w-4" /></button>
@@ -145,83 +106,62 @@ export default function ServicosAdminPage() {
 
       <AdminTable columns={columns} data={items} loading={loading} />
 
-      <AdminModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        title={editing ? "Editar Serviço" : "Novo Serviço"}
-        saving={saving}
-      >
-        <AdminFormField label="Tipo *" htmlFor="tipo">
-          <select id="tipo" value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
+      <AdminModal open={modalOpen} onClose={() => setModalOpen(false)}
+        onSubmit={handleSubmit} saving={saving}
+        title={editing ? "Editar Serviço" : "Novo Serviço"}>
+
+        <AdminFormField label="Tipo *"
+          value={form.tipo}
+          onChange={e => setForm(f => ({ ...f, tipo: (e.target as HTMLSelectElement).value }))}
+          as="select" />
+        {/* select manual pois AdminFormField não suporta <select> */}
+        <div className="-mt-3">
+          <select value={form.tipo} onChange={e => setForm(f => ({ ...f, tipo: e.target.value }))}
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
             {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-        </AdminFormField>
+        </div>
 
-        <AdminFormField label="Nome *" htmlFor="nome">
-          <input id="nome" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-
-        <AdminFormField label="Telefone *" htmlFor="telefone">
-          <input id="telefone" value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-
-        <AdminFormField label="Instagram" htmlFor="instagram">
-          <input id="instagram" value={form.instagram} onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-
-        <AdminFormField label="Endereço" htmlFor="endereco">
-          <input id="endereco" value={form.endereco} onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
+        <AdminFormField label="Nome *" value={form.nome}
+          onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+        <AdminFormField label="Telefone *" value={form.telefone}
+          onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
+        <AdminFormField label="Instagram" value={form.instagram}
+          onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
+        <AdminFormField label="Endereço" value={form.endereco}
+          onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} />
 
         {(form.tipo === "AGENCIA_TURISMO" || form.tipo === "ESPORTE_LAZER") && (
-          <AdminFormField label="Descrição *" htmlFor="descricao">
-            <textarea id="descricao" value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-              rows={3} className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-          </AdminFormField>
+          <AdminFormField label="Descrição *" multiline value={form.descricao}
+            onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} />
         )}
 
         {form.tipo === "GUIA_TURISMO" && (
           <>
-            <AdminFormField label="CNPJ *" htmlFor="cnpj">
-              <input id="cnpj" value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            </AdminFormField>
-            <AdminFormField label="Roteiro *" htmlFor="roteiro">
-              <select id="roteiro" value={form.roteiro} onChange={e => setForm(f => ({ ...f, roteiro: e.target.value }))}
+            <AdminFormField label="CNPJ *" value={form.cnpj}
+              onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Roteiro *</label>
+              <select value={form.roteiro} onChange={e => setForm(f => ({ ...f, roteiro: e.target.value }))}
                 className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm">
                 <option value="">Selecione...</option>
                 {ROTEIROS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
-            </AdminFormField>
-            <AdminFormField label="Idiomas *" htmlFor="idiomas">
-              <input id="idiomas" value={form.idiomas} onChange={e => setForm(f => ({ ...f, idiomas: e.target.value }))}
-                placeholder="Ex: Português, Inglês"
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            </AdminFormField>
+            </div>
+            <AdminFormField label="Idiomas *" placeholder="Ex: Português, Inglês"
+              value={form.idiomas} onChange={e => setForm(f => ({ ...f, idiomas: e.target.value }))} />
           </>
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <FileUploadField
-            label="Logo"
-            accept="image"
+          <FileUploadField label="Logo" accept="image"
             currentUrl={(editing as any)?.logo ?? ""}
             onFileChange={(_, file) => setLogoFile(file)}
-            onClear={() => setLogoFile(null)}
-          />
-          <FileUploadField
-            label="Foto"
-            accept="image"
+            onClear={() => setLogoFile(null)} />
+          <FileUploadField label="Foto" accept="image"
             currentUrl={(editing as any)?.foto ?? ""}
             onFileChange={(_, file) => setFotoFile(file)}
-            onClear={() => setFotoFile(null)}
-          />
+            onClear={() => setFotoFile(null)} />
         </div>
       </AdminModal>
     </div>

@@ -53,36 +53,23 @@ export default function GastronomiaAdminPage() {
     setSaving(true);
     try {
       const fd = buildFormData({
-        nome: form.nome,
-        telefone: form.telefone,
-        instagram: form.instagram || undefined,
-        endereco: form.endereco,
-        especialidade: form.especialidade || undefined,
-        cnpj: form.cnpj,
-        responsavelNome: form.responsavelNome,
-        responsavelCpf: form.responsavelCpf,
+        nome: form.nome, telefone: form.telefone,
+        instagram: form.instagram || undefined, endereco: form.endereco,
+        especialidade: form.especialidade || undefined, cnpj: form.cnpj,
+        responsavelNome: form.responsavelNome, responsavelCpf: form.responsavelCpf,
         ...(logoFile ? { logo: logoFile } : {}),
         ...(pdfFile ? { documentoPdf: pdfFile } : {}),
       });
-
-      if (editing) {
-        await gastronomiaApi.update(editing.id, fd as any);
-      } else {
-        await gastronomiaApi.create(fd as any);
-      }
-      setModalOpen(false);
-      load();
-    } catch (e) {
-      alert("Erro ao salvar: " + (e as Error).message);
-    } finally {
-      setSaving(false);
-    }
+      if (editing) await gastronomiaApi.update(editing.id, fd as any);
+      else await gastronomiaApi.create(fd as any);
+      setModalOpen(false); load();
+    } catch (e) { alert("Erro ao salvar: " + (e as Error).message); }
+    finally { setSaving(false); }
   }
 
   async function handleDelete(id: number) {
     if (!confirm("Excluir este item?")) return;
-    await gastronomiaApi.delete(id);
-    load();
+    await gastronomiaApi.delete(id); load();
   }
 
   const columns = [
@@ -114,42 +101,25 @@ export default function GastronomiaAdminPage() {
 
       <AdminTable columns={columns} data={items} loading={loading} />
 
-      <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit}
-        title={editing ? "Editar Gastronomia" : "Nova Gastronomia"} saving={saving}>
-
-        <AdminFormField label="Nome *" htmlFor="nome">
-          <input id="nome" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="Telefone *" htmlFor="telefone">
-          <input id="telefone" value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="Instagram" htmlFor="instagram">
-          <input id="instagram" value={form.instagram} onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="Endereço *" htmlFor="endereco">
-          <input id="endereco" value={form.endereco} onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="Especialidade" htmlFor="especialidade">
-          <input id="especialidade" value={form.especialidade} onChange={e => setForm(f => ({ ...f, especialidade: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="CNPJ *" htmlFor="cnpj">
-          <input id="cnpj" value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="Responsável Nome *" htmlFor="responsavelNome">
-          <input id="responsavelNome" value={form.responsavelNome} onChange={e => setForm(f => ({ ...f, responsavelNome: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-        <AdminFormField label="Responsável CPF *" htmlFor="responsavelCpf">
-          <input id="responsavelCpf" value={form.responsavelCpf} onChange={e => setForm(f => ({ ...f, responsavelCpf: e.target.value }))}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-        </AdminFormField>
-
+      <AdminModal open={modalOpen} onClose={() => setModalOpen(false)}
+        onSubmit={handleSubmit} saving={saving}
+        title={editing ? "Editar Gastronomia" : "Nova Gastronomia"}>
+        <AdminFormField label="Nome *" value={form.nome}
+          onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+        <AdminFormField label="Telefone *" value={form.telefone}
+          onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
+        <AdminFormField label="Instagram" value={form.instagram}
+          onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
+        <AdminFormField label="Endereço *" value={form.endereco}
+          onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} />
+        <AdminFormField label="Especialidade" value={form.especialidade}
+          onChange={e => setForm(f => ({ ...f, especialidade: e.target.value }))} />
+        <AdminFormField label="CNPJ *" value={form.cnpj}
+          onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
+        <AdminFormField label="Responsável Nome *" value={form.responsavelNome}
+          onChange={e => setForm(f => ({ ...f, responsavelNome: e.target.value }))} />
+        <AdminFormField label="Responsável CPF *" value={form.responsavelCpf}
+          onChange={e => setForm(f => ({ ...f, responsavelCpf: e.target.value }))} />
         <div className="grid grid-cols-2 gap-4">
           <FileUploadField label="Logo" accept="image"
             currentUrl={(editing as any)?.logo ?? ""}
