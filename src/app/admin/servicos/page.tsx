@@ -8,7 +8,6 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
-import { buildFormData } from "@/lib/buildFormData";
 
 const TIPOS = ["AGENCIA_TURISMO", "GUIA_TURISMO", "ESPORTE_LAZER", "LOCADORA_VEICULOS"];
 const ROTEIROS = ["A_PE", "ESPORTE_E_AVENTURA", "DE_PRAIAS", "CULTURAL", "RELIGIOSO", "RURAL", "ECOLOGICO"];
@@ -48,10 +47,14 @@ export default function ServicosAdminPage() {
     setEditing(item);
     setForm({
       tipo: item.tipo ?? "AGENCIA_TURISMO",
-      nome: item.nome ?? "", telefone: item.telefone ?? "",
-      instagram: item.instagram ?? "", endereco: item.endereco ?? "",
-      descricao: (item as any).descricao ?? "", cnpj: (item as any).cnpj ?? "",
-      roteiro: (item as any).roteiro ?? "", idiomas: (item as any).idiomas ?? "",
+      nome: item.nome ?? "",
+      telefone: item.telefone ?? "",
+      instagram: item.instagram ?? "",
+      endereco: item.endereco ?? "",
+      descricao: (item as any).descricao ?? "",
+      cnpj: (item as any).cnpj ?? "",
+      roteiro: (item as any).roteiro ?? "",
+      idiomas: (item as any).idiomas ?? "",
     });
     setLogoFile(null); setFotoFile(null);
     setModalOpen(true);
@@ -60,33 +63,56 @@ export default function ServicosAdminPage() {
   async function handleSubmit() {
     setSaving(true);
     try {
-      const fd = buildFormData({
-        tipo: form.tipo, nome: form.nome, telefone: form.telefone,
-        instagram: form.instagram || undefined, endereco: form.endereco || undefined,
-        descricao: form.descricao || undefined, cnpj: form.cnpj || undefined,
-        roteiro: form.roteiro || undefined, idiomas: form.idiomas || undefined,
-        ...(logoFile ? { logo: logoFile } : {}),
-        ...(fotoFile ? { foto: fotoFile } : {}),
-      });
-      if (editing) await servicoTuristaApi.update(editing.id, fd as any);
-      else await servicoTuristaApi.create(fd as any);
-      setModalOpen(false); load();
-    } catch (e) { alert("Erro ao salvar: " + (e as Error).message); }
-    finally { setSaving(false); }
+      // Monta FormData manualmente para ter controle total sobre quais
+      // campos são incluídos — evita o || undefined que descartava valores.
+      const fd = new FormData();
+      fd.append("tipo", form.tipo);
+      fd.append("nome", form.nome);
+      fd.append("telefone", form.telefone);
+      if (form.instagram) fd.append("instagram", form.instagram);
+      if (form.endereco)  fd.append("endereco",  form.endereco);
+
+      // Campos condicionais por tipo
+      if (form.tipo === "AGENCIA_TURISMO" || form.tipo === "ESPORTE_LAZER") {
+        fd.append("descricao", form.descricao);
+      }
+      if (form.tipo === "GUIA_TURISMO") {
+        fd.append("cnpj",    form.cnpj);
+        fd.append("roteiro", form.roteiro);
+        fd.append("idiomas", form.idiomas);
+      }
+
+      if (logoFile) fd.append("logo", logoFile);
+      if (fotoFile) fd.append("foto", fotoFile);
+
+      if (editing) await servicoTuristaApi.update(editing.id, fd);
+      else         await servicoTuristaApi.create(fd);
+
+      setModalOpen(false);
+      load();
+    } catch (e) {
+      alert("Erro ao salvar: " + (e as Error).message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  async function handleDelete(id: number) {
+  async function handleDelete(id: string) {
     if (!confirm("Excluir este serviço?")) return;
-    await servicoTuristaApi.delete(id); load();
+    await servicoTuristaApi.delete(id);
+    load();
   }
 
   const columns = [
-    { key: "id", label: "ID" },
-    { key: "tipo", label: "Tipo" },
-    { key: "nome", label: "Nome" },
+    { key: "id",       label: "ID" },
+    { key: "tipo",     label: "Tipo" },
+    { key: "nome",     label: "Nome" },
     { key: "telefone", label: "Telefone" },
-    { key: "logo", label: "Logo", render: (v: string) => <MediaPreview url={v} label="Logo" /> },
-    { key: "foto", label: "Foto", render: (v: string) => <MediaPreview url={v} label="Foto" /> },
+    { key: "cnpj",    label: "CNPJ",    render: (v: string) => v ?? "—" },
+    { key: "roteiro", label: "Roteiro", render: (v: string) => v ?? "—" },
+    { key: "idiomas", label: "Idiomas", render: (v: string) => v ?? "—" },
+    { key: "logoUrl", label: "Logo",    render: (v: string) => <MediaPreview url={v} label="Logo" /> },
+    { key: "fotoUrl", label: "Foto",    render: (v: string) => <MediaPreview url={v} label="Foto" /> },
     {
       key: "actions", label: "",
       render: (_: unknown, row: ServicoTurista) => (
@@ -160,11 +186,11 @@ export default function ServicosAdminPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <FileUploadField label="Logo" accept="image"
-            currentUrl={(editing as any)?.logo ?? ""}
+            currentUrl={(editing as any)?.logoUrl ?? ""}
             onFileChange={(_, file) => setLogoFile(file)}
             onClear={() => setLogoFile(null)} />
           <FileUploadField label="Foto" accept="image"
-            currentUrl={(editing as any)?.foto ?? ""}
+            currentUrl={(editing as any)?.fotoUrl ?? ""}
             onFileChange={(_, file) => setFotoFile(file)}
             onClear={() => setFotoFile(null)} />
         </div>
