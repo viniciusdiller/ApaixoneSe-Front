@@ -4,9 +4,21 @@ import type { ServicoTurista, CreateServicoTuristaDto, UpdateServicoTuristaDto }
 export const servicoTuristaApi = {
   getAll: () => apiFetch<ServicoTurista[]>("/servico-turista"),
   getById: (id: string) => apiFetch<ServicoTurista>(`/servico-turista/${id}`),
-  create: (data: CreateServicoTuristaDto) =>
-    apiFetch<ServicoTurista>("/servico-turista", { method: "POST", body: JSON.stringify(data) }),
-  update: (id: string, data: UpdateServicoTuristaDto) =>
-    apiFetch<ServicoTurista>(`/servico-turista/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-  remove: (id: string) => apiFetch<void>(`/servico-turista/${id}`, { method: "DELETE" }),
+
+  /** Aceita FormData (multipart com logo/foto) ou JSON puro */
+  create: (data: FormData | CreateServicoTuristaDto) =>
+    apiFetch<ServicoTurista>("/servico-turista", {
+      method: "POST",
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    }),
+
+  /** Aceita FormData (multipart com logo/foto) ou JSON puro */
+  update: (id: string, data: FormData | UpdateServicoTuristaDto) =>
+    apiFetch<ServicoTurista>(`/servico-turista/${id}`, {
+      method: "PUT",
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/servico-turista/${id}`, { method: "DELETE" }),
 };
