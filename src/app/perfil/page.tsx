@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { hospedagensApi } from "@/lib/api";
+import { hospedagemApi } from "@/lib/api";
 import {
   User,
   Building2,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 type Hospedagem = {
-  id: number;
+  id: string;
   nome: string;
   endereco?: string;
   telefone?: string;
@@ -42,7 +42,7 @@ export default function PerfilPage() {
   useEffect(() => {
     if (user?.perfil !== "PARCEIRO") return;
     setLoadingEstabs(true);
-    hospedagensApi
+    hospedagemApi
       .getAll()
       .then((data) => {
         // Filtra apenas as hospedagens do parceiro logado
@@ -88,11 +88,19 @@ export default function PerfilPage() {
             <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-foreground">
               {user.nome}
             </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">@{user.usuario}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              @{user.usuario}
+            </p>
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold">
-              {user.perfil === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-primary" />}
-              {user.perfil === "PARCEIRO" && <Store className="h-3.5 w-3.5 text-primary" />}
-              {user.perfil === "USUARIO" && <User className="h-3.5 w-3.5 text-primary" />}
+              {user.perfil === "ADMIN" && (
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              )}
+              {user.perfil === "PARCEIRO" && (
+                <Store className="h-3.5 w-3.5 text-primary" />
+              )}
+              {user.perfil === "USUARIO" && (
+                <User className="h-3.5 w-3.5 text-primary" />
+              )}
               <span className="capitalize">{user.perfil.toLowerCase()}</span>
             </div>
           </div>
@@ -132,7 +140,8 @@ export default function PerfilPage() {
                 Meus Estabelecimentos
               </h2>
               <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                {hospedagens.length} cadastrado{hospedagens.length !== 1 ? "s" : ""}
+                {hospedagens.length} cadastrado
+                {hospedagens.length !== 1 ? "s" : ""}
               </span>
             </div>
 
@@ -143,8 +152,12 @@ export default function PerfilPage() {
             ) : hospedagens.length === 0 ? (
               <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card py-16 text-center">
                 <Building2 className="mb-3 h-10 w-10 text-muted-foreground/50" />
-                <p className="text-sm font-medium text-foreground">Nenhum estabelecimento cadastrado</p>
-                <p className="mt-1 text-xs text-muted-foreground">Seus estabelecimentos aparecerão aqui.</p>
+                <p className="text-sm font-medium text-foreground">
+                  Nenhum estabelecimento cadastrado
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Seus estabelecimentos aparecerão aqui.
+                </p>
               </div>
             ) : (
               <ul className="space-y-3">
@@ -171,7 +184,9 @@ export default function PerfilPage() {
 
                     {/* Info */}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-foreground">{h.nome}</p>
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {h.nome}
+                      </p>
                       {h.endereco && (
                         <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3 shrink-0" />
@@ -200,9 +215,13 @@ export default function PerfilPage() {
                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-destructive hover:text-destructive"
                         onClick={() =>
                           confirm(`Excluir "${h.nome}"?`) &&
-                          hospedagensApi
-                            .delete(h.id)
-                            .then(() => setHospedagens((prev) => prev.filter((x) => x.id !== h.id)))
+                          hospedagemApi
+                            .remove(h.id)
+                            .then(() =>
+                              setHospedagens((prev) =>
+                                prev.filter((x) => x.id !== h.id),
+                              ),
+                            )
                             .catch(() => alert("Erro ao excluir."))
                         }
                       >
@@ -220,7 +239,9 @@ export default function PerfilPage() {
         {user.perfil === "USUARIO" && (
           <div className="rounded-2xl border border-border bg-card p-8 text-center">
             <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-            <p className="font-medium text-foreground">Bem-vindo, {user.nome.split(" ")[0]}!</p>
+            <p className="font-medium text-foreground">
+              Bem-vindo, {user.nome.split(" ")[0]}!
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Explore Saquarema e aproveite tudo que a cidade tem a oferecer.
             </p>

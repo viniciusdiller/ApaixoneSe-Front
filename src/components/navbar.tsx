@@ -3,19 +3,29 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, Waves, X, Volume2, VolumeX, LogIn, LogOut, User, LayoutDashboard, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  Waves,
+  X,
+  Volume2,
+  VolumeX,
+  LogIn,
+  LogOut,
+  User,
+  LayoutDashboard,
+  ChevronDown,
+} from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { GoogleTranslate } from "./google-translate";
 import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
-  { label: "Roteiros", to: "/roteiros" },
   { label: "Praias", to: "/praias" },
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
   { label: "Gastronomia", to: "/gastronomia" },
   { label: "Hospedagem", to: "/hospedagens" },
-  { label: "Servi\u00e7os Para o Turista", to: "/servicos" },
+  { label: "Serviços Para o Turista", to: "/servicos" },
   { label: "Explore Saqua", to: "https://meidesaqua.saquarema.rj.gov.br/" },
 ];
 
@@ -45,7 +55,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   // Fecha o menu do usuário ao clicar fora
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     }
@@ -66,7 +79,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     return () => {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
       if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
-      if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -80,18 +96,28 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       const volStep = (targetVol - startVol) / steps;
       let currentStep = 0;
       fadeIntervalRef.current = setInterval(() => {
-        if (!audioRef.current) { if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current); return resolve(); }
+        if (!audioRef.current) {
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          return resolve();
+        }
         currentStep++;
         let newVol = startVol + volStep * currentStep;
         newVol = Math.max(0, Math.min(newVol, 1));
         audioRef.current.volume = newVol;
-        if (currentStep >= steps) { if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current); audioRef.current.volume = targetVol; resolve(); }
+        if (currentStep >= steps) {
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          audioRef.current.volume = targetVol;
+          resolve();
+        }
       }, stepTime);
     });
   };
 
   useEffect(() => {
-    if (!isPlaying) { if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current); return; }
+    if (!isPlaying) {
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
+      return;
+    }
     monitorIntervalRef.current = setInterval(() => {
       const audio = audioRef.current;
       if (!audio || !audio.duration || isLoopingRef.current) return;
@@ -101,28 +127,53 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         fadeAudio(0, timeRemaining * 1000).then(() => {
           if (!audioRef.current || !isPlaying) return;
           audioRef.current.currentTime = 0;
-          audioRef.current.play().then(() => { fadeAudio(0.5, 1500).then(() => { isLoopingRef.current = false; }); }).catch(() => { isLoopingRef.current = false; });
+          audioRef.current
+            .play()
+            .then(() => {
+              fadeAudio(0.5, 1500).then(() => {
+                isLoopingRef.current = false;
+              });
+            })
+            .catch(() => {
+              isLoopingRef.current = false;
+            });
         });
       }
     }, 300);
-    return () => { if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current); };
+    return () => {
+      if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
+    };
   }, [isPlaying]);
 
   const toggleAudio = () => {
     if (!audioRef.current) return;
     if (isPlaying) {
       setIsPlaying(false);
-      fadeAudio(0, 1000).then(() => { audioRef.current?.pause(); });
+      fadeAudio(0, 1000).then(() => {
+        audioRef.current?.pause();
+      });
     } else {
       setIsPlaying(true);
       isLoopingRef.current = false;
-      if (audioRef.current.duration && audioRef.current.duration - audioRef.current.currentTime <= 2) { audioRef.current.currentTime = 0; }
+      if (
+        audioRef.current.duration &&
+        audioRef.current.duration - audioRef.current.currentTime <= 2
+      ) {
+        audioRef.current.currentTime = 0;
+      }
       audioRef.current.volume = 0;
-      audioRef.current.play().then(() => { fadeAudio(0.5, 1500); }).catch((error) => {
-        console.error("Erro ao reproduzir o \u00e1udio:", error);
-        setIsPlaying(false);
-        alert("N\u00e3o foi poss\u00edvel tocar o \u00e1udio. Verifique se o arquivo est\u00e1 na pasta 'public/sounds/ondas.mp3'.");
-      });
+      audioRef.current
+        .play()
+        .then(() => {
+          fadeAudio(0.5, 1500);
+        })
+        .catch((error) => {
+          console.error("Erro ao reproduzir o \u00e1udio:", error);
+          setIsPlaying(false);
+          alert(
+            "N\u00e3o foi poss\u00edvel tocar o \u00e1udio. Verifique se o arquivo est\u00e1 na pasta 'public/sounds/ondas.mp3'.",
+          );
+        });
     }
   };
 
@@ -132,22 +183,45 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     router.push("/");
   }
 
-  const bgClass = scrolled || !isHome ? "bg-primary/95 backdrop-blur-md shadow-lg py-3" : "bg-transparent py-5";
+  const bgClass =
+    scrolled || !isHome
+      ? "bg-primary/95 backdrop-blur-md shadow-lg py-3"
+      : "bg-transparent py-5";
 
   return (
-    <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}>
+    <header
+      className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}
+    >
       <nav className="container mx-auto flex items-center justify-between px-4">
         {/* Logo */}
         <div className="flex items-center gap-4 md:gap-0">
-          <button className="text-primary-foreground md:hidden" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Menu">
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <button
+            className="text-primary-foreground md:hidden"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menu"
+          >
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
-          <Link href="/" className="flex items-center gap-2 text-primary-foreground">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-primary-foreground"
+          >
             <Waves className="hidden h-10 w-10 md:block" />
             <div>
-              <span className="font-display text-xl font-bold tracking-wide notranslate">APAIXONE-SE</span>
-              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80"> Saquarema/rj - BR</span>
-              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">Capital Nacional do Surf</span>
+              <span className="font-display text-xl font-bold tracking-wide notranslate">
+                APAIXONE-SE
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+                {" "}
+                Saquarema/rj - BR
+              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
+                Capital Nacional do Surf
+              </span>
             </div>
           </Link>
         </div>
@@ -156,7 +230,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         <ul className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <li key={link.to}>
-              <Link href={link.to} className="relative text-sm font-medium uppercase tracking-wide text-primary-foreground/90 transition-colors after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all hover:text-primary-foreground hover:after:w-full">
+              <Link
+                href={link.to}
+                className="relative text-sm font-medium uppercase tracking-wide text-primary-foreground/90 transition-colors after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-accent after:transition-all hover:text-primary-foreground hover:after:w-full"
+              >
                 {link.label}
               </Link>
             </li>
@@ -168,8 +245,16 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           <GoogleTranslate />
 
           {/* Botão som mobile */}
-          <button onClick={toggleAudio} className="text-primary-foreground md:hidden" aria-label="Alternar som das ondas">
-            {isPlaying ? <Volume2 className="h-6 w-6" /> : <VolumeX className="h-6 w-6" />}
+          <button
+            onClick={toggleAudio}
+            className="text-primary-foreground md:hidden"
+            aria-label="Alternar som das ondas"
+          >
+            {isPlaying ? (
+              <Volume2 className="h-6 w-6" />
+            ) : (
+              <VolumeX className="h-6 w-6" />
+            )}
           </button>
 
           {/* Área de auth */}
@@ -209,10 +294,16 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                   className="flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:bg-primary-foreground/25"
                 >
                   <div className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-primary">
-                    {user.nome?.charAt(0).toUpperCase() ?? <User className="h-3 w-3" />}
+                    {user.nome?.charAt(0).toUpperCase() ?? (
+                      <User className="h-3 w-3" />
+                    )}
                   </div>
-                  <span className="hidden max-w-[80px] truncate md:inline">{user.nome?.split(" ")[0]}</span>
-                  <ChevronDown className={`h-3 w-3 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                  <span className="hidden max-w-[80px] truncate md:inline">
+                    {user.nome?.split(" ")[0]}
+                  </span>
+                  <ChevronDown
+                    className={`h-3 w-3 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 <AnimatePresence>
@@ -225,8 +316,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                       className="absolute right-0 top-10 z-50 min-w-[160px] rounded-xl border border-border bg-card shadow-lg"
                     >
                       <div className="border-b border-border px-4 py-3">
-                        <p className="text-xs font-semibold text-foreground">{user.nome}</p>
-                        <p className="text-[10px] text-muted-foreground capitalize">{user.perfil.toLowerCase()}</p>
+                        <p className="text-xs font-semibold text-foreground">
+                          {user.nome}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground capitalize">
+                          {user.perfil.toLowerCase()}
+                        </p>
                       </div>
                       <div className="p-1">
                         <Link
@@ -258,11 +353,21 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
                 <span>\u2600 {weather.temperature}\u00b0C</span>
                 <span className="opacity-60">|</span>
-                <span>\ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
+                <span>
+                  \ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m
+                </span>
               </div>
             )}
-            <button onClick={toggleAudio} className="text-primary-foreground/80 transition-colors hover:text-primary-foreground" aria-label="Alternar som das ondas">
-              {isPlaying ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+            <button
+              onClick={toggleAudio}
+              className="text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+              aria-label="Alternar som das ondas"
+            >
+              {isPlaying ? (
+                <Volume2 className="h-5 w-5" />
+              ) : (
+                <VolumeX className="h-5 w-5" />
+              )}
             </button>
           </div>
         </div>
@@ -280,7 +385,11 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             <ul className="flex flex-col items-center gap-4 py-6">
               {navLinks.map((link) => (
                 <li key={link.to}>
-                  <Link href={link.to} onClick={() => setMobileOpen(false)} className="font-display text-lg uppercase tracking-wide text-primary-foreground">
+                  <Link
+                    href={link.to}
+                    onClick={() => setMobileOpen(false)}
+                    className="font-display text-lg uppercase tracking-wide text-primary-foreground"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -289,19 +398,30 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               {/* Auth mobile */}
               {!user ? (
                 <li>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
+                  >
                     <LogIn className="h-4 w-4" /> Entrar
                   </Link>
                 </li>
               ) : user.perfil === "ADMIN" ? (
                 <>
                   <li>
-                    <Link href="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 font-display text-sm uppercase tracking-wide text-primary">
+                    <Link
+                      href="/admin"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 font-display text-sm uppercase tracking-wide text-primary"
+                    >
                       <LayoutDashboard className="h-4 w-4" /> Painel Admin
                     </Link>
                   </li>
                   <li>
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-primary-foreground/70">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 text-sm text-primary-foreground/70"
+                    >
                       <LogOut className="h-4 w-4" /> Sair
                     </button>
                   </li>
@@ -309,12 +429,19 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               ) : (
                 <>
                   <li>
-                    <Link href="/perfil" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground">
+                    <Link
+                      href="/perfil"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
+                    >
                       <User className="h-4 w-4" /> Meu Perfil
                     </Link>
                   </li>
                   <li>
-                    <button onClick={handleLogout} className="flex items-center gap-2 text-sm text-primary-foreground/70">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 text-sm text-primary-foreground/70"
+                    >
                       <LogOut className="h-4 w-4" /> Sair
                     </button>
                   </li>
@@ -325,7 +452,9 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 <li className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground">
                   <span>\u2600 {weather.temperature}\u00b0C</span>
                   <span>|</span>
-                  <span>\ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
+                  <span>
+                    \ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m
+                  </span>
                 </li>
               )}
             </ul>
