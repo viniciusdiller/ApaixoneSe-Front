@@ -7,7 +7,7 @@ import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
@@ -25,6 +25,7 @@ export default function AdminAtividadesPage() {
   const [items, setItems] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; editing: Atividade | null }>({ open: false, editing: null });
+  const [viewing, setViewing] = useState<Atividade | null>(null);
   const [form, setForm] = useState<CreateAtividadeDto>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -34,14 +35,7 @@ export default function AdminAtividadesPage() {
 
   const openCreate = () => { setForm(empty); setError(""); setModal({ open: true, editing: null }); };
   const openEdit = (item: Atividade) => {
-    setForm({
-      titulo: item.titulo,
-      descricao: item.descricao,
-      local: item.local,
-      roteiro: item.roteiro,
-      latitude: item.latitude ?? undefined,
-      longitude: item.longitude ?? undefined,
-    });
+    setForm({ titulo: item.titulo, descricao: item.descricao, local: item.local, roteiro: item.roteiro, latitude: item.latitude, longitude: item.longitude });
     setError(""); setModal({ open: true, editing: item });
   };
   const closeModal = () => setModal({ open: false, editing: null });
@@ -52,12 +46,8 @@ export default function AdminAtividadesPage() {
       modal.editing ? await atividadesApi.update(modal.editing.id, form) : await atividadesApi.create(form);
       closeModal(); load();
     } catch (err: unknown) {
-      try {
-        const p = JSON.parse((err as Error).message);
-        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
-      } catch {
-        setError("Erro ao salvar.");
-      }
+      try { const p = JSON.parse((err as Error).message); setError(Array.isArray(p.message) ? p.message.join(" ") : p.message); }
+      catch { setError("Erro ao salvar."); }
     } finally { setSaving(false); }
   };
 
@@ -69,6 +59,8 @@ export default function AdminAtividadesPage() {
   const set = (k: keyof CreateAtividadeDto) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [k]: e.target.value }));
+
+  const roteiroLabel = (v: TipoRoteiro) => ROTEIROS.find((r) => r.value === v)?.label ?? v;
 
   return (
     <div>
@@ -83,14 +75,33 @@ export default function AdminAtividadesPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable<Atividade> data={items} columns={[
-          { key: "id", label: "ID", render: (_, row) => <span className="font-mono text-xs">{String(row.id).slice(0, 8)}…</span> },
+        <AdminTable data={items} columns={[
           { key: "titulo", label: "Título" },
           { key: "local", label: "Local" },
-          { key: "roteiro", label: "Roteiro", render: (_, row) => ROTEIROS.find(x => x.value === row.roteiro)?.label ?? row.roteiro },
-        ]} onEdit={openEdit} onDelete={handleDelete} />
+          { key: "roteiro", label: "Roteiro", render: (r) => roteiroLabel(r.roteiro) },
+        ]} extraActions={(row) => (
+          <button onClick={() => setViewing(row)} title="Ver detalhes"
+            className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+            <Eye size={16} />
+          </button>
+        )} onEdit={openEdit} onDelete={handleDelete} />
       )}
 
+      {/* Modal Visualização */}
+      <AdminModal title="Detalhes da Atividade" open={!!viewing} onClose={() => setViewing(null)}>
+        {viewing && (
+          <dl className="space-y-3 text-sm">
+            <ViewRow label="Título" value={viewing.titulo} />
+            <ViewRow label="Local" value={viewing.local} />
+            <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
+            <ViewRow label="Descrição" value={viewing.descricao} />
+            {viewing.latitude != null && <ViewRow label="Latitude" value={String(viewing.latitude)} />}
+            {viewing.longitude != null && <ViewRow label="Longitude" value={String(viewing.longitude)} />}
+          </dl>
+        )}
+      </AdminModal>
+
+      {/* Modal Criar/Editar */}
       <AdminModal title={modal.editing ? "Editar Atividade" : "Nova Atividade"} open={modal.open} onClose={closeModal}>
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField label="Título" value={form.titulo} onChange={set("titulo")} required />
@@ -114,6 +125,16 @@ export default function AdminAtividadesPage() {
           </div>
         </form>
       </AdminModal>
+    </div>
+  );
+}
+
+function ViewRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
 }
