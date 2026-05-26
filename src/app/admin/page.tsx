@@ -11,13 +11,28 @@ import {
   planoViagemApi,
   catApi,
 } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api/config";
 import type { Gastronomia, Hospedagem, ServicoTurista } from "@/lib/api";
 import {
   Users, Calendar, Utensils, BedDouble,
   Wrench, MapPin, BookOpen, Tag, Clock,
   CheckCircle2, XCircle, ConciergeBell, Eye, X,
   Phone, Instagram, MapPinned, FileText, Building,
+  ImageOff, ExternalLink,
 } from "lucide-react";
+
+// ────────────────────────────────────────────────────────────────
+// Helper: resolve URL relativa do backend para URL absoluta
+// ────────────────────────────────────────────────────────────────
+// O backend pode devolver caminhos como:
+//   "/uploads/hospedagem/foo/logo.jpg"  -> URL relativa
+//   "http://..."                        -> já absoluta (Cloudinary, S3, etc.)
+function resolveUrl(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  // garante que não duplica a barra
+  return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
+}
 
 // ────────────────────────────────────────────────────────────────
 // Tipos
@@ -46,7 +61,7 @@ function StatCard({ label, count, icon, color }: {
 }
 
 // ────────────────────────────────────────────────────────────────
-// DetailRow — linha de info no modal
+// DetailRow
 // ────────────────────────────────────────────────────────────────
 function DetailRow({ icon, label, value }: {
   icon: React.ReactNode; label: string; value?: string | null;
@@ -64,7 +79,42 @@ function DetailRow({ icon, label, value }: {
 }
 
 // ────────────────────────────────────────────────────────────────
-// Modal de detalhes do item pendente
+// ImagePreview — galeria de imagens do estabelecimento
+// ────────────────────────────────────────────────────────────────
+function ImagePreview({ urls, label }: { urls: (string | undefined)[]; label: string }) {
+  const resolved = urls.map(resolveUrl).filter(Boolean) as string[];
+  if (resolved.length === 0) return null;
+
+  return (
+    <div>
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {resolved.map((src, i) => (
+          <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="group relative block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={src}
+              alt={`${label} ${i + 1}`}
+              width={80}
+              height={80}
+              className="h-20 w-20 rounded-lg object-cover ring-1 ring-border transition group-hover:ring-primary"
+              onError={(e) => {
+                const wrapper = e.currentTarget.closest(".img-thumb") as HTMLElement | null;
+                if (wrapper) wrapper.style.display = "none";
+              }}
+            />
+            <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 transition group-hover:bg-black/30">
+              <ExternalLink size={16} className="text-white opacity-0 transition group-hover:opacity-100" />
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// Modal de detalhes
 // ────────────────────────────────────────────────────────────────
 function PendingDetailModal({
   item, actionLoading, onApprove, onReject, onClose,
@@ -77,7 +127,7 @@ function PendingDetailModal({
 }) {
   const { data } = item;
 
-  const logo = "logoUrl" in data ? (data.logoUrl ?? undefined) : undefined;
+  const logoResolved = resolveUrl("logoUrl" in data ? data.logoUrl : undefined);
   const nome = data.nome;
   const cnpj = "cnpj" in data ? (data.cnpj ?? undefined) : undefined;
   const telefone = data.telefone;
@@ -85,9 +135,35 @@ function PendingDetailModal({
   const endereco = "endereco" in data ? (data.endereco ?? undefined) : undefined;
   const respNome = "responsavelNome" in data ? (data.responsavelNome ?? undefined) : undefined;
   const respCpf = "responsavelCpf" in data ? (data.responsavelCpf ?? undefined) : undefined;
-  const docUrl = "documentoPdfUrl" in data ? (data.documentoPdfUrl ?? undefined) : undefined;
 
-  // campos específicos por tipo
+  // PDF: resolve URL para apontar pro backend correto
+  const docUrlRaw = "documentoPdfUrl" in data ? (data.documentoPdfUrl ?? undefined) : undefined;
+  const docUrl = resolveUrl(docUrlRaw);
+
+  // Imagens para preview — cada entidade tem campos diferentes
+  const imageUrls: string[] = [];
+  if (item.kind === "gastronomia") {
+    // logoUrl já está no header; adiciona imagens extras se existirem
+    if (item.data.logoUrl) imageUrls.push(item.data.logoUrl);
+    // fotos adicionais (array ou campo extra) — ajuste o campo se o backend usar outro nome
+    const g = item.data as Gastronomia & { fotos?: string[]; imagemUrl?: string };
+    if (g.fotos) imageUrls.push(...g.fotos);
+    if (g.imagemUrl) imageUrls.push(g.imagemUrl);
+  } else if (item.kind === "hospedagem") {
+    const h = item.data as Hospedagem & { fotos?: string[]; imagemUrl?: string };
+    if (h.logoUrl) imageUrls.push(h.logoUrl);
+    if (h.fotos) imageUrls.push(...h.fotos);
+    if (h.imagemUrl) imageUrls.push(h.imagemUrl);
+  } else {
+    const s = item.data as ServicoTurista & { fotos?: string[]; imagemUrl?: string };
+    if (s.logoUrl) imageUrls.push(s.logoUrl);
+    if (s.fotos) imageUrls.push(...s.fotos);
+    if (s.imagemUrl) imageUrls.push(s.imagemUrl);
+  }
+  // remove duplicatas
+  const uniqueImages = [...new Set(imageUrls)];
+
+  // campos específicos
   const especialidade = item.kind === "gastronomia" ? (item.data.especialidade ?? undefined) : undefined;
   const diferencial = item.kind === "hospedagem" ? item.data.textoDiferencial : undefined;
   const tipo = item.kind === "servico" ? item.data.tipo.replaceAll("_", " ") : undefined;
@@ -99,33 +175,38 @@ function PendingDetailModal({
     item.kind === "hospedagem" ? "Hospedagem" : "Serviço Turístico";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div
         className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl"
         style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
       >
         {/* header */}
         <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
-          {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logo} alt={nome} width={40} height={40}
-              className="h-10 w-10 flex-shrink-0 rounded-lg object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-                const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-                if (fb) fb.style.display = "flex";
-              }}
-            />
-          ) : null}
-          <div
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted font-bold text-muted-foreground"
-            style={logo ? { display: "none" } : {}}
-          >
-            {nome.charAt(0).toUpperCase()}
+          <div className="relative h-10 w-10 flex-shrink-0">
+            {logoResolved ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoResolved} alt={nome} width={40} height={40}
+                className="h-10 w-10 rounded-lg object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
+                  if (fb) fb.style.display = "flex";
+                }}
+              />
+            ) : null}
+            <div
+              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted font-bold text-muted-foreground"
+              style={logoResolved ? { display: "none" } : {}}
+            >
+              {nome.charAt(0).toUpperCase()}
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="font-display text-lg font-bold uppercase tracking-widest text-foreground truncate">
+          <div className="min-w-0 flex-1">
+            <h2 className="font-display truncate text-lg font-bold uppercase tracking-widest text-foreground">
               {nome}
             </h2>
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
@@ -138,35 +219,62 @@ function PendingDetailModal({
         </div>
 
         {/* body */}
-        <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
-          <DetailRow icon={<Phone size={14} />} label="Telefone" value={telefone} />
-          <DetailRow icon={<Instagram size={14} />} label="Instagram" value={instagram} />
-          <DetailRow icon={<MapPinned size={14} />} label="Endereço" value={endereco} />
-          <DetailRow icon={<Building size={14} />} label="CNPJ" value={cnpj} />
-          <DetailRow icon={<Building size={14} />} label="Responsável" value={respNome} />
-          <DetailRow icon={<FileText size={14} />} label="CPF Responsável" value={respCpf} />
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+
+          {/* ── Preview de imagens ── */}
+          {uniqueImages.length > 0 ? (
+            <ImagePreview urls={uniqueImages} label="Imagens" />
+          ) : (
+            <div
+              className="flex items-center gap-2 rounded-lg p-3 text-sm text-muted-foreground"
+              style={{ backgroundColor: "hsl(var(--muted))", border: "1px dashed hsl(var(--border))" }}
+            >
+              <ImageOff size={15} className="flex-shrink-0" />
+              Nenhuma imagem enviada
+            </div>
+          )}
+
+          {/* ── Divider ── */}
+          <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
+
+          {/* ── Informações ── */}
+          <div className="space-y-2">
+            <DetailRow icon={<Phone size={14} />} label="Telefone" value={telefone} />
+            <DetailRow icon={<Instagram size={14} />} label="Instagram" value={instagram} />
+            <DetailRow icon={<MapPinned size={14} />} label="Endereço" value={endereco} />
+            <DetailRow icon={<Building size={14} />} label="CNPJ" value={cnpj} />
+            <DetailRow icon={<Building size={14} />} label="Responsável" value={respNome} />
+            <DetailRow icon={<FileText size={14} />} label="CPF Responsável" value={respCpf} />
+            {especialidade && <DetailRow icon={<Utensils size={14} />} label="Especialidade" value={especialidade} />}
+            {diferencial && <DetailRow icon={<Building size={14} />} label="Diferencial" value={diferencial} />}
+            {tipo && <DetailRow icon={<ConciergeBell size={14} />} label="Tipo de Serviço" value={tipo} />}
+            {descricao && <DetailRow icon={<FileText size={14} />} label="Descrição" value={descricao} />}
+            {idiomas && <DetailRow icon={<FileText size={14} />} label="Idiomas" value={idiomas} />}
+          </div>
+
+          {/* ── Comprovante PDF ── */}
           {docUrl && (
-            <div className="flex items-center gap-2 text-sm">
-              <FileText size={14} className="text-primary flex-shrink-0" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Documento: </span>
+            <div
+              className="rounded-lg p-3"
+              style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
+            >
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comprovante / Documento</p>
               <a
                 href={docUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="truncate text-primary underline underline-offset-2 hover:text-primary/80"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
               >
+                <FileText size={15} />
                 Visualizar PDF
+                <ExternalLink size={13} />
               </a>
+              <p className="mt-1.5 break-all text-xs text-muted-foreground">{docUrl}</p>
             </div>
           )}
-          {especialidade && <DetailRow icon={<Utensils size={14} />} label="Especialidade" value={especialidade} />}
-          {diferencial && <DetailRow icon={<Building size={14} />} label="Diferencial" value={diferencial} />}
-          {tipo && <DetailRow icon={<ConciergeBell size={14} />} label="Tipo de Serviço" value={tipo} />}
-          {descricao && <DetailRow icon={<FileText size={14} />} label="Descrição" value={descricao} />}
-          {idiomas && <DetailRow icon={<FileText size={14} />} label="Idiomas" value={idiomas} />}
         </div>
 
-        {/* footer com ações */}
+        {/* footer */}
         <div
           className="flex items-center justify-end gap-2 px-6 py-4"
           style={{ borderTop: "1px solid hsl(var(--border))" }}
@@ -200,20 +308,17 @@ function PendingDetailModal({
 }
 
 // ────────────────────────────────────────────────────────────────
-// PendingCard — linha do card com botão "Ver mais"
+// PendingCard
 // ────────────────────────────────────────────────────────────────
-function PendingCard({ logo, nome, sub, onView }: {
-  logo?: string;
-  nome: string;
-  sub: string;
-  onView: () => void;
+function PendingCard({ logoRaw, nome, sub, onView }: {
+  logoRaw?: string | null; nome: string; sub: string; onView: () => void;
 }) {
+  const logo = resolveUrl(logoRaw);
   return (
     <div
       className="flex items-center gap-3 rounded-lg p-3"
       style={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
     >
-      {/* logo / avatar */}
       <div className="relative h-9 w-9 flex-shrink-0">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -234,14 +339,10 @@ function PendingCard({ logo, nome, sub, onView }: {
           {nome.charAt(0).toUpperCase()}
         </div>
       </div>
-
-      {/* info */}
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-foreground">{nome}</p>
         <p className="truncate text-xs text-muted-foreground">{sub}</p>
       </div>
-
-      {/* botão ver mais */}
       <button
         onClick={onView}
         className="flex flex-shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
@@ -271,11 +372,9 @@ function PendingSection({ icon, title, count, children }: {
           {count} pendente{count !== 1 ? "s" : ""}
         </span>
       </div>
-      {count === 0 ? (
-        <p className="text-sm italic text-muted-foreground">Nenhuma solicitação pendente.</p>
-      ) : (
-        <div className="space-y-2">{children}</div>
-      )}
+      {count === 0
+        ? <p className="text-sm italic text-muted-foreground">Nenhuma solicitação pendente.</p>
+        : <div className="space-y-2">{children}</div>}
     </div>
   );
 }
@@ -288,7 +387,6 @@ export default function AdminDashboardPage() {
     users: "...", atividades: "...", eventos: "...", gastronomia: "...",
     hospedagem: "...", servicos: "...", planos: "...", cats: "...",
   });
-
   const [pendGast, setPendGast] = useState<Gastronomia[]>([]);
   const [pendHosp, setPendHosp] = useState<Hospedagem[]>([]);
   const [pendServ, setPendServ] = useState<ServicoTurista[]>([]);
@@ -315,12 +413,9 @@ export default function AdminDashboardPage() {
         cats: c.status === "fulfilled" ? c.value.length : "—",
       });
     });
-
     setPendLoading(true);
     Promise.allSettled([
-      gastronomiaApi.getAll(),
-      hospedagemApi.getAll(),
-      servicoTuristaApi.getAll(),
+      gastronomiaApi.getAll(), hospedagemApi.getAll(), servicoTuristaApi.getAll(),
     ]).then(([g, h, s]) => {
       setPendGast(g.status === "fulfilled" ? g.value.filter((x) => x.status === "PENDENTE") : []);
       setPendHosp(h.status === "fulfilled" ? h.value.filter((x) => x.status === "PENDENTE") : []);
@@ -330,7 +425,6 @@ export default function AdminDashboardPage() {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
-  // ── review ──
   const handleReview = async (status: "APROVADO" | "REJEITADO") => {
     if (!activeItem) return;
     setActionLoading(true);
@@ -346,9 +440,7 @@ export default function AdminDashboardPage() {
         setPendServ((p) => p.filter((x) => x.id !== activeItem.data.id));
       }
       setActiveItem(null);
-    } finally {
-      setActionLoading(false);
-    }
+    } finally { setActionLoading(false); }
   };
 
   return (
@@ -358,7 +450,6 @@ export default function AdminDashboardPage() {
         <p className="text-muted-foreground">Visão geral dos dados cadastrados no sistema.</p>
       </div>
 
-      {/* stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Usuários" count={stats.users} icon={<Users className="h-5 w-5 text-white" />} color="bg-primary" />
         <StatCard label="Atividades" count={stats.atividades} icon={<MapPin className="h-5 w-5 text-white" />} color="bg-restinga" />
@@ -370,7 +461,6 @@ export default function AdminDashboardPage() {
         <StatCard label="Categorias" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" />
       </div>
 
-      {/* pendentes */}
       <div>
         <div className="mb-4 flex items-center gap-3">
           <Clock size={20} className="text-amber-500" />
@@ -396,21 +486,19 @@ export default function AdminDashboardPage() {
           <div className="grid gap-4 lg:grid-cols-3">
             <PendingSection icon={<Utensils size={16} />} title="Gastronomia" count={pendGast.length}>
               {pendGast.map((g) => (
-                <PendingCard key={g.id} logo={g.logoUrl} nome={g.nome} sub={g.endereco}
+                <PendingCard key={g.id} logoRaw={g.logoUrl} nome={g.nome} sub={g.endereco}
                   onView={() => setActiveItem({ kind: "gastronomia", data: g })} />
               ))}
             </PendingSection>
-
             <PendingSection icon={<BedDouble size={16} />} title="Hospedagem" count={pendHosp.length}>
               {pendHosp.map((h) => (
-                <PendingCard key={h.id} logo={h.logoUrl} nome={h.nome} sub={h.endereco}
+                <PendingCard key={h.id} logoRaw={h.logoUrl} nome={h.nome} sub={h.endereco}
                   onView={() => setActiveItem({ kind: "hospedagem", data: h })} />
               ))}
             </PendingSection>
-
             <PendingSection icon={<ConciergeBell size={16} />} title="Serviços Turísticos" count={pendServ.length}>
               {pendServ.map((s) => (
-                <PendingCard key={s.id} logo={s.logoUrl ?? undefined} nome={s.nome} sub={s.tipo.replaceAll("_", " ")}
+                <PendingCard key={s.id} logoRaw={s.logoUrl} nome={s.nome} sub={s.tipo.replaceAll("_", " ")}
                   onView={() => setActiveItem({ kind: "servico", data: s })} />
               ))}
             </PendingSection>
@@ -418,7 +506,6 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* modal de detalhes */}
       {activeItem && (
         <PendingDetailModal
           item={activeItem}
