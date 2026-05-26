@@ -1,101 +1,80 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 export interface Column<T> {
-  key: string;
+  key: keyof T;
   label: string;
-  /** Recebe (valor da célula, row completa) */
-  render?: (value: unknown, row: T) => React.ReactNode;
+  render?: (value: T[keyof T], row: T) => ReactNode;
 }
 
-interface AdminTableProps<T extends { id: string | number }> {
-  columns: Column<T>[];
+interface Props<T extends { id: string | number }> {
   data: T[];
-  loading?: boolean;
-  onEdit?: (row: T) => void;
+  columns: Column<T>[];
   onDelete?: (row: T) => void;
-}
-
-function safeCell(value: unknown): React.ReactNode {
-  if (value === null || value === undefined) return <span className="text-muted-foreground">&mdash;</span>;
-  if (typeof value === "object") return <span className="text-muted-foreground text-xs">[objeto]</span>;
-  return String(value);
+  /** Botões extras por linha, exibidos ANTES do botão de excluir */
+  extraActions?: (row: T) => ReactNode;
 }
 
 export function AdminTable<T extends { id: string | number }>({
-  columns,
   data,
-  loading,
-  onEdit,
+  columns,
   onDelete,
-}: AdminTableProps<T>) {
-  if (loading) {
-    return (
-      <div className="rounded-lg border border-border bg-card py-16 text-center text-sm text-muted-foreground">
-        Carregando...
-      </div>
-    );
-  }
-
+  extraActions,
+}: Props<T>) {
   if (data.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-card py-16 text-center text-sm text-muted-foreground">
-        Nenhum registro encontrado.
+      <div className="rounded-xl border border-border bg-surface py-16 text-center">
+        <p className="text-muted-foreground">Nenhum registro encontrado.</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <table className="min-w-full divide-y divide-border bg-card text-sm">
-        <thead className="bg-muted">
-          <tr>
+    <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border bg-surface-offset">
             {columns.map((col) => (
               <th
-                key={col.key}
+                key={String(col.key)}
                 className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
                 {col.label}
               </th>
             ))}
-            {(onEdit || onDelete) && (
+            {(onDelete || extraActions) && (
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Ações
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody>
           {data.map((row) => (
-            <tr key={row.id} className="transition-colors hover:bg-muted/40">
-              {columns.map((col) => {
-                const value = (row as Record<string, unknown>)[col.key];
-                return (
-                  <td key={col.key} className="px-4 py-3 text-foreground">
-                    {col.render ? col.render(value, row) : safeCell(value)}
-                  </td>
-                );
-              })}
-              {(onEdit || onDelete) && (
+            <tr
+              key={row.id}
+              className="border-b border-border last:border-0 transition-colors hover:bg-surface-offset"
+            >
+              {columns.map((col) => (
+                <td key={String(col.key)} className="px-4 py-3 text-foreground">
+                  {col.render
+                    ? col.render(row[col.key], row)
+                    : String(row[col.key] ?? "—")}
+                </td>
+              ))}
+              {(onDelete || extraActions) && (
                 <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-2">
-                    {onEdit && (
-                      <button
-                        onClick={() => onEdit(row)}
-                        className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                        aria-label="Editar"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                    )}
+                  <div className="flex items-center justify-end gap-1">
+                    {extraActions?.(row)}
                     {onDelete && (
                       <button
                         onClick={() => onDelete(row)}
-                        className="rounded p-1.5 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-600"
-                        aria-label="Excluir"
+                        title="Excluir"
+                        className="rounded p-1 text-muted-foreground transition hover:bg-error/10 hover:text-error"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 size={16} />
                       </button>
                     )}
                   </div>
