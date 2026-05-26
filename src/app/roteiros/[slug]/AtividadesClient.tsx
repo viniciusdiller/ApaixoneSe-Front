@@ -47,22 +47,22 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-black/40" />
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[120px] opacity-10">
-          {roteiro.icon}
-        </div>
+        <div className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[120px] opacity-10"></div>
         <div className="container relative z-10 mx-auto">
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Voltar \u00e0 p\u00e1gina inicial
+            Voltar para página inicial
           </Link>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">Roteiro</p>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
-            {roteiro.icon} {roteiro.label}
-          </h1>
-          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">{roteiro.descricao}</p>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
+            Roteiro
+          </p>
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl"></h1>
+          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+            {roteiro.descricao}
+          </p>
         </div>
       </section>
 
@@ -70,11 +70,14 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
       <section className="px-4 py-16">
         <div className="container mx-auto max-w-5xl">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="font-display text-3xl font-bold uppercase text-foreground">Atividades</h2>
+            <h2 className="font-display text-3xl font-bold uppercase text-foreground">
+              Atividades
+            </h2>
             {!loading && !error && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
                 <MapPin className="h-4 w-4" />
-                {atividades.length} {atividades.length === 1 ? "atividade" : "atividades"}
+                {atividades.length}{" "}
+                {atividades.length === 1 ? "atividade" : "atividades"}
               </span>
             )}
           </div>
@@ -82,22 +85,31 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
           {error && (
             <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
               <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
-              <p className="text-base font-medium">N\u00e3o foi poss\u00edvel carregar as atividades.</p>
-              <p className="mt-1 text-sm">Verifique sua conex\u00e3o e tente novamente.</p>
+              <p className="text-base font-medium">
+                Não foi possível carregar as atividades.
+              </p>
+              <p className="mt-1 text-sm">
+                Verifique sua conexão e tente novamente.
+              </p>
             </div>
           )}
 
           {loading && (
             <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, i) => <AtividadeSkeleton key={i} />)}
+              {Array.from({ length: 4 }).map((_, i) => (
+                <AtividadeSkeleton key={i} />
+              ))}
             </div>
           )}
 
           {!loading && !error && atividades.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-              <span className="mb-3 text-5xl">{roteiro.icon}</span>
-              <p className="text-base font-medium">Nenhuma atividade cadastrada ainda.</p>
-              <p className="mt-1 text-sm">Em breve novas experi\u00eancias ser\u00e3o adicionadas.</p>
+              <p className="text-base font-medium">
+                Nenhuma atividade cadastrada ainda.
+              </p>
+              <p className="mt-1 text-sm">
+                Em breve novas experiências serã adicionadas.
+              </p>
             </div>
           )}
 
@@ -120,20 +132,23 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
                       <span>{atividade.local}</span>
                     </div>
                   )}
-                  <p className="mt-3 text-sm text-muted-foreground">{atividade.descricao}</p>
-                  {atividade.latitude != null && atividade.longitude != null && (
-                    <div className="mt-4">
-                      <a
-                        href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-                      >
-                        <MapPin className="h-3.5 w-3.5" />
-                        Ver no mapa
-                      </a>
-                    </div>
-                  )}
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {atividade.descricao}
+                  </p>
+                  {atividade.latitude != null &&
+                    atividade.longitude != null && (
+                      <div className="mt-4">
+                        <a
+                          href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                        >
+                          <MapPin className="h-3.5 w-3.5" />
+                          Ver no mapa
+                        </a>
+                      </div>
+                    )}
                 </motion.div>
               ))}
             </div>
@@ -145,7 +160,7 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary px-8 py-3 font-display text-sm uppercase tracking-wide text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
-              Voltar ao In\u00edcio
+              Voltar ao Início
             </Link>
           </div>
         </div>

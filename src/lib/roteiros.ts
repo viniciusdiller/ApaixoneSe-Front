@@ -17,7 +17,7 @@ export type RoteiroMeta = {
   slug: string;
   label: string;
   descricao: string;
-  icon: string;
+
   imagem: string;
   /** Layout no bento grid da home */
   span: string;
@@ -28,8 +28,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "A_PE",
     slug: "a-pe",
     label: "A P\u00e9",
-    descricao: "Percursos e trilhas para explorar Saquarema a p\u00e9, com contato direto com a natureza e a cultura local.",
-    icon: "\ud83e\udd7e",
+    descricao:
+      "Percursos e trilhas para explorar Saquarema a pé, com contato direto com a natureza e a cultura local.",
     imagem: "/images/itauna-surf.jpg",
     span: "",
   },
@@ -37,8 +37,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "ESPORTE_E_AVENTURA",
     slug: "esporte-e-aventura",
     label: "Esporte e Aventura",
-    descricao: "Adrenalina pura em um dos destinos esportivos mais famosos do Brasil.",
-    icon: "\ud83c\udfc4",
+    descricao:
+      "Adrenalina pura em um dos destinos esportivos mais famosos do Brasil.",
     imagem: "/images/itauna-surf.jpg",
     span: "md:col-span-2",
   },
@@ -46,8 +46,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "DE_PRAIAS",
     slug: "de-praias",
     label: "De Praias",
-    descricao: "As praias de Saquarema — cada uma com uma personalidade \u00fanica.",
-    icon: "\ud83c\udfd6\ufe0f",
+    descricao:
+      "As praias de Saquarema — cada uma com uma personalidade \u00fanica.",
     imagem: "/images/itauna-surf.jpg",
     span: "",
   },
@@ -55,8 +55,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "CULTURAL",
     slug: "cultural",
     label: "Cultural",
-    descricao: "Mergulhe na hist\u00f3ria, na f\u00e9 e na arte que moldaram a identidade de Saquarema.",
-    icon: "\ud83c\udfdb\ufe0f",
+    descricao:
+      "Mergulhe na hist\u00f3ria, na f\u00e9 e na arte que moldaram a identidade de Saquarema.",
     imagem: "/images/igreja-nazare.jpg",
     span: "md:col-span-2 md:row-span-2",
   },
@@ -64,8 +64,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "RELIGIOSO",
     slug: "religioso",
     label: "Religioso",
-    descricao: "Espiritualidade e devoc\u00e3o em lugares sagrados de grande beleza e tradi\u00e7\u00e3o.",
-    icon: "\u26ea",
+    descricao:
+      "Espiritualidade e devoc\u00e3o em lugares sagrados de grande beleza e tradi\u00e7\u00e3o.",
     imagem: "/images/igreja-nazare.jpg",
     span: "",
   },
@@ -73,8 +73,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "RURAL",
     slug: "rural",
     label: "Rural",
-    descricao: "Fazendas, gastronomia do campo e tradi\u00e7\u00f5es do interior de Saquarema.",
-    icon: "\ud83c\udf3e",
+    descricao:
+      "Fazendas, gastronomia do campo e tradi\u00e7\u00f5es do interior de Saquarema.",
     imagem: "/images/gastronomia.jpg",
     span: "",
   },
@@ -82,8 +82,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "ECOLOGICO",
     slug: "ecologico",
     label: "Ecol\u00f3gico",
-    descricao: "Natureza exuberante, lagoas, restingas e fauna local para os amantes do ecoturismo.",
-    icon: "\ud83c\udf3f",
+    descricao:
+      "Natureza exuberante, lagoas, restingas e fauna local para os amantes do ecoturismo.",
     imagem: "/images/itauna-surf.jpg",
     span: "",
   },

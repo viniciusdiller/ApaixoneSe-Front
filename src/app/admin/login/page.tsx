@@ -20,16 +20,16 @@ export default function AdminLoginPage() {
       const data = await usersApi.login({ identificador, senha });
       // Backend retorna { token, user } — campo exato: "token"
       const token = data.token;
-      if (!token) throw new Error("Token n\u00e3o retornado pelo servidor.");
+      if (!token) throw new Error("Token não retornado pelo servidor.");
       setToken(token);
       router.push("/admin");
     } catch (err: any) {
-      let msg = "Usu\u00e1rio ou senha inv\u00e1lidos.";
+      let msg = "Usuário ou senha inválidos.";
       try {
         const parsed = JSON.parse(err.message);
         msg = Array.isArray(parsed.message)
           ? parsed.message.join(" ")
-          : parsed.message ?? msg;
+          : (parsed.message ?? msg);
       } catch {}
       setError(msg);
     } finally {
@@ -43,11 +43,16 @@ export default function AdminLoginPage() {
         <div className="text-center mb-8">
           <h1
             className="text-3xl font-bold tracking-tight"
-            style={{ fontFamily: "var(--font-display, Oswald, sans-serif)", color: "var(--primary, #c8a96e)" }}
+            style={{
+              fontFamily: "var(--font-display, Oswald, sans-serif)",
+              color: "var(--primary, #c8a96e)",
+            }}
           >
             Apaixone-se
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Painel Administrativo</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Painel Administrativo
+          </p>
         </div>
 
         <form
@@ -56,7 +61,7 @@ export default function AdminLoginPage() {
         >
           <div className="space-y-1">
             <label htmlFor="identificador" className="text-sm font-medium">
-              Usu\u00e1rio
+              Usuário
             </label>
             <input
               id="identificador"
@@ -103,7 +108,10 @@ export default function AdminLoginPage() {
         </form>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          <a href="/" className="underline underline-offset-2 hover:text-foreground transition">
+          <a
+            href="/"
+            className="underline underline-offset-2 hover:text-foreground transition"
+          >
             \u2190 Voltar ao site
           </a>
         </p>
