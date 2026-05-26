@@ -51,21 +51,17 @@ interface UserDetails {
 const PERFIS: Perfil[] = ["USUARIO", "PARCEIRO", "ADMIN"];
 
 const PERFIL_BADGE: Record<Perfil, string> = {
-  USUARIO: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  PARCEIRO:
-    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  ADMIN: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
+  USUARIO: "bg-blue-100 text-blue-800",
+  PARCEIRO: "bg-amber-100 text-amber-800",
+  ADMIN: "bg-rose-100 text-rose-800",
 };
 
 // ── helpers ────────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    APROVADO:
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-    PENDENTE:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
-    REJEITADO:
-      "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    APROVADO: "bg-green-100 text-green-800",
+    PENDENTE: "bg-yellow-100 text-yellow-800",
+    REJEITADO: "bg-red-100 text-red-800",
   };
   return (
     <span
@@ -173,7 +169,7 @@ export default function AdminUsuariosPage() {
         planos: allPlanos.filter((p) => p.usuarioId === user.id),
       });
     } catch {
-      // mostra o que tiver
+      // mantém o que foi carregado parcialmente
     } finally {
       setDetailsLoading(false);
     }
@@ -229,14 +225,14 @@ export default function AdminUsuariosPage() {
               <button
                 onClick={() => openDetails(row)}
                 title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-primary"
               >
                 <Eye size={16} />
               </button>
               <button
                 onClick={() => openEdit(row)}
                 title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-primary"
               >
                 <Pencil size={16} />
               </button>
@@ -256,7 +252,7 @@ export default function AdminUsuariosPage() {
       >
         <div className="grid gap-4">
           {editError && (
-            <p className="rounded bg-error/10 px-3 py-2 text-sm text-error">
+            <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
               {editError}
             </p>
           )}
@@ -280,20 +276,16 @@ export default function AdminUsuariosPage() {
             required
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">
-              Perfil
-            </label>
+            <label className="text-sm font-medium text-foreground">Perfil</label>
             <select
               value={editForm.perfil}
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, perfil: e.target.value as Perfil }))
               }
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {PERFIS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
@@ -308,24 +300,26 @@ export default function AdminUsuariosPage() {
 
       {/* ── Modal Detalhes ────────────────────────────────────────────── */}
       {details && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-surface shadow-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl shadow-2xl"
+            style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+          >
             {/* header */}
-            <div className="flex items-center gap-3 border-b border-border px-6 py-4">
+            <div
+              className="flex items-center gap-3 px-6 py-4"
+              style={{ borderBottom: "1px solid hsl(var(--border))" }}
+            >
               <UserCircle size={24} className="text-primary" />
               <div className="flex-1">
-                <h2 className="font-display text-xl font-bold uppercase tracking-widest">
+                <h2 className="font-display text-xl font-bold uppercase tracking-widest text-foreground">
                   {details.user.nome}
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   @{details.user.usuario} · {details.user.email}
                 </p>
               </div>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  PERFIL_BADGE[details.user.perfil]
-                }`}
-              >
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERFIL_BADGE[details.user.perfil]}`}>
                 {details.user.perfil}
               </span>
               <button
@@ -337,86 +331,39 @@ export default function AdminUsuariosPage() {
             </div>
 
             {/* body scrollável */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-4">
               {detailsLoading ? (
                 <p className="text-sm text-muted-foreground">Carregando…</p>
               ) : (
                 <>
-                  <Section
-                    icon={<UtensilsCrossed size={16} />}
-                    title="Gastronomia"
-                    count={details.gastronomias.length}
-                  >
-                    {details.gastronomias.length === 0 ? (
-                      <Empty />
-                    ) : (
-                      details.gastronomias.map((g) => (
-                        <EstabelecimentoCard
-                          key={g.id}
-                          nome={g.nome}
-                          sub={g.endereco}
-                          status={g.status}
-                          logo={g.logoUrl}
-                        />
-                      ))
-                    )}
+                  <Section icon={<UtensilsCrossed size={16} />} title="Gastronomia" count={details.gastronomias.length}>
+                    {details.gastronomias.length === 0 ? <Empty /> : details.gastronomias.map((g) => (
+                      <EstabelecimentoCard key={g.id} nome={g.nome} sub={g.endereco} status={g.status} logo={g.logoUrl} />
+                    ))}
                   </Section>
 
-                  <Section
-                    icon={<BedDouble size={16} />}
-                    title="Hospedagem"
-                    count={details.hospedagens.length}
-                  >
-                    {details.hospedagens.length === 0 ? (
-                      <Empty />
-                    ) : (
-                      details.hospedagens.map((h) => (
-                        <EstabelecimentoCard
-                          key={h.id}
-                          nome={h.nome}
-                          sub={h.endereco}
-                          status={h.status}
-                          logo={h.logoUrl}
-                        />
-                      ))
-                    )}
+                  <Section icon={<BedDouble size={16} />} title="Hospedagem" count={details.hospedagens.length}>
+                    {details.hospedagens.length === 0 ? <Empty /> : details.hospedagens.map((h) => (
+                      <EstabelecimentoCard key={h.id} nome={h.nome} sub={h.endereco} status={h.status} logo={h.logoUrl} />
+                    ))}
                   </Section>
 
-                  <Section
-                    icon={<Briefcase size={16} />}
-                    title="Serviços Turísticos"
-                    count={details.servicos.length}
-                  >
-                    {details.servicos.length === 0 ? (
-                      <Empty />
-                    ) : (
-                      details.servicos.map((s) => (
-                        <EstabelecimentoCard
-                          key={s.id}
-                          nome={s.nome}
-                          sub={s.tipo}
-                          status={s.status}
-                          logo={s.logoUrl ?? undefined}
-                        />
-                      ))
-                    )}
+                  <Section icon={<Briefcase size={16} />} title="Serviços Turísticos" count={details.servicos.length}>
+                    {details.servicos.length === 0 ? <Empty /> : details.servicos.map((s) => (
+                      <EstabelecimentoCard key={s.id} nome={s.nome} sub={s.tipo} status={s.status} logo={s.logoUrl ?? undefined} />
+                    ))}
                   </Section>
 
-                  <Section
-                    icon={<Map size={16} />}
-                    title="Planos de Viagem"
-                    count={details.planos.length}
-                  >
-                    {details.planos.length === 0 ? (
-                      <Empty />
-                    ) : (
+                  <Section icon={<Map size={16} />} title="Planos de Viagem" count={details.planos.length}>
+                    {details.planos.length === 0 ? <Empty /> : (
                       <div className="space-y-2">
                         {details.planos.map((p) => (
                           <div
                             key={p.id}
-                            className="flex items-center justify-between rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm"
+                            className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+                            style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
                           >
-                            <span className="font-medium">{p.titulo}</span>
+                            <span className="font-medium text-foreground">{p.titulo}</span>
                             <span className="text-xs text-muted-foreground">
                               {new Date(p.dataInicio).toLocaleDateString("pt-BR")}
                               {" → "}
@@ -432,10 +379,13 @@ export default function AdminUsuariosPage() {
             </div>
 
             {/* footer */}
-            <div className="border-t border-border px-6 py-3 text-right">
+            <div
+              className="px-6 py-3 text-right"
+              style={{ borderTop: "1px solid hsl(var(--border))" }}
+            >
               <button
                 onClick={() => setDetails(null)}
-                className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-surface-offset"
+                className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted"
               >
                 Fechar
               </button>
@@ -449,10 +399,7 @@ export default function AdminUsuariosPage() {
 
 // ── sub-componentes ────────────────────────────────────────────────────────
 function Section({
-  icon,
-  title,
-  count,
-  children,
+  icon, title, count, children,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -463,10 +410,13 @@ function Section({
     <div>
       <div className="mb-2 flex items-center gap-2">
         <span className="text-primary">{icon}</span>
-        <h3 className="font-display text-sm font-bold uppercase tracking-widest">
+        <h3 className="font-display text-sm font-bold uppercase tracking-widest text-foreground">
           {title}
         </h3>
-        <span className="ml-auto rounded-full bg-surface-offset px-2 py-0.5 text-xs text-muted-foreground">
+        <span
+          className="ml-auto rounded-full px-2 py-0.5 text-xs text-muted-foreground"
+          style={{ backgroundColor: "hsl(var(--muted))" }}
+        >
           {count}
         </span>
       </div>
@@ -476,10 +426,7 @@ function Section({
 }
 
 function EstabelecimentoCard({
-  nome,
-  sub,
-  status,
-  logo,
+  nome, sub, status, logo,
 }: {
   nome: string;
   sub: string;
@@ -487,7 +434,10 @@ function EstabelecimentoCard({
   logo?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2">
+    <div
+      className="flex items-center gap-3 rounded-lg px-3 py-2"
+      style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
+    >
       {logo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -495,15 +445,24 @@ function EstabelecimentoCard({
           alt={nome}
           width={32}
           height={32}
-          className="h-8 w-8 rounded object-cover"
+          className="h-8 w-8 flex-shrink-0 rounded object-cover"
+          onError={(e) => {
+            const target = e.currentTarget;
+            target.style.display = "none";
+            const fallback = target.nextElementSibling as HTMLElement | null;
+            if (fallback) fallback.style.display = "flex";
+          }}
         />
-      ) : (
-        <div className="flex h-8 w-8 items-center justify-center rounded bg-surface-offset text-muted-foreground">
-          <span className="text-xs font-bold">{nome.charAt(0)}</span>
-        </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-medium">{nome}</p>
+      ) : null}
+      {/* fallback sempre renderizado, oculto se logo carregar */}
+      <div
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
+        style={logo ? { display: "none" } : {}}
+      >
+        <span className="text-xs font-bold">{nome.charAt(0).toUpperCase()}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground">{nome}</p>
         <p className="truncate text-xs text-muted-foreground">{sub}</p>
       </div>
       <StatusBadge status={status} />
