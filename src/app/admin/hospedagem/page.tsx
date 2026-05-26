@@ -8,6 +8,7 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
+import { OwnerCard } from "@/components/admin/OwnerCard";
 import { buildFormData } from "@/lib/buildFormData";
 
 export default function HospedagemAdminPage() {
@@ -41,9 +42,9 @@ export default function HospedagemAdminPage() {
     setEditing(item);
     setForm({
       nome: item.nome ?? "", telefone: item.telefone ?? "", instagram: item.instagram ?? "",
-      endereco: item.endereco ?? "", textoDiferencial: (item as any).textoDiferencial ?? "",
-      cnpj: (item as any).cnpj ?? "", responsavelNome: (item as any).responsavelNome ?? "",
-      responsavelCpf: (item as any).responsavelCpf ?? "",
+      endereco: item.endereco ?? "", textoDiferencial: item.textoDiferencial ?? "",
+      cnpj: item.cnpj ?? "", responsavelNome: item.responsavelNome ?? "",
+      responsavelCpf: item.responsavelCpf ?? "",
     });
     setLogoFile(null); setPdfFile(null);
     setModalOpen(true);
@@ -73,10 +74,10 @@ export default function HospedagemAdminPage() {
   }
 
   const columns: Column<Hospedagem>[] = [
-    { key: "id", label: "ID" },
     { key: "nome", label: "Nome" },
     { key: "telefone", label: "Telefone" },
     { key: "cnpj", label: "CNPJ" },
+    { key: "status", label: "Status" },
     { key: "logoUrl", label: "Logo", render: (v) => <MediaPreview url={v as string} label="Logo" /> },
     { key: "documentoPdfUrl", label: "PDF", render: (v) => <MediaPreview url={v as string} label="Documento" isPdf /> },
     {
@@ -93,7 +94,10 @@ export default function HospedagemAdminPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Hospedagem</h1>
+        <div>
+          <h1 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">Hospedagem</h1>
+          <p className="text-sm text-muted-foreground">{items.length} registros</p>
+        </div>
         <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4" /> Nova Hospedagem
         </button>
@@ -104,31 +108,24 @@ export default function HospedagemAdminPage() {
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit} saving={saving}
         title={editing ? "Editar Hospedagem" : "Nova Hospedagem"}>
-        <AdminFormField label="Nome *" value={form.nome}
-          onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-        <AdminFormField label="Telefone *" value={form.telefone}
-          onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
-        <AdminFormField label="Instagram" value={form.instagram}
-          onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
-        <AdminFormField label="Endereço *" value={form.endereco}
-          onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} />
-        <AdminFormField label="Texto Diferencial *" multiline value={form.textoDiferencial}
-          onChange={e => setForm(f => ({ ...f, textoDiferencial: e.target.value }))} />
-        <AdminFormField label="CNPJ *" value={form.cnpj}
-          onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
-        <AdminFormField label="Responsável Nome *" value={form.responsavelNome}
-          onChange={e => setForm(f => ({ ...f, responsavelNome: e.target.value }))} />
-        <AdminFormField label="Responsável CPF *" value={form.responsavelCpf}
-          onChange={e => setForm(f => ({ ...f, responsavelCpf: e.target.value }))} />
+
+        {editing && (
+          <OwnerCard usuarioId={editing.usuarioId} embedded={editing.usuario} />
+        )}
+
+        <AdminFormField label="Nome *" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+        <AdminFormField label="Telefone *" value={form.telefone} onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
+        <AdminFormField label="Instagram" value={form.instagram} onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))} />
+        <AdminFormField label="Endereço *" value={form.endereco} onChange={e => setForm(f => ({ ...f, endereco: e.target.value }))} />
+        <AdminFormField label="Texto Diferencial *" multiline value={form.textoDiferencial} onChange={e => setForm(f => ({ ...f, textoDiferencial: e.target.value }))} />
+        <AdminFormField label="CNPJ *" value={form.cnpj} onChange={e => setForm(f => ({ ...f, cnpj: e.target.value }))} />
+        <AdminFormField label="Responsável Nome *" value={form.responsavelNome} onChange={e => setForm(f => ({ ...f, responsavelNome: e.target.value }))} />
+        <AdminFormField label="Responsável CPF *" value={form.responsavelCpf} onChange={e => setForm(f => ({ ...f, responsavelCpf: e.target.value }))} />
         <div className="grid grid-cols-2 gap-4">
-          <FileUploadField label="Logo" accept="image"
-            currentUrl={(editing as any)?.logo ?? ""}
-            onFileChange={(_, file) => setLogoFile(file)}
-            onClear={() => setLogoFile(null)} />
-          <FileUploadField label="Documento PDF" accept="pdf"
-            currentUrl={(editing as any)?.documentoPdf ?? ""}
-            onFileChange={(_, file) => setPdfFile(file)}
-            onClear={() => setPdfFile(null)} />
+          <FileUploadField label="Logo" accept="image" currentUrl={editing?.logoUrl ?? ""}
+            onFileChange={(_, file) => setLogoFile(file)} onClear={() => setLogoFile(null)} />
+          <FileUploadField label="Documento PDF" accept="pdf" currentUrl={editing?.documentoPdfUrl ?? ""}
+            onFileChange={(_, file) => setPdfFile(file)} onClear={() => setPdfFile(null)} />
         </div>
       </AdminModal>
     </div>

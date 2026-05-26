@@ -12,37 +12,27 @@ import {
   catApi,
 } from "@/lib/api";
 import { API_BASE_URL } from "@/lib/api/config";
-import type { Gastronomia, Hospedagem, ServicoTurista, User } from "@/lib/api";
+import type { Gastronomia, Hospedagem, ServicoTurista } from "@/lib/api";
+import { OwnerCard } from "@/components/admin/OwnerCard";
 import {
   Users, Calendar, Utensils, BedDouble,
   Wrench, MapPin, BookOpen, Tag, Clock,
   CheckCircle2, XCircle, ConciergeBell, Eye, X,
   Phone, Instagram, MapPinned, FileText, Building,
-  ImageOff, ExternalLink, UserCircle2, Mail, AtSign, ShieldCheck,
+  ImageOff, ExternalLink,
 } from "lucide-react";
 
-// ────────────────────────────────────────────────────────────────
-// Helper: resolve URL relativa → absoluta
-// ────────────────────────────────────────────────────────────────
 function resolveUrl(url?: string | null): string | undefined {
   if (!url) return undefined;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
-// ────────────────────────────────────────────────────────────────
-// Tipos
-// ────────────────────────────────────────────────────────────────
-type OwnerUser = Pick<User, "id" | "nome" | "usuario" | "email" | "perfil">;
-
 type PendingItem =
   | { kind: "gastronomia"; data: Gastronomia }
   | { kind: "hospedagem"; data: Hospedagem }
   | { kind: "servico"; data: ServicoTurista };
 
-// ────────────────────────────────────────────────────────────────
-// StatCard
-// ────────────────────────────────────────────────────────────────
 function StatCard({ label, count, icon, color }: {
   label: string; count: number | string;
   icon: React.ReactNode; color: string;
@@ -58,9 +48,6 @@ function StatCard({ label, count, icon, color }: {
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// DetailRow
-// ────────────────────────────────────────────────────────────────
 function DetailRow({ icon, label, value }: {
   icon: React.ReactNode; label: string; value?: string | null;
 }) {
@@ -76,88 +63,6 @@ function DetailRow({ icon, label, value }: {
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// OwnerCard — seção dedicada ao dono real cadastrado no sistema
-// ────────────────────────────────────────────────────────────────
-function OwnerCard({ owner, loading }: { owner: OwnerUser | null; loading: boolean }) {
-  const perfilLabel: Record<string, string> = {
-    ADMIN: "Administrador",
-    PARCEIRO: "Parceiro",
-    USUARIO: "Usuário",
-  };
-
-  return (
-    <div
-      className="rounded-lg p-4"
-      style={{
-        background: "linear-gradient(135deg, hsl(var(--primary) / 0.07) 0%, hsl(var(--primary) / 0.03) 100%)",
-        border: "1px solid hsl(var(--primary) / 0.25)",
-      }}
-    >
-      {/* cabeçalho da seção */}
-      <div className="mb-3 flex items-center gap-2">
-        <UserCircle2 size={15} className="text-primary" />
-        <p className="text-xs font-bold uppercase tracking-widest text-primary">Dono da conta</p>
-      </div>
-
-      {loading ? (
-        <div className="flex items-center gap-3 animate-pulse">
-          <div className="h-10 w-10 rounded-full bg-primary/20" />
-          <div className="flex-1 space-y-2">
-            <div className="h-3 w-32 rounded bg-primary/20" />
-            <div className="h-3 w-48 rounded bg-primary/20" />
-          </div>
-        </div>
-      ) : owner ? (
-        <div className="flex items-start gap-3">
-          {/* avatar com inicial */}
-          <div
-            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-            style={{ backgroundColor: "hsl(var(--primary))" }}
-          >
-            {owner.nome.charAt(0).toUpperCase()}
-          </div>
-          <div className="min-w-0 flex-1 space-y-1">
-            {/* nome + badge perfil */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-bold text-foreground">{owner.nome}</span>
-              <span
-                className="rounded-full px-2 py-0.5 text-xs font-medium"
-                style={{
-                  backgroundColor: owner.perfil === "ADMIN" ? "hsl(var(--primary) / 0.15)" : "hsl(var(--primary) / 0.08)",
-                  color: "hsl(var(--primary))",
-                }}
-              >
-                {perfilLabel[owner.perfil] ?? owner.perfil}
-              </span>
-            </div>
-            {/* usuário */}
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <AtSign size={12} />
-              <span>{owner.usuario}</span>
-            </div>
-            {/* email */}
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Mail size={12} />
-              <span className="break-all">{owner.email}</span>
-            </div>
-            {/* ID sistema */}
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-              <ShieldCheck size={11} />
-              <span className="font-mono text-[10px] break-all">{owner.id}</span>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <p className="text-xs italic text-muted-foreground">Não foi possível carregar os dados do dono.</p>
-      )}
-    </div>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────
-// ImagePreview
-// ────────────────────────────────────────────────────────────────
 function ImagePreview({ urls, label }: { urls: string[]; label: string }) {
   const resolved = urls.map(resolveUrl).filter(Boolean) as string[];
   if (resolved.length === 0) return null;
@@ -168,12 +73,8 @@ function ImagePreview({ urls, label }: { urls: string[]; label: string }) {
         {resolved.map((src, i) => (
           <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="group relative block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={`${label} ${i + 1}`}
-              width={80} height={80}
-              className="h-20 w-20 rounded-lg object-cover ring-1 ring-border transition group-hover:ring-primary"
-            />
+            <img src={src} alt={`${label} ${i + 1}`} width={80} height={80}
+              className="h-20 w-20 rounded-lg object-cover ring-1 ring-border transition group-hover:ring-primary" />
             <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 transition group-hover:bg-black/30">
               <ExternalLink size={16} className="text-white opacity-0 transition group-hover:opacity-100" />
             </span>
@@ -184,63 +85,22 @@ function ImagePreview({ urls, label }: { urls: string[]; label: string }) {
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// buildImageList
-// ────────────────────────────────────────────────────────────────
 function buildImageList(item: PendingItem): string[] {
   const raw: (string | null | undefined)[] = [];
-  if (item.kind === "gastronomia") {
-    raw.push(item.data.logoUrl);
-  } else if (item.kind === "hospedagem") {
-    raw.push(item.data.logoUrl);
-  } else {
-    raw.push(item.data.logoUrl);
-    raw.push(item.data.fotoUrl);
-  }
+  if (item.kind === "gastronomia") { raw.push(item.data.logoUrl); }
+  else if (item.kind === "hospedagem") { raw.push(item.data.logoUrl); }
+  else { raw.push(item.data.logoUrl); raw.push(item.data.fotoUrl); }
   return [...new Set(raw.filter((v): v is string => Boolean(v)))];
 }
 
-// ────────────────────────────────────────────────────────────────
-// Modal de detalhes
-// ────────────────────────────────────────────────────────────────
 function PendingDetailModal({
   item, actionLoading, onApprove, onReject, onClose,
 }: {
-  item: PendingItem;
-  actionLoading: boolean;
-  onApprove: () => void;
-  onReject: () => void;
-  onClose: () => void;
+  item: PendingItem; actionLoading: boolean;
+  onApprove: () => void; onReject: () => void; onClose: () => void;
 }) {
   const { data } = item;
   const images = buildImageList(item);
-
-  // ── estado do dono ──
-  const [owner, setOwner] = useState<OwnerUser | null>(null);
-  const [ownerLoading, setOwnerLoading] = useState(true);
-
-  useEffect(() => {
-    setOwner(null);
-    setOwnerLoading(true);
-
-    // 1) tenta usar o objeto usuario já populado pelo backend
-    const embedded = "usuario" in data ? data.usuario : undefined;
-    if (embedded) {
-      // o tipo Pick não garante "usuario", buscamos via getById para ter o campo completo
-      usersApi.getById(embedded.id)
-        .then((u) => setOwner(u as OwnerUser))
-        .catch(() => setOwner(embedded as OwnerUser)) // fallback: usa o que veio embedded
-        .finally(() => setOwnerLoading(false));
-    } else {
-      // 2) fallback: busca pelo usuarioId
-      usersApi.getById(data.usuarioId)
-        .then((u) => setOwner(u as OwnerUser))
-        .catch(() => setOwner(null))
-        .finally(() => setOwnerLoading(false));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.id]);
-
   const logoResolved = resolveUrl("logoUrl" in data ? (data as { logoUrl?: string | null }).logoUrl : undefined);
   const nome = data.nome;
   const cnpj = "cnpj" in data ? (data.cnpj ?? undefined) : undefined;
@@ -249,84 +109,52 @@ function PendingDetailModal({
   const endereco = "endereco" in data ? (data.endereco ?? undefined) : undefined;
   const respNome = "responsavelNome" in data ? (data.responsavelNome ?? undefined) : undefined;
   const respCpf = "responsavelCpf" in data ? (data.responsavelCpf ?? undefined) : undefined;
-  const docUrlRaw = "documentoPdfUrl" in data ? (data.documentoPdfUrl ?? undefined) : undefined;
-  const docUrl = resolveUrl(docUrlRaw);
-
+  const docUrl = resolveUrl("documentoPdfUrl" in data ? (data.documentoPdfUrl ?? undefined) : undefined);
   const especialidade = item.kind === "gastronomia" ? (item.data.especialidade ?? undefined) : undefined;
   const diferencial = item.kind === "hospedagem" ? item.data.textoDiferencial : undefined;
   const tipo = item.kind === "servico" ? item.data.tipo.replaceAll("_", " ") : undefined;
   const descricao = item.kind === "servico" ? (item.data.descricao ?? undefined) : undefined;
   const idiomas = item.kind === "servico" ? (item.data.idiomas ?? undefined) : undefined;
-
-  const categoryLabel =
-    item.kind === "gastronomia" ? "Gastronomia" :
-    item.kind === "hospedagem" ? "Hospedagem" : "Serviço Turístico";
+  const categoryLabel = item.kind === "gastronomia" ? "Gastronomia" : item.kind === "hospedagem" ? "Hospedagem" : "Serviço Turístico";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl"
-        style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
-      >
-        {/* ── header ── */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl"
+        style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+
+        {/* header */}
         <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
           <div className="relative h-10 w-10 flex-shrink-0">
             {logoResolved ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoResolved} alt={nome} width={40} height={40}
                 className="h-10 w-10 rounded-lg object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-                  if (fb) fb.style.display = "flex";
-                }}
-              />
+                onError={(e) => { e.currentTarget.style.display = "none"; const fb = e.currentTarget.nextElementSibling as HTMLElement | null; if (fb) fb.style.display = "flex"; }} />
             ) : null}
-            <div
-              className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted font-bold text-muted-foreground"
-              style={logoResolved ? { display: "none" } : {}}
-            >
-              {nome.charAt(0).toUpperCase()}
-            </div>
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted font-bold text-muted-foreground"
+              style={logoResolved ? { display: "none" } : {}}>{nome.charAt(0).toUpperCase()}</div>
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="font-display truncate text-lg font-bold uppercase tracking-widest text-foreground">{nome}</h2>
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-              {categoryLabel} · PENDENTE
-            </span>
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">{categoryLabel} · PENDENTE</span>
           </div>
-          <button onClick={onClose} className="ml-2 rounded p-1 text-muted-foreground hover:text-foreground">
-            <X size={18} />
-          </button>
+          <button onClick={onClose} className="ml-2 rounded p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
         </div>
 
-        {/* ── body ── */}
+        {/* body */}
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
-
-          {/* Dono da conta */}
-          <OwnerCard owner={owner} loading={ownerLoading} />
-
+          <OwnerCard usuarioId={data.usuarioId} embedded={data.usuario} />
           <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
 
-          {/* preview de imagens */}
-          {images.length > 0 ? (
-            <ImagePreview urls={images} label="Imagens" />
-          ) : (
-            <div
-              className="flex items-center gap-2 rounded-lg p-3 text-sm text-muted-foreground"
-              style={{ backgroundColor: "hsl(var(--muted))", border: "1px dashed hsl(var(--border))" }}
-            >
-              <ImageOff size={15} className="flex-shrink-0" />
-              Nenhuma imagem enviada
+          {images.length > 0 ? <ImagePreview urls={images} label="Imagens" /> : (
+            <div className="flex items-center gap-2 rounded-lg p-3 text-sm text-muted-foreground"
+              style={{ backgroundColor: "hsl(var(--muted))", border: "1px dashed hsl(var(--border))" }}>
+              <ImageOff size={15} className="flex-shrink-0" /> Nenhuma imagem enviada
             </div>
           )}
-
           <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
 
-          {/* informações do estabelecimento */}
           <div className="space-y-2">
             <DetailRow icon={<Phone size={14} />} label="Telefone" value={telefone} />
             <DetailRow icon={<Instagram size={14} />} label="Instagram" value={instagram} />
@@ -341,46 +169,26 @@ function PendingDetailModal({
             {idiomas && <DetailRow icon={<FileText size={14} />} label="Idiomas" value={idiomas} />}
           </div>
 
-          {/* PDF */}
           {docUrl && (
-            <div
-              className="rounded-lg p-3"
-              style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
-            >
+            <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comprovante / Documento</p>
-              <a
-                href={docUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90"
-              >
-                <FileText size={15} />
-                Visualizar PDF
-                <ExternalLink size={13} />
+              <a href={docUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90">
+                <FileText size={15} /> Visualizar PDF <ExternalLink size={13} />
               </a>
-              <p className="mt-1.5 break-all text-xs text-muted-foreground">{docUrl}</p>
             </div>
           )}
         </div>
 
-        {/* ── footer ── */}
-        <div
-          className="flex items-center justify-end gap-2 px-6 py-4"
-          style={{ borderTop: "1px solid hsl(var(--border))" }}
-        >
-          <button onClick={onClose} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">
-            Cancelar
-          </button>
-          <button
-            onClick={onReject} disabled={actionLoading}
-            className="flex items-center gap-1.5 rounded-md bg-red-100 px-4 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-200 disabled:opacity-50"
-          >
+        {/* footer */}
+        <div className="flex items-center justify-end gap-2 px-6 py-4" style={{ borderTop: "1px solid hsl(var(--border))" }}>
+          <button onClick={onClose} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">Cancelar</button>
+          <button onClick={onReject} disabled={actionLoading}
+            className="flex items-center gap-1.5 rounded-md bg-red-100 px-4 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-200 disabled:opacity-50">
             <XCircle size={15} /> Recusar
           </button>
-          <button
-            onClick={onApprove} disabled={actionLoading}
-            className="flex items-center gap-1.5 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
-          >
+          <button onClick={onApprove} disabled={actionLoading}
+            className="flex items-center gap-1.5 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50">
             <CheckCircle2 size={15} /> Aprovar
           </button>
         </div>
@@ -389,62 +197,39 @@ function PendingDetailModal({
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// PendingCard
-// ────────────────────────────────────────────────────────────────
 function PendingCard({ logoRaw, nome, sub, onView }: {
   logoRaw?: string | null; nome: string; sub: string; onView: () => void;
 }) {
   const logo = resolveUrl(logoRaw);
   return (
-    <div
-      className="flex items-center gap-3 rounded-lg p-3"
-      style={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
-    >
+    <div className="flex items-center gap-3 rounded-lg p-3"
+      style={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}>
       <div className="relative h-9 w-9 flex-shrink-0">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} alt={nome} width={36} height={36}
-            className="h-9 w-9 rounded-lg object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-              const fb = e.currentTarget.nextElementSibling as HTMLElement | null;
-              if (fb) fb.style.display = "flex";
-            }}
-          />
+          <img src={logo} alt={nome} width={36} height={36} className="h-9 w-9 rounded-lg object-cover"
+            onError={(e) => { e.currentTarget.style.display = "none"; const fb = e.currentTarget.nextElementSibling as HTMLElement | null; if (fb) fb.style.display = "flex"; }} />
         ) : null}
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground"
-          style={logo ? { display: "none" } : {}}
-        >
-          {nome.charAt(0).toUpperCase()}
-        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-xs font-bold text-muted-foreground"
+          style={logo ? { display: "none" } : {}}>{nome.charAt(0).toUpperCase()}</div>
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-foreground">{nome}</p>
         <p className="truncate text-xs text-muted-foreground">{sub}</p>
       </div>
-      <button
-        onClick={onView}
-        className="flex flex-shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
-      >
+      <button onClick={onView}
+        className="flex flex-shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted">
         <Eye size={13} /> Ver mais
       </button>
     </div>
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// PendingSection
-// ────────────────────────────────────────────────────────────────
 function PendingSection({ icon, title, count, children }: {
   icon: React.ReactNode; title: string; count: number; children: React.ReactNode;
 }) {
   return (
-    <div
-      className="rounded-xl p-4"
-      style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
-    >
+    <div className="rounded-xl p-4" style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
       <div className="mb-3 flex items-center gap-2">
         <span className="text-primary">{icon}</span>
         <h3 className="font-display text-sm font-bold uppercase tracking-widest text-foreground">{title}</h3>
@@ -452,16 +237,12 @@ function PendingSection({ icon, title, count, children }: {
           {count} pendente{count !== 1 ? "s" : ""}
         </span>
       </div>
-      {count === 0
-        ? <p className="text-sm italic text-muted-foreground">Nenhuma solicitação pendente.</p>
+      {count === 0 ? <p className="text-sm italic text-muted-foreground">Nenhuma solicitação pendente.</p>
         : <div className="space-y-2">{children}</div>}
     </div>
   );
 }
 
-// ────────────────────────────────────────────────────────────────
-// Dashboard
-// ────────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Record<string, number | string>>({
     users: "...", atividades: "...", eventos: "...", gastronomia: "...",
@@ -473,7 +254,6 @@ export default function AdminDashboardPage() {
   const [pendLoading, setPendLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeItem, setActiveItem] = useState<PendingItem | null>(null);
-
   const totalPending = pendGast.length + pendHosp.length + pendServ.length;
 
   const loadAll = useCallback(() => {
@@ -483,14 +263,14 @@ export default function AdminDashboardPage() {
       planoViagemApi.getAll(), catApi.getAll(),
     ]).then(([u, a, e, g, h, s, p, c]) => {
       setStats({
-        users:      u.status === "fulfilled" ? u.value.length : "—",
+        users: u.status === "fulfilled" ? u.value.length : "—",
         atividades: a.status === "fulfilled" ? a.value.length : "—",
-        eventos:    e.status === "fulfilled" ? e.value.length : "—",
-        gastronomia:g.status === "fulfilled" ? g.value.length : "—",
+        eventos: e.status === "fulfilled" ? e.value.length : "—",
+        gastronomia: g.status === "fulfilled" ? g.value.length : "—",
         hospedagem: h.status === "fulfilled" ? h.value.length : "—",
-        servicos:   s.status === "fulfilled" ? s.value.length : "—",
-        planos:     p.status === "fulfilled" ? p.value.length : "—",
-        cats:       c.status === "fulfilled" ? c.value.length : "—",
+        servicos: s.status === "fulfilled" ? s.value.length : "—",
+        planos: p.status === "fulfilled" ? p.value.length : "—",
+        cats: c.status === "fulfilled" ? c.value.length : "—",
       });
     });
     setPendLoading(true);
@@ -531,14 +311,14 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Usuários"        count={stats.users}      icon={<Users    className="h-5 w-5 text-white" />} color="bg-primary" />
-        <StatCard label="Atividades"      count={stats.atividades} icon={<MapPin   className="h-5 w-5 text-white" />} color="bg-restinga" />
-        <StatCard label="Eventos"         count={stats.eventos}    icon={<Calendar className="h-5 w-5 text-white" />} color="bg-accent" />
-        <StatCard label="Gastronomia"     count={stats.gastronomia}icon={<Utensils className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="Hospedagem"      count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" />
-        <StatCard label="Serviços"        count={stats.servicos}   icon={<Wrench   className="h-5 w-5 text-white" />} color="bg-restinga" />
-        <StatCard label="Planos de Viagem"count={stats.planos}     icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="Categorias"      count={stats.cats}       icon={<Tag      className="h-5 w-5 text-white" />} color="bg-accent" />
+        <StatCard label="Usuários" count={stats.users} icon={<Users className="h-5 w-5 text-white" />} color="bg-primary" />
+        <StatCard label="Atividades" count={stats.atividades} icon={<MapPin className="h-5 w-5 text-white" />} color="bg-restinga" />
+        <StatCard label="Eventos" count={stats.eventos} icon={<Calendar className="h-5 w-5 text-white" />} color="bg-accent" />
+        <StatCard label="Gastronomia" count={stats.gastronomia} icon={<Utensils className="h-5 w-5 text-white" />} color="bg-secondary" />
+        <StatCard label="Hospedagem" count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" />
+        <StatCard label="Serviços" count={stats.servicos} icon={<Wrench className="h-5 w-5 text-white" />} color="bg-restinga" />
+        <StatCard label="Planos de Viagem" count={stats.planos} icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" />
+        <StatCard label="Categorias" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" />
       </div>
 
       <div>
@@ -551,7 +331,6 @@ export default function AdminDashboardPage() {
             </span>
           )}
         </div>
-
         {pendLoading ? (
           <div className="rounded-xl p-8 text-center text-sm text-muted-foreground" style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
             Carregando solicitações…
@@ -565,35 +344,22 @@ export default function AdminDashboardPage() {
         ) : (
           <div className="grid gap-4 lg:grid-cols-3">
             <PendingSection icon={<Utensils size={16} />} title="Gastronomia" count={pendGast.length}>
-              {pendGast.map((g) => (
-                <PendingCard key={g.id} logoRaw={g.logoUrl} nome={g.nome} sub={g.endereco}
-                  onView={() => setActiveItem({ kind: "gastronomia", data: g })} />
-              ))}
+              {pendGast.map((g) => (<PendingCard key={g.id} logoRaw={g.logoUrl} nome={g.nome} sub={g.endereco} onView={() => setActiveItem({ kind: "gastronomia", data: g })} />))}
             </PendingSection>
             <PendingSection icon={<BedDouble size={16} />} title="Hospedagem" count={pendHosp.length}>
-              {pendHosp.map((h) => (
-                <PendingCard key={h.id} logoRaw={h.logoUrl} nome={h.nome} sub={h.endereco}
-                  onView={() => setActiveItem({ kind: "hospedagem", data: h })} />
-              ))}
+              {pendHosp.map((h) => (<PendingCard key={h.id} logoRaw={h.logoUrl} nome={h.nome} sub={h.endereco} onView={() => setActiveItem({ kind: "hospedagem", data: h })} />))}
             </PendingSection>
             <PendingSection icon={<ConciergeBell size={16} />} title="Serviços Turísticos" count={pendServ.length}>
-              {pendServ.map((s) => (
-                <PendingCard key={s.id} logoRaw={s.logoUrl} nome={s.nome} sub={s.tipo.replaceAll("_", " ")}
-                  onView={() => setActiveItem({ kind: "servico", data: s })} />
-              ))}
+              {pendServ.map((s) => (<PendingCard key={s.id} logoRaw={s.logoUrl} nome={s.nome} sub={s.tipo.replaceAll("_", " ")} onView={() => setActiveItem({ kind: "servico", data: s })} />))}
             </PendingSection>
           </div>
         )}
       </div>
 
       {activeItem && (
-        <PendingDetailModal
-          item={activeItem}
-          actionLoading={actionLoading}
-          onApprove={() => handleReview("APROVADO")}
-          onReject={() => handleReview("REJEITADO")}
-          onClose={() => setActiveItem(null)}
-        />
+        <PendingDetailModal item={activeItem} actionLoading={actionLoading}
+          onApprove={() => handleReview("APROVADO")} onReject={() => handleReview("REJEITADO")}
+          onClose={() => setActiveItem(null)} />
       )}
     </div>
   );

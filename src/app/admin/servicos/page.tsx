@@ -7,6 +7,7 @@ import type { ServicoTurista, CreateServicoTuristaDto, TipoServicoTurista, TipoR
 import { AdminTable, type Column } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { OwnerCard } from "@/components/admin/OwnerCard";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 
 const TIPOS: { value: TipoServicoTurista; label: string }[] = [
@@ -27,15 +28,8 @@ const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
 ];
 
 const emptyForm = (): CreateServicoTuristaDto => ({
-  tipo: "GUIA_TURISMO",
-  nome: "",
-  telefone: "",
-  usuarioId: "",
-  instagram: "",
-  descricao: "",
-  endereco: "",
-  cnpj: "",
-  idiomas: "",
+  tipo: "GUIA_TURISMO", nome: "", telefone: "", usuarioId: "",
+  instagram: "", descricao: "", endereco: "", cnpj: "", idiomas: "",
 });
 
 export default function AdminServicosPage() {
@@ -49,23 +43,15 @@ export default function AdminServicosPage() {
   const load = () => { setLoading(true); servicoTuristaApi.getAll().then(setItems).finally(() => setLoading(false)); };
   useEffect(load, []);
 
-  function openCreate() {
-    setEditing(null); setForm(emptyForm()); setModalOpen(true);
-  }
+  function openCreate() { setEditing(null); setForm(emptyForm()); setModalOpen(true); }
 
   function openEdit(item: ServicoTurista) {
     setEditing(item);
     setForm({
-      tipo: item.tipo,
-      nome: item.nome ?? "",
-      telefone: item.telefone ?? "",
-      usuarioId: item.usuarioId ?? "",
-      instagram: item.instagram ?? "",
-      descricao: item.descricao ?? "",
-      endereco: item.endereco ?? "",
-      cnpj: item.cnpj ?? "",
-      roteiro: item.roteiro ?? undefined,
-      idiomas: item.idiomas ?? "",
+      tipo: item.tipo, nome: item.nome ?? "", telefone: item.telefone ?? "",
+      usuarioId: item.usuarioId ?? "", instagram: item.instagram ?? "",
+      descricao: item.descricao ?? "", endereco: item.endereco ?? "",
+      cnpj: item.cnpj ?? "", roteiro: item.roteiro ?? undefined, idiomas: item.idiomas ?? "",
     });
     setModalOpen(true);
   }
@@ -90,7 +76,6 @@ export default function AdminServicosPage() {
       setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const columns: Column<ServicoTurista>[] = [
-    { key: "id", label: "ID" },
     { key: "tipo", label: "Tipo", render: (v) => TIPOS.find(t => t.value === (v as string))?.label ?? String(v) },
     { key: "nome", label: "Nome" },
     { key: "telefone", label: "Telefone" },
@@ -123,6 +108,11 @@ export default function AdminServicosPage() {
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit} saving={saving}
         title={editing ? "Editar Serviço" : "Novo Serviço"}>
+
+        {editing && (
+          <OwnerCard usuarioId={editing.usuarioId} embedded={editing.usuario} />
+        )}
+
         <div className="space-y-1">
           <label className="text-sm font-medium">Tipo *</label>
           <select value={form.tipo} onChange={set("tipo")}
@@ -132,7 +122,6 @@ export default function AdminServicosPage() {
         </div>
         <AdminFormField label="Nome *" value={form.nome ?? ""} onChange={set("nome")} />
         <AdminFormField label="Telefone *" value={form.telefone ?? ""} onChange={set("telefone")} />
-        <AdminFormField label="ID do Usuário *" value={form.usuarioId ?? ""} onChange={set("usuarioId")} />
         <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
         <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
         <AdminFormField label="Endereço" value={form.endereco ?? ""} onChange={set("endereco")} />

@@ -6,6 +6,7 @@ import type { PlanoViagem, CreatePlanoViagemDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { OwnerCard } from "@/components/admin/OwnerCard";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus } from "lucide-react";
 
@@ -65,7 +66,6 @@ export default function AdminPlanosPage() {
         <AdminTable<PlanoViagem>
           data={items}
           columns={[
-            { key: "id", label: "ID" },
             { key: "titulo", label: "Título" },
             { key: "dataInicio", label: "Início", render: (_, row) => row.dataInicio ? new Date(row.dataInicio).toLocaleDateString("pt-BR") : "—" },
             { key: "dataFim", label: "Fim", render: (_, row) => row.dataFim ? new Date(row.dataFim).toLocaleDateString("pt-BR") : "—" },
@@ -78,8 +78,16 @@ export default function AdminPlanosPage() {
 
       <AdminModal title={modal.editing ? "Editar Plano" : "Novo Plano"} open={modal.open} onClose={closeModal}>
         <form onSubmit={handleSave} className="space-y-4">
+
+          {/* Dono da conta — só aparece ao editar */}
+          {modal.editing && (
+            <OwnerCard
+              usuarioId={modal.editing.usuarioId}
+              embedded={modal.editing.usuario ?? undefined}
+            />
+          )}
+
           <AdminFormField label="Título" value={form.titulo} onChange={set("titulo")} required />
-          <AdminFormField label="ID do Usuário" value={form.usuarioId} onChange={set("usuarioId")} required />
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField label="Data Início" value={form.dataInicio} onChange={set("dataInicio")} type="date" required />
             <AdminFormField label="Data Fim" value={form.dataFim} onChange={set("dataFim")} type="date" required />
