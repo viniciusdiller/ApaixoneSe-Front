@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Waves, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
@@ -23,7 +24,8 @@ export default function LoginPage() {
     try {
       await login({ identificador, senha });
       // Redireciona conforme perfil (lido do localStorage logo após login)
-      const raw = typeof window !== "undefined" ? localStorage.getItem("app_user") : null;
+      const raw =
+        typeof window !== "undefined" ? localStorage.getItem("app_user") : null;
       const user = raw ? JSON.parse(raw) : null;
       if (user?.perfil === "ADMIN") {
         router.push("/admin");
@@ -50,18 +52,15 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="mb-10 text-center">
-          <div className="mb-4 flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
-              <Waves className="h-8 w-8 text-primary-foreground" />
-            </div>
+        <div className=" text-center">
+          <div className="flex justify-center mb-10">
+            <Image
+              height={200}
+              width={200}
+              src="/images/apaixone-se.png"
+              alt="Logo"
+            />
           </div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-wide text-foreground">
-            Apaixone-se
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Saquarema / RJ — Capital Nacional do Surf
-          </p>
         </div>
 
         {/* Card do formulário */}
@@ -70,7 +69,10 @@ export default function LoginPage() {
           className="space-y-5 rounded-2xl border border-border bg-card p-8 shadow-sm"
         >
           <div className="space-y-1.5">
-            <label htmlFor="identificador" className="text-sm font-semibold text-foreground">
+            <label
+              htmlFor="identificador"
+              className="text-sm font-semibold text-foreground"
+            >
               Usuário ou E-mail
             </label>
             <input
@@ -80,13 +82,16 @@ export default function LoginPage() {
               autoComplete="username"
               value={identificador}
               onChange={(e) => setIdentificador(e.target.value)}
-              placeholder="seu_usuario"
+              placeholder="Usuário"
               className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="senha" className="text-sm font-semibold text-foreground">
+            <label
+              htmlFor="senha"
+              className="text-sm font-semibold text-foreground"
+            >
               Senha
             </label>
             <div className="relative">
@@ -97,7 +102,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                placeholder="Sua senha aqui"
                 className="w-full rounded-xl border border-border bg-background px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
               <button
@@ -106,7 +111,11 @@ export default function LoginPage() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
                 aria-label={showSenha ? "Ocultar senha" : "Mostrar senha"}
               >
-                {showSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showSenha ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
