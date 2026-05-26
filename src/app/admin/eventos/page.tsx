@@ -7,7 +7,7 @@ import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil } from "lucide-react";
 
 const empty: CreateEventoDto = { titulo: "", descricao: "", data: "", local: "" };
 
@@ -24,7 +24,10 @@ export default function AdminEventosPage() {
   useEffect(load, []);
 
   const openCreate = () => { setForm(empty); setError(""); setModal({ open: true, editing: null }); };
-  const openEdit = (item: Evento) => { setForm({ titulo: item.titulo, descricao: item.descricao, data: item.data?.slice(0, 16) ?? "", local: item.local }); setError(""); setModal({ open: true, editing: item }); };
+  const openEdit = (item: Evento) => {
+    setForm({ titulo: item.titulo, descricao: item.descricao, data: item.data?.slice(0, 16) ?? "", local: item.local });
+    setError(""); setModal({ open: true, editing: item });
+  };
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -64,16 +67,27 @@ export default function AdminEventosPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable data={items} columns={[
-          { key: "titulo", label: "Título" },
-          { key: "local", label: "Local" },
-          { key: "data", label: "Data", render: (r) => new Date(r.data).toLocaleDateString("pt-BR") },
-        ]} extraActions={(row) => (
-          <button onClick={() => setViewing(row)} title="Ver detalhes"
-            className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
-            <Eye size={16} />
-          </button>
-        )} onEdit={openEdit} onDelete={handleDelete} />
+        <AdminTable
+          data={items}
+          columns={[
+            { key: "titulo", label: "Título" },
+            { key: "local", label: "Local" },
+            { key: "data", label: "Data", render: (_val, row) => new Date(row.data).toLocaleDateString("pt-BR") },
+          ]}
+          extraActions={(row) => (
+            <>
+              <button onClick={() => setViewing(row)} title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Eye size={16} />
+              </button>
+              <button onClick={() => openEdit(row)} title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Pencil size={16} />
+              </button>
+            </>
+          )}
+          onDelete={handleDelete}
+        />
       )}
 
       {/* Modal Visualização */}

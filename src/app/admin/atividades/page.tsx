@@ -7,7 +7,7 @@ import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil } from "lucide-react";
 
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
@@ -75,16 +75,27 @@ export default function AdminAtividadesPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable data={items} columns={[
-          { key: "titulo", label: "Título" },
-          { key: "local", label: "Local" },
-          { key: "roteiro", label: "Roteiro", render: (r) => roteiroLabel(r.roteiro) },
-        ]} extraActions={(row) => (
-          <button onClick={() => setViewing(row)} title="Ver detalhes"
-            className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
-            <Eye size={16} />
-          </button>
-        )} onEdit={openEdit} onDelete={handleDelete} />
+        <AdminTable
+          data={items}
+          columns={[
+            { key: "titulo", label: "Título" },
+            { key: "local", label: "Local" },
+            { key: "roteiro", label: "Roteiro", render: (_val, row) => roteiroLabel(row.roteiro) },
+          ]}
+          extraActions={(row) => (
+            <>
+              <button onClick={() => setViewing(row)} title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Eye size={16} />
+              </button>
+              <button onClick={() => openEdit(row)} title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Pencil size={16} />
+              </button>
+            </>
+          )}
+          onDelete={handleDelete}
+        />
       )}
 
       {/* Modal Visualização */}

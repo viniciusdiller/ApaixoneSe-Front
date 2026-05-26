@@ -6,9 +6,10 @@ import type { Cat, CreateCatDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil } from "lucide-react";
 
 const empty: CreateCatDto = { texto: "", arquivoUrl: "" };
 
@@ -25,7 +26,10 @@ export default function AdminCategoriasPage() {
   useEffect(load, []);
 
   const openCreate = () => { setForm(empty); setError(""); setModal({ open: true, editing: null }); };
-  const openEdit = (item: Cat) => { setForm({ texto: item.texto, arquivoUrl: item.arquivoUrl }); setError(""); setModal({ open: true, editing: item }); };
+  const openEdit = (item: Cat) => {
+    setForm({ texto: item.texto, arquivoUrl: item.arquivoUrl });
+    setError(""); setModal({ open: true, editing: item });
+  };
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -44,6 +48,9 @@ export default function AdminCategoriasPage() {
     await catApi.remove(item.id); load();
   };
 
+  const setField = (k: keyof CreateCatDto, value: string) =>
+    setForm((prev) => ({ ...prev, [k]: value }));
+
   const set = (k: keyof CreateCatDto) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((prev) => ({ ...prev, [k]: e.target.value }));
@@ -61,15 +68,26 @@ export default function AdminCategoriasPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable data={items} columns={[
-          { key: "texto", label: "Texto", render: (r) => <span className="line-clamp-2 max-w-sm text-sm">{r.texto}</span> },
-          { key: "arquivoUrl", label: "Arquivo", render: (r) => <MediaPreview url={r.arquivoUrl} label="Arquivo" isPdf={r.arquivoUrl?.toLowerCase().endsWith(".pdf")} /> },
-        ]} extraActions={(row) => (
-          <button onClick={() => setViewing(row)} title="Ver detalhes"
-            className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
-            <Eye size={16} />
-          </button>
-        )} onEdit={openEdit} onDelete={handleDelete} />
+        <AdminTable
+          data={items}
+          columns={[
+            { key: "texto", label: "Texto", render: (_val, row) => <span className="line-clamp-2 max-w-sm text-sm">{row.texto}</span> },
+            { key: "arquivoUrl", label: "Arquivo", render: (_val, row) => <MediaPreview url={row.arquivoUrl} label="Arquivo" isPdf={row.arquivoUrl?.toLowerCase().endsWith(".pdf")} /> },
+          ]}
+          extraActions={(row) => (
+            <>
+              <button onClick={() => setViewing(row)} title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Eye size={16} />
+              </button>
+              <button onClick={() => openEdit(row)} title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Pencil size={16} />
+              </button>
+            </>
+          )}
+          onDelete={handleDelete}
+        />
       )}
 
       {/* Modal Visualização */}
@@ -92,7 +110,15 @@ export default function AdminCategoriasPage() {
       <AdminModal title={modal.editing ? "Editar CAT" : "Novo Registro CAT"} open={modal.open} onClose={closeModal}>
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField label="Texto descritivo" value={form.texto} onChange={set("texto")} multiline required />
-          <AdminFormField label="URL do Arquivo (PDF ou Imagem)" value={form.arquivoUrl} onChange={set("arquivoUrl")} type="url" required />
+          <FileUploadField
+            label="Arquivo (PDF ou Imagem)"
+            accept="any"
+            currentUrl={form.arquivoUrl}
+            required
+            hint="PDF, PNG, JPG ou WEBP"
+            onFileChange={(url) => setField("arquivoUrl", url)}
+            onClear={() => setField("arquivoUrl", "")}
+          />
           {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">{error}</p>}
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={closeModal} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>

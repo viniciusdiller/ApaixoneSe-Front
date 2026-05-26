@@ -9,7 +9,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil } from "lucide-react";
 
 const empty: CreateHospedagemDto = {
   nome: "", telefone: "", endereco: "", textoDiferencial: "",
@@ -97,23 +97,28 @@ export default function AdminHospedagemPage() {
         <AdminTable
           data={items}
           columns={[
-            { key: "logoUrl", label: "Logo", render: (r) => <MediaPreview url={r.logoUrl} label="Logo" /> },
+            { key: "logoUrl", label: "Logo", render: (_val, row) => <MediaPreview url={row.logoUrl} label="Logo" /> },
             { key: "nome", label: "Nome" },
             { key: "endereco", label: "Endereço" },
-            { key: "documentoPdfUrl", label: "PDF", render: (r) => <MediaPreview url={r.documentoPdfUrl} label="Documento" isPdf /> },
+            { key: "documentoPdfUrl", label: "PDF", render: (_val, row) => <MediaPreview url={row.documentoPdfUrl} label="Documento" isPdf /> },
             {
-              key: "status", label: "Status", render: (r) => (
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(r.status)}`}>{r.status}</span>
+              key: "status", label: "Status", render: (_val, row) => (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}>{row.status}</span>
               ),
             },
           ]}
           extraActions={(row) => (
-            <button onClick={() => setViewing(row)} title="Ver detalhes"
-              className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
-              <Eye size={16} />
-            </button>
+            <>
+              <button onClick={() => setViewing(row)} title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Eye size={16} />
+              </button>
+              <button onClick={() => openEdit(row)} title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Pencil size={16} />
+              </button>
+            </>
           )}
-          onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
