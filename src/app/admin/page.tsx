@@ -24,13 +24,9 @@ import {
 // ────────────────────────────────────────────────────────────────
 // Helper: resolve URL relativa do backend para URL absoluta
 // ────────────────────────────────────────────────────────────────
-// O backend pode devolver caminhos como:
-//   "/uploads/hospedagem/foo/logo.jpg"  -> URL relativa
-//   "http://..."                        -> já absoluta (Cloudinary, S3, etc.)
 function resolveUrl(url?: string | null): string | undefined {
   if (!url) return undefined;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
-  // garante que não duplica a barra
   return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
@@ -79,12 +75,11 @@ function DetailRow({ icon, label, value }: {
 }
 
 // ────────────────────────────────────────────────────────────────
-// ImagePreview — galeria de imagens do estabelecimento
+// ImagePreview — galeria de imagens
 // ────────────────────────────────────────────────────────────────
-function ImagePreview({ urls, label }: { urls: (string | undefined)[]; label: string }) {
+function ImagePreview({ urls, label }: { urls: string[]; label: string }) {
   const resolved = urls.map(resolveUrl).filter(Boolean) as string[];
   if (resolved.length === 0) return null;
-
   return (
     <div>
       <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -95,13 +90,8 @@ function ImagePreview({ urls, label }: { urls: (string | undefined)[]; label: st
             <img
               src={src}
               alt={`${label} ${i + 1}`}
-              width={80}
-              height={80}
+              width={80} height={80}
               className="h-20 w-20 rounded-lg object-cover ring-1 ring-border transition group-hover:ring-primary"
-              onError={(e) => {
-                const wrapper = e.currentTarget.closest(".img-thumb") as HTMLElement | null;
-                if (wrapper) wrapper.style.display = "none";
-              }}
             />
             <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 transition group-hover:bg-black/30">
               <ExternalLink size={16} className="text-white opacity-0 transition group-hover:opacity-100" />
@@ -111,6 +101,28 @@ function ImagePreview({ urls, label }: { urls: (string | undefined)[]; label: st
       </div>
     </div>
   );
+}
+
+// ────────────────────────────────────────────────────────────────
+// buildImageList — monta lista de imagens sem duplicatas por tipo
+// ────────────────────────────────────────────────────────────────
+function buildImageList(item: PendingItem): string[] {
+  const raw: (string | null | undefined)[] = [];
+
+  if (item.kind === "gastronomia") {
+    raw.push(item.data.logoUrl);
+    // sem campo de foto adicional no tipo atual
+  } else if (item.kind === "hospedagem") {
+    raw.push(item.data.logoUrl);
+    // sem campo de foto adicional no tipo atual
+  } else {
+    // ServicoTurista: tem logoUrl (logo do negócio) E fotoUrl (foto do guia/serviço)
+    raw.push(item.data.logoUrl);
+    raw.push(item.data.fotoUrl); // ← campo correto conforme types.ts
+  }
+
+  // filtra nulos/undefined e remove duplicatas
+  return [...new Set(raw.filter((v): v is string => Boolean(v)))];
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -126,6 +138,7 @@ function PendingDetailModal({
   onClose: () => void;
 }) {
   const { data } = item;
+  const images = buildImageList(item);
 
   const logoResolved = resolveUrl("logoUrl" in data ? data.logoUrl : undefined);
   const nome = data.nome;
@@ -135,35 +148,9 @@ function PendingDetailModal({
   const endereco = "endereco" in data ? (data.endereco ?? undefined) : undefined;
   const respNome = "responsavelNome" in data ? (data.responsavelNome ?? undefined) : undefined;
   const respCpf = "responsavelCpf" in data ? (data.responsavelCpf ?? undefined) : undefined;
-
-  // PDF: resolve URL para apontar pro backend correto
   const docUrlRaw = "documentoPdfUrl" in data ? (data.documentoPdfUrl ?? undefined) : undefined;
   const docUrl = resolveUrl(docUrlRaw);
 
-  // Imagens para preview — cada entidade tem campos diferentes
-  const imageUrls: string[] = [];
-  if (item.kind === "gastronomia") {
-    // logoUrl já está no header; adiciona imagens extras se existirem
-    if (item.data.logoUrl) imageUrls.push(item.data.logoUrl);
-    // fotos adicionais (array ou campo extra) — ajuste o campo se o backend usar outro nome
-    const g = item.data as Gastronomia & { fotos?: string[]; imagemUrl?: string };
-    if (g.fotos) imageUrls.push(...g.fotos);
-    if (g.imagemUrl) imageUrls.push(g.imagemUrl);
-  } else if (item.kind === "hospedagem") {
-    const h = item.data as Hospedagem & { fotos?: string[]; imagemUrl?: string };
-    if (h.logoUrl) imageUrls.push(h.logoUrl);
-    if (h.fotos) imageUrls.push(...h.fotos);
-    if (h.imagemUrl) imageUrls.push(h.imagemUrl);
-  } else {
-    const s = item.data as ServicoTurista & { fotos?: string[]; imagemUrl?: string };
-    if (s.logoUrl) imageUrls.push(s.logoUrl);
-    if (s.fotos) imageUrls.push(...s.fotos);
-    if (s.imagemUrl) imageUrls.push(s.imagemUrl);
-  }
-  // remove duplicatas
-  const uniqueImages = [...new Set(imageUrls)];
-
-  // campos específicos
   const especialidade = item.kind === "gastronomia" ? (item.data.especialidade ?? undefined) : undefined;
   const diferencial = item.kind === "hospedagem" ? item.data.textoDiferencial : undefined;
   const tipo = item.kind === "servico" ? item.data.tipo.replaceAll("_", " ") : undefined;
@@ -188,8 +175,7 @@ function PendingDetailModal({
           <div className="relative h-10 w-10 flex-shrink-0">
             {logoResolved ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoResolved} alt={nome} width={40} height={40}
+              <img src={logoResolved} alt={nome} width={40} height={40}
                 className="h-10 w-10 rounded-lg object-cover"
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
@@ -206,9 +192,7 @@ function PendingDetailModal({
             </div>
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-display truncate text-lg font-bold uppercase tracking-widest text-foreground">
-              {nome}
-            </h2>
+            <h2 className="font-display truncate text-lg font-bold uppercase tracking-widest text-foreground">{nome}</h2>
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
               {categoryLabel} · PENDENTE
             </span>
@@ -221,9 +205,9 @@ function PendingDetailModal({
         {/* body */}
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
 
-          {/* ── Preview de imagens ── */}
-          {uniqueImages.length > 0 ? (
-            <ImagePreview urls={uniqueImages} label="Imagens" />
+          {/* preview de imagens */}
+          {images.length > 0 ? (
+            <ImagePreview urls={images} label="Imagens" />
           ) : (
             <div
               className="flex items-center gap-2 rounded-lg p-3 text-sm text-muted-foreground"
@@ -234,10 +218,9 @@ function PendingDetailModal({
             </div>
           )}
 
-          {/* ── Divider ── */}
           <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
 
-          {/* ── Informações ── */}
+          {/* informações */}
           <div className="space-y-2">
             <DetailRow icon={<Phone size={14} />} label="Telefone" value={telefone} />
             <DetailRow icon={<Instagram size={14} />} label="Instagram" value={instagram} />
@@ -252,7 +235,7 @@ function PendingDetailModal({
             {idiomas && <DetailRow icon={<FileText size={14} />} label="Idiomas" value={idiomas} />}
           </div>
 
-          {/* ── Comprovante PDF ── */}
+          {/* PDF */}
           {docUrl && (
             <div
               className="rounded-lg p-3"
@@ -279,27 +262,20 @@ function PendingDetailModal({
           className="flex items-center justify-end gap-2 px-6 py-4"
           style={{ borderTop: "1px solid hsl(var(--border))" }}
         >
-          <button
-            onClick={onClose}
-            className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted"
-          >
+          <button onClick={onClose} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">
             Cancelar
           </button>
           <button
-            onClick={onReject}
-            disabled={actionLoading}
+            onClick={onReject} disabled={actionLoading}
             className="flex items-center gap-1.5 rounded-md bg-red-100 px-4 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-200 disabled:opacity-50"
           >
-            <XCircle size={15} />
-            Recusar
+            <XCircle size={15} /> Recusar
           </button>
           <button
-            onClick={onApprove}
-            disabled={actionLoading}
+            onClick={onApprove} disabled={actionLoading}
             className="flex items-center gap-1.5 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
           >
-            <CheckCircle2 size={15} />
-            Aprovar
+            <CheckCircle2 size={15} /> Aprovar
           </button>
         </div>
       </div>
@@ -322,8 +298,7 @@ function PendingCard({ logoRaw, nome, sub, onView }: {
       <div className="relative h-9 w-9 flex-shrink-0">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logo} alt={nome} width={36} height={36}
+          <img src={logo} alt={nome} width={36} height={36}
             className="h-9 w-9 rounded-lg object-cover"
             onError={(e) => {
               e.currentTarget.style.display = "none";
@@ -347,8 +322,7 @@ function PendingCard({ logoRaw, nome, sub, onView }: {
         onClick={onView}
         className="flex flex-shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
       >
-        <Eye size={13} />
-        Ver mais
+        <Eye size={13} /> Ver mais
       </button>
     </div>
   );
