@@ -1,21 +1,20 @@
 import type { Metadata } from "next";
-import "./globals.css";
 import { SiteShell } from "@/components/site-shell";
+import { AuthProvider } from "@/context/AuthContext";
+import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Apaixone-se",
-  description: "Portal turístico de Saquarema",
+  title: "Apaixone-se por Saquarema",
+  description: "Descubra as belezas, eventos e atrações de Saquarema/RJ",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <body>
-        <SiteShell>{children}</SiteShell>
+        <AuthProvider>
+          <SiteShell>{children}</SiteShell>
+        </AuthProvider>
       </body>
     </html>
   );
