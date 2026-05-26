@@ -9,7 +9,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 const empty: CreateGastronomiaDto = {
   nome: "", telefone: "", endereco: "", cnpj: "",
@@ -23,6 +23,7 @@ export default function AdminGastronomiaPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; editing: Gastronomia | null }>({ open: false, editing: null });
+  const [viewing, setViewing] = useState<Gastronomia | null>(null);
   const [form, setForm] = useState<CreateGastronomiaDto>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -73,6 +74,14 @@ export default function AdminGastronomiaPage() {
   const setField = (k: keyof CreateGastronomiaDto, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
+  const ownerName = (id: string) => {
+    const u = users.find((u) => u.id === id);
+    return u ? `${u.nome} (@${u.usuario})` : id;
+  };
+
+  const statusClass = (s: string) =>
+    s === "APROVADO" ? "bg-green-100 text-green-700" : s === "REJEITADO" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700";
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -89,26 +98,62 @@ export default function AdminGastronomiaPage() {
         <AdminTable
           data={items}
           columns={[
-            { key: "id", label: "ID", render: (r) => <span className="font-mono text-xs">{String(r.id).slice(0, 8)}…</span> },
             { key: "logoUrl", label: "Logo", render: (r) => <MediaPreview url={r.logoUrl} label="Logo" /> },
             { key: "nome", label: "Nome" },
             { key: "endereco", label: "Endereço" },
             { key: "documentoPdfUrl", label: "PDF", render: (r) => <MediaPreview url={r.documentoPdfUrl} label="Documento" isPdf /> },
             {
               key: "status", label: "Status", render: (r) => (
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  r.status === "APROVADO" ? "bg-green-100 text-green-700"
-                  : r.status === "REJEITADO" ? "bg-red-100 text-red-700"
-                  : "bg-yellow-100 text-yellow-700"
-                }`}>{r.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(r.status)}`}>{r.status}</span>
               ),
             },
           ]}
+          extraActions={(row) => (
+            <button onClick={() => setViewing(row)} title="Ver detalhes"
+              className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+              <Eye size={16} />
+            </button>
+          )}
           onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
 
+      {/* Modal Visualização */}
+      <AdminModal title="Detalhes do Estabelecimento" open={!!viewing} onClose={() => setViewing(null)}>
+        {viewing && (
+          <div className="space-y-4">
+            {viewing.logoUrl && (
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={viewing.logoUrl} alt={viewing.nome} className="h-16 w-16 rounded-lg object-cover border border-border" />
+                <div>
+                  <p className="font-display font-bold text-lg uppercase tracking-wide">{viewing.nome}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>{viewing.status}</span>
+                </div>
+              </div>
+            )}
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <ViewRow label="Telefone" value={viewing.telefone} />
+              <ViewRow label="CNPJ" value={viewing.cnpj} />
+              <ViewRow label="Especialidade" value={viewing.especialidade} />
+              <ViewRow label="Instagram" value={viewing.instagram} />
+              <ViewRow label="Responsável" value={viewing.responsavelNome} />
+              <ViewRow label="CPF Responsável" value={viewing.responsavelCpf} />
+            </dl>
+            <ViewRow label="Endereço" value={viewing.endereco} />
+            <ViewRow label="Usuário Dono" value={ownerName(viewing.usuarioId)} />
+            {viewing.documentoPdfUrl && (
+              <div className="flex flex-col gap-0.5">
+                <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Documento</dt>
+                <MediaPreview url={viewing.documentoPdfUrl} label="Documento" isPdf />
+              </div>
+            )}
+          </div>
+        )}
+      </AdminModal>
+
+      {/* Modal Criar/Editar */}
       <AdminModal
         title={modal.editing ? "Editar Gastronomia" : "Novo Estabelecimento"}
         open={modal.open}
@@ -172,6 +217,16 @@ export default function AdminGastronomiaPage() {
           </div>
         </form>
       </AdminModal>
+    </div>
+  );
+}
+
+function ViewRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
 }

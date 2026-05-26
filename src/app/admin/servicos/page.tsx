@@ -9,7 +9,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 const TIPOS_SERVICO: { value: TipoServicoTurista; label: string }[] = [
   { value: "GUIA_TURISMO", label: "Guia de Turismo" },
@@ -39,6 +39,7 @@ export default function AdminServicosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; editing: ServicoTurista | null }>({ open: false, editing: null });
+  const [viewing, setViewing] = useState<ServicoTurista | null>(null);
   const [form, setForm] = useState<CreateServicoTuristaDto>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -90,6 +91,12 @@ export default function AdminServicosPage() {
   const setField = (k: keyof CreateServicoTuristaDto, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
+  const tipoLabel = (v: TipoServicoTurista) => TIPOS_SERVICO.find((t) => t.value === v)?.label ?? v;
+  const roteiroLabel = (v?: TipoRoteiro) => v ? (ROTEIROS.find((r) => r.value === v)?.label ?? v) : "—";
+  const ownerName = (id: string) => { const u = users.find((u) => u.id === id); return u ? `${u.nome} (@${u.usuario})` : id; };
+  const statusClass = (s: string) =>
+    s === "APROVADO" ? "bg-green-100 text-green-700" : s === "REJEITADO" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700";
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -106,26 +113,63 @@ export default function AdminServicosPage() {
         <AdminTable
           data={items}
           columns={[
-            { key: "id", label: "ID", render: (r) => <span className="font-mono text-xs">{String(r.id).slice(0, 8)}…</span> },
             { key: "logoUrl", label: "Logo", render: (r) => <MediaPreview url={r.logoUrl ?? ""} label="Logo" /> },
             { key: "fotoUrl", label: "Foto", render: (r) => <MediaPreview url={r.fotoUrl ?? ""} label="Foto" /> },
             { key: "nome", label: "Nome" },
-            { key: "tipo", label: "Tipo", render: (r) => TIPOS_SERVICO.find((t) => t.value === r.tipo)?.label ?? r.tipo },
+            { key: "tipo", label: "Tipo", render: (r) => tipoLabel(r.tipo) },
             {
               key: "status", label: "Status", render: (r) => (
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  r.status === "APROVADO" ? "bg-green-100 text-green-700"
-                  : r.status === "REJEITADO" ? "bg-red-100 text-red-700"
-                  : "bg-yellow-100 text-yellow-700"
-                }`}>{r.status}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(r.status)}`}>{r.status}</span>
               ),
             },
           ]}
+          extraActions={(row) => (
+            <button onClick={() => setViewing(row)} title="Ver detalhes"
+              className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+              <Eye size={16} />
+            </button>
+          )}
           onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
 
+      {/* Modal Visualização */}
+      <AdminModal title="Detalhes do Serviço" open={!!viewing} onClose={() => setViewing(null)}>
+        {viewing && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              {viewing.logoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={viewing.logoUrl} alt={viewing.nome} className="h-14 w-14 rounded-lg object-cover border border-border" />
+              )}
+              <div>
+                <p className="font-display font-bold text-lg uppercase tracking-wide">{viewing.nome}</p>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>{viewing.status}</span>
+              </div>
+            </div>
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <ViewRow label="Tipo" value={tipoLabel(viewing.tipo)} />
+              <ViewRow label="Telefone" value={viewing.telefone} />
+              <ViewRow label="CNPJ" value={viewing.cnpj} />
+              <ViewRow label="Idiomas" value={viewing.idiomas} />
+              <ViewRow label="Instagram" value={viewing.instagram} />
+              <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
+            </dl>
+            <ViewRow label="Endereço" value={viewing.endereco} />
+            <ViewRow label="Descrição" value={viewing.descricao} />
+            <ViewRow label="Usuário Prestador" value={ownerName(viewing.usuarioId)} />
+            {viewing.fotoUrl && (
+              <div className="flex flex-col gap-0.5">
+                <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Foto do Serviço</dt>
+                <MediaPreview url={viewing.fotoUrl} label="Foto" />
+              </div>
+            )}
+          </div>
+        )}
+      </AdminModal>
+
+      {/* Modal Criar/Editar */}
       <AdminModal
         title={modal.editing ? "Editar Serviço" : "Novo Serviço"}
         open={modal.open}
@@ -196,6 +240,16 @@ export default function AdminServicosPage() {
           </div>
         </form>
       </AdminModal>
+    </div>
+  );
+}
+
+function ViewRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
 }
