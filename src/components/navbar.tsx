@@ -76,7 +76,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
         currentStep++;
         let newVol = startVol + volStep * currentStep;
-
         newVol = Math.max(0, Math.min(newVol, 1));
         audioRef.current.volume = newVol;
 
