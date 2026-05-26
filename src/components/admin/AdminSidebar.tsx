@@ -15,6 +15,7 @@ import {
   Waves,
   ChevronRight,
 } from "lucide-react";
+import { SessionTimer } from "./SessionTimer";
 
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -73,6 +74,9 @@ export function AdminSidebar() {
           })}
         </ul>
       </nav>
+
+      {/* Cronômetro de sessão */}
+      <SessionTimer />
 
       {/* Footer link */}
       <div className="border-t border-border p-4">
