@@ -6,8 +6,9 @@ import type { Cat, CreateCatDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
 const empty: CreateCatDto = { texto: "", arquivoUrl: "" };
 
@@ -15,6 +16,7 @@ export default function AdminCategoriasPage() {
   const [items, setItems] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; editing: Cat | null }>({ open: false, editing: null });
+  const [viewing, setViewing] = useState<Cat | null>(null);
   const [form, setForm] = useState<CreateCatDto>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -32,12 +34,8 @@ export default function AdminCategoriasPage() {
       modal.editing ? await catApi.update(modal.editing.id, form) : await catApi.create(form);
       closeModal(); load();
     } catch (err: unknown) {
-      try {
-        const p = JSON.parse((err as Error).message);
-        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
-      } catch {
-        setError("Erro ao salvar.");
-      }
+      try { const p = JSON.parse((err as Error).message); setError(Array.isArray(p.message) ? p.message.join(" ") : p.message); }
+      catch { setError("Erro ao salvar."); }
     } finally { setSaving(false); }
   };
 
@@ -63,13 +61,34 @@ export default function AdminCategoriasPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable<Cat> data={items} columns={[
-          { key: "id", label: "ID", render: (_, row) => <span className="font-mono text-xs">{String(row.id).slice(0, 8)}…</span> },
-          { key: "texto", label: "Texto", render: (_, row) => <span className="line-clamp-2 max-w-sm text-sm">{row.texto}</span> },
-          { key: "arquivoUrl", label: "Arquivo", render: (_, row) => <a href={row.arquivoUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 text-xs">Ver arquivo</a> },
-        ]} onEdit={openEdit} onDelete={handleDelete} />
+        <AdminTable data={items} columns={[
+          { key: "texto", label: "Texto", render: (r) => <span className="line-clamp-2 max-w-sm text-sm">{r.texto}</span> },
+          { key: "arquivoUrl", label: "Arquivo", render: (r) => <MediaPreview url={r.arquivoUrl} label="Arquivo" isPdf={r.arquivoUrl?.toLowerCase().endsWith(".pdf")} /> },
+        ]} extraActions={(row) => (
+          <button onClick={() => setViewing(row)} title="Ver detalhes"
+            className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+            <Eye size={16} />
+          </button>
+        )} onEdit={openEdit} onDelete={handleDelete} />
       )}
 
+      {/* Modal Visualização */}
+      <AdminModal title="Detalhes do Registro CAT" open={!!viewing} onClose={() => setViewing(null)}>
+        {viewing && (
+          <dl className="space-y-4 text-sm">
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Texto</dt>
+              <dd className="text-sm text-foreground whitespace-pre-wrap">{viewing.texto}</dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Arquivo</dt>
+              <dd><MediaPreview url={viewing.arquivoUrl} label="Arquivo" isPdf={viewing.arquivoUrl?.toLowerCase().endsWith(".pdf")} /></dd>
+            </div>
+          </dl>
+        )}
+      </AdminModal>
+
+      {/* Modal Criar/Editar */}
       <AdminModal title={modal.editing ? "Editar CAT" : "Novo Registro CAT"} open={modal.open} onClose={closeModal}>
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField label="Texto descritivo" value={form.texto} onChange={set("texto")} multiline required />

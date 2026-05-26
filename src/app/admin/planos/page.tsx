@@ -6,16 +6,16 @@ import type { PlanoViagem, CreatePlanoViagemDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
-import { OwnerCard } from "@/components/admin/OwnerCard";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus } from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 
-const empty: CreatePlanoViagemDto = { titulo: "", dataInicio: "", dataFim: "", usuarioId: "" };
+const empty: CreatePlanoViagemDto = { titulo: "", descricao: "" };
 
 export default function AdminPlanosPage() {
   const [items, setItems] = useState<PlanoViagem[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{ open: boolean; editing: PlanoViagem | null }>({ open: false, editing: null });
+  const [viewing, setViewing] = useState<PlanoViagem | null>(null);
   const [form, setForm] = useState<CreatePlanoViagemDto>(empty);
   const [saving, setSaving] = useState(false);
 
@@ -23,15 +23,7 @@ export default function AdminPlanosPage() {
   useEffect(load, []);
 
   const openCreate = () => { setForm(empty); setModal({ open: true, editing: null }); };
-  const openEdit = (item: PlanoViagem) => {
-    setForm({
-      titulo: item.titulo,
-      dataInicio: item.dataInicio?.slice(0, 10) ?? "",
-      dataFim: item.dataFim?.slice(0, 10) ?? "",
-      usuarioId: item.usuarioId,
-    });
-    setModal({ open: true, editing: item });
-  };
+  const openEdit = (item: PlanoViagem) => { setForm({ titulo: item.titulo, descricao: item.descricao }); setModal({ open: true, editing: item }); };
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -63,41 +55,56 @@ export default function AdminPlanosPage() {
       </div>
 
       {loading ? <LoadingGrid count={3} /> : (
-        <AdminTable<PlanoViagem>
+        <AdminTable
           data={items}
           columns={[
             { key: "titulo", label: "Título" },
-            { key: "dataInicio", label: "Início", render: (_, row) => row.dataInicio ? new Date(row.dataInicio).toLocaleDateString("pt-BR") : "—" },
-            { key: "dataFim", label: "Fim", render: (_, row) => row.dataFim ? new Date(row.dataFim).toLocaleDateString("pt-BR") : "—" },
-            { key: "createdAt", label: "Criado em", render: (_, row) => row.createdAt ? new Date(row.createdAt).toLocaleDateString("pt-BR") : "—" },
+            { key: "descricao", label: "Descrição", render: (r) => <span className="line-clamp-1 max-w-xs">{r.descricao ?? "—"}</span> },
+            { key: "createdAt", label: "Criado em", render: (r) => r.createdAt ? new Date(r.createdAt).toLocaleDateString("pt-BR") : "—" },
           ]}
+          extraActions={(row) => (
+            <button onClick={() => setViewing(row)} title="Ver detalhes"
+              className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+              <Eye size={16} />
+            </button>
+          )}
           onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
 
+      {/* Modal Visualização */}
+      <AdminModal title="Detalhes do Plano" open={!!viewing} onClose={() => setViewing(null)}>
+        {viewing && (
+          <dl className="space-y-3 text-sm">
+            <ViewRow label="Título" value={viewing.titulo} />
+            <ViewRow label="Descrição" value={viewing.descricao} />
+            {viewing.createdAt && <ViewRow label="Criado em" value={new Date(viewing.createdAt).toLocaleString("pt-BR")} />}
+          </dl>
+        )}
+      </AdminModal>
+
+      {/* Modal Criar/Editar */}
       <AdminModal title={modal.editing ? "Editar Plano" : "Novo Plano"} open={modal.open} onClose={closeModal}>
         <form onSubmit={handleSave} className="space-y-4">
-
-          {/* Dono da conta — só aparece ao editar */}
-          {modal.editing && (
-            <OwnerCard
-              usuarioId={modal.editing.usuarioId}
-              embedded={modal.editing.usuario ?? undefined}
-            />
-          )}
-
           <AdminFormField label="Título" value={form.titulo} onChange={set("titulo")} required />
-          <div className="grid grid-cols-2 gap-3">
-            <AdminFormField label="Data Início" value={form.dataInicio} onChange={set("dataInicio")} type="date" required />
-            <AdminFormField label="Data Fim" value={form.dataFim} onChange={set("dataFim")} type="date" required />
-          </div>
+          <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={closeModal} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>
             <button type="submit" disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">{saving ? "Salvando..." : "Salvar"}</button>
           </div>
         </form>
       </AdminModal>
+    </div>
+  );
+}
+
+function ViewRow({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
 }
