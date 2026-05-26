@@ -29,10 +29,19 @@ import {
   Briefcase,
   Map,
   X,
+  UserPlus,
 } from "lucide-react";
 
 // ── tipos ──────────────────────────────────────────────────────────────────
 interface EditForm {
+  nome: string;
+  usuario: string;
+  email: string;
+  perfil: Perfil;
+  senha: string;
+}
+
+interface CreateForm {
   nome: string;
   usuario: string;
   email: string;
@@ -54,6 +63,14 @@ const PERFIL_BADGE: Record<Perfil, string> = {
   USUARIO: "bg-blue-100 text-blue-800",
   PARCEIRO: "bg-amber-100 text-amber-800",
   ADMIN: "bg-rose-100 text-rose-800",
+};
+
+const EMPTY_CREATE: CreateForm = {
+  nome: "",
+  usuario: "",
+  email: "",
+  perfil: "USUARIO",
+  senha: "",
 };
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -78,6 +95,12 @@ function StatusBadge({ status }: { status: string }) {
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // modal criar
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState<CreateForm>(EMPTY_CREATE);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
 
   // modal editar
   const [editUser, setEditUser] = useState<User | null>(null);
@@ -104,6 +127,35 @@ export default function AdminUsuariosPage() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  // ── criar usuário ──
+  const handleCreate = async () => {
+    setCreating(true);
+    setCreateError("");
+    try {
+      await usersApi.create({
+        nome: createForm.nome,
+        usuario: createForm.usuario,
+        email: createForm.email,
+        perfil: createForm.perfil,
+        senha: createForm.senha,
+      });
+      setCreateOpen(false);
+      setCreateForm(EMPTY_CREATE);
+      load();
+    } catch (err: unknown) {
+      let msg = "Erro ao criar usuário.";
+      try {
+        const parsed = JSON.parse((err as Error).message);
+        msg = Array.isArray(parsed.message)
+          ? parsed.message.join(" ")
+          : (parsed.message ?? msg);
+      } catch {}
+      setCreateError(msg);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   // ── abrir edição ──
   const openEdit = (user: User) => {
@@ -186,6 +238,13 @@ export default function AdminUsuariosPage() {
           </h1>
           <p className="text-sm text-muted-foreground">{users.length} registros</p>
         </div>
+        <button
+          onClick={() => { setCreateForm(EMPTY_CREATE); setCreateError(""); setCreateOpen(true); }}
+          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-95"
+        >
+          <UserPlus size={16} />
+          Novo Usuário
+        </button>
       </div>
 
       {/* tabela */}
@@ -241,6 +300,63 @@ export default function AdminUsuariosPage() {
           onDelete={handleDelete}
         />
       )}
+
+      {/* ── Modal Criar ───────────────────────────────────────────────── */}
+      <AdminModal
+        open={createOpen}
+        title="Novo Usuário"
+        onClose={() => setCreateOpen(false)}
+        onSubmit={handleCreate}
+        submitLabel={creating ? "Criando…" : "Criar Usuário"}
+      >
+        <div className="grid gap-4">
+          {createError && (
+            <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-400">
+              {createError}
+            </p>
+          )}
+          <AdminFormField
+            label="Nome completo"
+            value={createForm.nome}
+            onChange={(v) => setCreateForm((f) => ({ ...f, nome: v }))}
+            required
+          />
+          <AdminFormField
+            label="Nome de usuário (login)"
+            value={createForm.usuario}
+            onChange={(v) => setCreateForm((f) => ({ ...f, usuario: v }))}
+            required
+          />
+          <AdminFormField
+            label="E-mail"
+            type="email"
+            value={createForm.email}
+            onChange={(v) => setCreateForm((f) => ({ ...f, email: v }))}
+            required
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-foreground">Perfil</label>
+            <select
+              value={createForm.perfil}
+              onChange={(e) =>
+                setCreateForm((f) => ({ ...f, perfil: e.target.value as Perfil }))
+              }
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              {PERFIS.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+          <AdminFormField
+            label="Senha"
+            type="password"
+            value={createForm.senha}
+            onChange={(v) => setCreateForm((f) => ({ ...f, senha: v }))}
+            required
+          />
+        </div>
+      </AdminModal>
 
       {/* ── Modal Edição ──────────────────────────────────────────────── */}
       <AdminModal
@@ -454,7 +570,6 @@ function EstabelecimentoCard({
           }}
         />
       ) : null}
-      {/* fallback sempre renderizado, oculto se logo carregar */}
       <div
         className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
         style={logo ? { display: "none" } : {}}
