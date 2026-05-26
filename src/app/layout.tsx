@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import "./globals.css";
 import { SiteShell } from "@/components/site-shell";
 import { AuthProvider } from "@/context/AuthContext";
-import "../styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Apaixone-se por Saquarema",
