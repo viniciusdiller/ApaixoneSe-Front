@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { GoogleTranslate } from "./google-translate";
 
 const navLinks = [
-  { label: "Roteiros", to: "/roteiros" },
   { label: "Praias", to: "/praias" },
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
@@ -133,6 +132,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
     if (isPlaying) {
       setIsPlaying(false);
+      // Fade-Out de 1 segundo ao pausar
       fadeAudio(0, 1000).then(() => {
         audioRef.current?.pause();
       });
@@ -151,6 +151,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       audioRef.current
         .play()
         .then(() => {
+          // Fade-In de 1.5 segundos ao dar play (bem suave)
           fadeAudio(0.5, 1500);
         })
         .catch((error) => {
