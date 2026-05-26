@@ -1,33 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { isAuthenticated } from "@/lib/api/auth";
+import { useAuth } from "@/context/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [checked, setChecked] = useState(false);
+  const { user, isLoading } = useAuth();
 
   const isLoginPage = pathname === "/admin/login";
 
   useEffect(() => {
-    // Se não está na página de login e não está autenticado, redireciona
-    if (!isLoginPage && !isAuthenticated()) {
-      router.replace("/admin/login");
-    } else {
-      setChecked(true);
+    if (isLoading) return;
+    // Permite a página de redirect do /admin/login
+    if (isLoginPage) return;
+    // Redireciona para /login se não autenticado ou não for ADMIN
+    if (!user || user.perfil !== "ADMIN") {
+      router.replace("/login");
     }
-  }, [isLoginPage, router]);
+  }, [user, isLoading, isLoginPage, router]);
 
-  // Página de login: renderiza sem sidebar
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
-
-  // Aguarda a checagem de auth antes de renderizar o painel
-  if (!checked) return null;
+  if (isLoginPage) return <>{children}</>;
+  if (isLoading || !user || user.perfil !== "ADMIN") return null;
 
   return (
     <div className="flex min-h-screen bg-background">
