@@ -9,7 +9,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil } from "lucide-react";
 
 const TIPOS_SERVICO: { value: TipoServicoTurista; label: string }[] = [
   { value: "GUIA_TURISMO", label: "Guia de Turismo" },
@@ -33,6 +33,11 @@ const empty: CreateServicoTuristaDto = {
   instagram: "", descricao: "", endereco: "", cnpj: "",
   idiomas: "", logoUrl: "", fotoUrl: "",
 };
+
+const statusClass = (s: string) =>
+  s === "APROVADO" ? "bg-green-100 text-green-700" :
+  s === "REJEITADO" ? "bg-red-100 text-red-700" :
+  "bg-yellow-100 text-yellow-700";
 
 export default function AdminServicosPage() {
   const [items, setItems] = useState<ServicoTurista[]>([]);
@@ -94,8 +99,6 @@ export default function AdminServicosPage() {
   const tipoLabel = (v: TipoServicoTurista) => TIPOS_SERVICO.find((t) => t.value === v)?.label ?? v;
   const roteiroLabel = (v?: TipoRoteiro) => v ? (ROTEIROS.find((r) => r.value === v)?.label ?? v) : "—";
   const ownerName = (id: string) => { const u = users.find((u) => u.id === id); return u ? `${u.nome} (@${u.usuario})` : id; };
-  const statusClass = (s: string) =>
-    s === "APROVADO" ? "bg-green-100 text-green-700" : s === "REJEITADO" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700";
 
   return (
     <div>
@@ -113,23 +116,44 @@ export default function AdminServicosPage() {
         <AdminTable
           data={items}
           columns={[
-            { key: "logoUrl", label: "Logo", render: (r) => <MediaPreview url={r.logoUrl ?? ""} label="Logo" /> },
-            { key: "fotoUrl", label: "Foto", render: (r) => <MediaPreview url={r.fotoUrl ?? ""} label="Foto" /> },
-            { key: "nome", label: "Nome" },
-            { key: "tipo", label: "Tipo", render: (r) => tipoLabel(r.tipo) },
             {
-              key: "status", label: "Status", render: (r) => (
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(r.status)}`}>{r.status}</span>
+              key: "logoUrl",
+              label: "Logo",
+              render: (_val, row) => <MediaPreview url={row.logoUrl ?? ""} label="Logo" />,
+            },
+            {
+              key: "fotoUrl",
+              label: "Foto",
+              render: (_val, row) => <MediaPreview url={row.fotoUrl ?? ""} label="Foto" />,
+            },
+            { key: "nome", label: "Nome" },
+            {
+              key: "tipo",
+              label: "Tipo",
+              render: (_val, row) => tipoLabel(row.tipo),
+            },
+            {
+              key: "status",
+              label: "Status",
+              render: (_val, row) => (
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}>
+                  {row.status}
+                </span>
               ),
             },
           ]}
           extraActions={(row) => (
-            <button onClick={() => setViewing(row)} title="Ver detalhes"
-              className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
-              <Eye size={16} />
-            </button>
+            <>
+              <button onClick={() => setViewing(row)} title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Eye size={16} />
+              </button>
+              <button onClick={() => openEdit(row)} title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <Pencil size={16} />
+              </button>
+            </>
           )}
-          onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
