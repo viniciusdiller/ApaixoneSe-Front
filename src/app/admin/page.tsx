@@ -12,17 +12,17 @@ import {
   catApi,
 } from "@/lib/api";
 import { API_BASE_URL } from "@/lib/api/config";
-import type { Gastronomia, Hospedagem, ServicoTurista } from "@/lib/api";
+import type { Gastronomia, Hospedagem, ServicoTurista, User } from "@/lib/api";
 import {
   Users, Calendar, Utensils, BedDouble,
   Wrench, MapPin, BookOpen, Tag, Clock,
   CheckCircle2, XCircle, ConciergeBell, Eye, X,
   Phone, Instagram, MapPinned, FileText, Building,
-  ImageOff, ExternalLink,
+  ImageOff, ExternalLink, UserCircle2, Mail, AtSign, ShieldCheck,
 } from "lucide-react";
 
 // ────────────────────────────────────────────────────────────────
-// Helper: resolve URL relativa do backend para URL absoluta
+// Helper: resolve URL relativa → absoluta
 // ────────────────────────────────────────────────────────────────
 function resolveUrl(url?: string | null): string | undefined {
   if (!url) return undefined;
@@ -33,6 +33,8 @@ function resolveUrl(url?: string | null): string | undefined {
 // ────────────────────────────────────────────────────────────────
 // Tipos
 // ────────────────────────────────────────────────────────────────
+type OwnerUser = Pick<User, "id" | "nome" | "usuario" | "email" | "perfil">;
+
 type PendingItem =
   | { kind: "gastronomia"; data: Gastronomia }
   | { kind: "hospedagem"; data: Hospedagem }
@@ -75,7 +77,86 @@ function DetailRow({ icon, label, value }: {
 }
 
 // ────────────────────────────────────────────────────────────────
-// ImagePreview — galeria de imagens
+// OwnerCard — seção dedicada ao dono real cadastrado no sistema
+// ────────────────────────────────────────────────────────────────
+function OwnerCard({ owner, loading }: { owner: OwnerUser | null; loading: boolean }) {
+  const perfilLabel: Record<string, string> = {
+    ADMIN: "Administrador",
+    PARCEIRO: "Parceiro",
+    USUARIO: "Usuário",
+  };
+
+  return (
+    <div
+      className="rounded-lg p-4"
+      style={{
+        background: "linear-gradient(135deg, hsl(var(--primary) / 0.07) 0%, hsl(var(--primary) / 0.03) 100%)",
+        border: "1px solid hsl(var(--primary) / 0.25)",
+      }}
+    >
+      {/* cabeçalho da seção */}
+      <div className="mb-3 flex items-center gap-2">
+        <UserCircle2 size={15} className="text-primary" />
+        <p className="text-xs font-bold uppercase tracking-widest text-primary">Dono da conta</p>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center gap-3 animate-pulse">
+          <div className="h-10 w-10 rounded-full bg-primary/20" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-32 rounded bg-primary/20" />
+            <div className="h-3 w-48 rounded bg-primary/20" />
+          </div>
+        </div>
+      ) : owner ? (
+        <div className="flex items-start gap-3">
+          {/* avatar com inicial */}
+          <div
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+            style={{ backgroundColor: "hsl(var(--primary))" }}
+          >
+            {owner.nome.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1 space-y-1">
+            {/* nome + badge perfil */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-bold text-foreground">{owner.nome}</span>
+              <span
+                className="rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: owner.perfil === "ADMIN" ? "hsl(var(--primary) / 0.15)" : "hsl(var(--primary) / 0.08)",
+                  color: "hsl(var(--primary))",
+                }}
+              >
+                {perfilLabel[owner.perfil] ?? owner.perfil}
+              </span>
+            </div>
+            {/* usuário */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <AtSign size={12} />
+              <span>{owner.usuario}</span>
+            </div>
+            {/* email */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Mail size={12} />
+              <span className="break-all">{owner.email}</span>
+            </div>
+            {/* ID sistema */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+              <ShieldCheck size={11} />
+              <span className="font-mono text-[10px] break-all">{owner.id}</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p className="text-xs italic text-muted-foreground">Não foi possível carregar os dados do dono.</p>
+      )}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// ImagePreview
 // ────────────────────────────────────────────────────────────────
 function ImagePreview({ urls, label }: { urls: string[]; label: string }) {
   const resolved = urls.map(resolveUrl).filter(Boolean) as string[];
@@ -104,24 +185,18 @@ function ImagePreview({ urls, label }: { urls: string[]; label: string }) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// buildImageList — monta lista de imagens sem duplicatas por tipo
+// buildImageList
 // ────────────────────────────────────────────────────────────────
 function buildImageList(item: PendingItem): string[] {
   const raw: (string | null | undefined)[] = [];
-
   if (item.kind === "gastronomia") {
     raw.push(item.data.logoUrl);
-    // sem campo de foto adicional no tipo atual
   } else if (item.kind === "hospedagem") {
     raw.push(item.data.logoUrl);
-    // sem campo de foto adicional no tipo atual
   } else {
-    // ServicoTurista: tem logoUrl (logo do negócio) E fotoUrl (foto do guia/serviço)
     raw.push(item.data.logoUrl);
-    raw.push(item.data.fotoUrl); // ← campo correto conforme types.ts
+    raw.push(item.data.fotoUrl);
   }
-
-  // filtra nulos/undefined e remove duplicatas
   return [...new Set(raw.filter((v): v is string => Boolean(v)))];
 }
 
@@ -140,7 +215,33 @@ function PendingDetailModal({
   const { data } = item;
   const images = buildImageList(item);
 
-  const logoResolved = resolveUrl("logoUrl" in data ? data.logoUrl : undefined);
+  // ── estado do dono ──
+  const [owner, setOwner] = useState<OwnerUser | null>(null);
+  const [ownerLoading, setOwnerLoading] = useState(true);
+
+  useEffect(() => {
+    setOwner(null);
+    setOwnerLoading(true);
+
+    // 1) tenta usar o objeto usuario já populado pelo backend
+    const embedded = "usuario" in data ? data.usuario : undefined;
+    if (embedded) {
+      // o tipo Pick não garante "usuario", buscamos via getById para ter o campo completo
+      usersApi.getById(embedded.id)
+        .then((u) => setOwner(u as OwnerUser))
+        .catch(() => setOwner(embedded as OwnerUser)) // fallback: usa o que veio embedded
+        .finally(() => setOwnerLoading(false));
+    } else {
+      // 2) fallback: busca pelo usuarioId
+      usersApi.getById(data.usuarioId)
+        .then((u) => setOwner(u as OwnerUser))
+        .catch(() => setOwner(null))
+        .finally(() => setOwnerLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.id]);
+
+  const logoResolved = resolveUrl("logoUrl" in data ? (data as { logoUrl?: string | null }).logoUrl : undefined);
   const nome = data.nome;
   const cnpj = "cnpj" in data ? (data.cnpj ?? undefined) : undefined;
   const telefone = data.telefone;
@@ -170,7 +271,7 @@ function PendingDetailModal({
         className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl"
         style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
       >
-        {/* header */}
+        {/* ── header ── */}
         <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
           <div className="relative h-10 w-10 flex-shrink-0">
             {logoResolved ? (
@@ -202,8 +303,13 @@ function PendingDetailModal({
           </button>
         </div>
 
-        {/* body */}
+        {/* ── body ── */}
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+
+          {/* Dono da conta */}
+          <OwnerCard owner={owner} loading={ownerLoading} />
+
+          <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
 
           {/* preview de imagens */}
           {images.length > 0 ? (
@@ -220,7 +326,7 @@ function PendingDetailModal({
 
           <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
 
-          {/* informações */}
+          {/* informações do estabelecimento */}
           <div className="space-y-2">
             <DetailRow icon={<Phone size={14} />} label="Telefone" value={telefone} />
             <DetailRow icon={<Instagram size={14} />} label="Instagram" value={instagram} />
@@ -257,7 +363,7 @@ function PendingDetailModal({
           )}
         </div>
 
-        {/* footer */}
+        {/* ── footer ── */}
         <div
           className="flex items-center justify-end gap-2 px-6 py-4"
           style={{ borderTop: "1px solid hsl(var(--border))" }}
@@ -377,14 +483,14 @@ export default function AdminDashboardPage() {
       planoViagemApi.getAll(), catApi.getAll(),
     ]).then(([u, a, e, g, h, s, p, c]) => {
       setStats({
-        users: u.status === "fulfilled" ? u.value.length : "—",
+        users:      u.status === "fulfilled" ? u.value.length : "—",
         atividades: a.status === "fulfilled" ? a.value.length : "—",
-        eventos: e.status === "fulfilled" ? e.value.length : "—",
-        gastronomia: g.status === "fulfilled" ? g.value.length : "—",
+        eventos:    e.status === "fulfilled" ? e.value.length : "—",
+        gastronomia:g.status === "fulfilled" ? g.value.length : "—",
         hospedagem: h.status === "fulfilled" ? h.value.length : "—",
-        servicos: s.status === "fulfilled" ? s.value.length : "—",
-        planos: p.status === "fulfilled" ? p.value.length : "—",
-        cats: c.status === "fulfilled" ? c.value.length : "—",
+        servicos:   s.status === "fulfilled" ? s.value.length : "—",
+        planos:     p.status === "fulfilled" ? p.value.length : "—",
+        cats:       c.status === "fulfilled" ? c.value.length : "—",
       });
     });
     setPendLoading(true);
@@ -425,14 +531,14 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Usuários" count={stats.users} icon={<Users className="h-5 w-5 text-white" />} color="bg-primary" />
-        <StatCard label="Atividades" count={stats.atividades} icon={<MapPin className="h-5 w-5 text-white" />} color="bg-restinga" />
-        <StatCard label="Eventos" count={stats.eventos} icon={<Calendar className="h-5 w-5 text-white" />} color="bg-accent" />
-        <StatCard label="Gastronomia" count={stats.gastronomia} icon={<Utensils className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="Hospedagem" count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" />
-        <StatCard label="Serviços" count={stats.servicos} icon={<Wrench className="h-5 w-5 text-white" />} color="bg-restinga" />
-        <StatCard label="Planos de Viagem" count={stats.planos} icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="Categorias" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" />
+        <StatCard label="Usuários"        count={stats.users}      icon={<Users    className="h-5 w-5 text-white" />} color="bg-primary" />
+        <StatCard label="Atividades"      count={stats.atividades} icon={<MapPin   className="h-5 w-5 text-white" />} color="bg-restinga" />
+        <StatCard label="Eventos"         count={stats.eventos}    icon={<Calendar className="h-5 w-5 text-white" />} color="bg-accent" />
+        <StatCard label="Gastronomia"     count={stats.gastronomia}icon={<Utensils className="h-5 w-5 text-white" />} color="bg-secondary" />
+        <StatCard label="Hospedagem"      count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" />
+        <StatCard label="Serviços"        count={stats.servicos}   icon={<Wrench   className="h-5 w-5 text-white" />} color="bg-restinga" />
+        <StatCard label="Planos de Viagem"count={stats.planos}     icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" />
+        <StatCard label="Categorias"      count={stats.cats}       icon={<Tag      className="h-5 w-5 text-white" />} color="bg-accent" />
       </div>
 
       <div>
