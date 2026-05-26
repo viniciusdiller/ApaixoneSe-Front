@@ -168,10 +168,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           fadeAudio(0.5, 1500);
         })
         .catch((error) => {
-          console.error("Erro ao reproduzir o \u00e1udio:", error);
+          console.error("Erro ao reproduzir o áudio:", error);
           setIsPlaying(false);
           alert(
-            "N\u00e3o foi poss\u00edvel tocar o \u00e1udio. Verifique se o arquivo est\u00e1 na pasta 'public/sounds/ondas.mp3'.",
+            "Não foi possível tocar o áudio. Verifique se o arquivo está na pasta 'public/sounds/ondas.mp3'.",
           );
         });
     }
@@ -180,6 +180,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   function handleLogout() {
     logout();
     setUserMenuOpen(false);
+    setMobileOpen(false);
     router.push("/");
   }
 
@@ -193,7 +194,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}
     >
       <nav className="container mx-auto flex items-center justify-between px-4">
-        {/* Logo */}
+        {/* Logo + hambúrguer */}
         <div className="flex items-center gap-4 md:gap-0">
           <button
             className="text-primary-foreground md:hidden"
@@ -244,7 +245,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         <div className="flex items-center gap-3 md:gap-4">
           <GoogleTranslate />
 
-          {/* Botão som mobile */}
+          {/* Botão som — mobile (sempre visível na barra) */}
           <button
             onClick={toggleAudio}
             className="text-primary-foreground md:hidden"
@@ -257,10 +258,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             )}
           </button>
 
-          {/* Área de auth */}
-          <div className="flex items-center gap-2">
+          {/*
+           * AUTH — desktop only.
+           * No mobile o hambúrguer já contém os itens de auth,
+           * por isso ocultamos com "hidden md:flex".
+           */}
+          <div className="hidden items-center gap-2 md:flex">
             {!user ? (
-              // Não logado: botão Entrar
               <Link
                 href="/login"
                 className="flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:bg-primary-foreground/25"
@@ -269,14 +273,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 Entrar
               </Link>
             ) : user.perfil === "ADMIN" ? (
-              // ADMIN: botão Painel + logout
               <div className="flex items-center gap-2">
                 <Link
                   href="/admin"
                   className="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-primary transition hover:opacity-90"
                 >
                   <LayoutDashboard className="h-3.5 w-3.5" />
-                  <span className="hidden md:inline">Painel Admin</span>
+                  <span>Painel Admin</span>
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -287,7 +290,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 </button>
               </div>
             ) : (
-              // PARCEIRO ou USUARIO: avatar dropdown
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen((v) => !v)}
@@ -298,11 +300,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                       <User className="h-3 w-3" />
                     )}
                   </div>
-                  <span className="hidden max-w-[80px] truncate md:inline">
+                  <span className="max-w-[80px] truncate">
                     {user.nome?.split(" ")[0]}
                   </span>
                   <ChevronDown
-                    className={`h-3 w-3 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                    className={`h-3 w-3 transition-transform ${
+                      userMenuOpen ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -347,15 +351,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             )}
           </div>
 
-          {/* Som + clima desktop */}
+          {/* Som + clima — desktop */}
           <div className="hidden items-center gap-4 md:flex">
             {weather?.temperature !== undefined && (
               <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-                <span>\u2600 {weather.temperature}\u00b0C</span>
+                <span>☀ {weather.temperature}°C</span>
                 <span className="opacity-60">|</span>
-                <span>
-                  \ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m
-                </span>
+                <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
               </div>
             )}
             <button
@@ -373,7 +375,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         </div>
       </nav>
 
-      {/* Menu mobile */}
+      {/* ── Menu mobile ────────────────────────────────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -395,7 +397,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 </li>
               ))}
 
-              {/* Auth mobile */}
+              {/* Divisor visual */}
+              <li className="w-32 border-t border-primary-foreground/20" aria-hidden />
+
+              {/* Auth — visível apenas no hambúrguer (mobile) */}
               {!user ? (
                 <li>
                   <Link
@@ -406,41 +411,53 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                     <LogIn className="h-4 w-4" /> Entrar
                   </Link>
                 </li>
-              ) : user.perfil === "ADMIN" ? (
-                <>
-                  <li>
-                    <Link
-                      href="/admin"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 font-display text-sm uppercase tracking-wide text-primary"
-                    >
-                      <LayoutDashboard className="h-4 w-4" /> Painel Admin
-                    </Link>
-                  </li>
-                  <li>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 text-sm text-primary-foreground/70"
-                    >
-                      <LogOut className="h-4 w-4" /> Sair
-                    </button>
-                  </li>
-                </>
               ) : (
                 <>
-                  <li>
-                    <Link
-                      href="/perfil"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
-                    >
-                      <User className="h-4 w-4" /> Meu Perfil
-                    </Link>
+                  {/* Saudação */}
+                  <li className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-sm font-bold text-primary">
+                      {user.nome?.charAt(0).toUpperCase() ?? (
+                        <User className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-primary-foreground">
+                        {user.nome?.split(" ")[0]}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-wider text-primary-foreground/60">
+                        {user.perfil}
+                      </p>
+                    </div>
                   </li>
+
+                  {user.perfil === "ADMIN" && (
+                    <li>
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 font-display text-sm uppercase tracking-wide text-primary"
+                      >
+                        <LayoutDashboard className="h-4 w-4" /> Painel Admin
+                      </Link>
+                    </li>
+                  )}
+
+                  {user.perfil !== "ADMIN" && (
+                    <li>
+                      <Link
+                        href="/perfil"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
+                      >
+                        <User className="h-4 w-4" /> Meu Perfil
+                      </Link>
+                    </li>
+                  )}
+
                   <li>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 text-sm text-primary-foreground/70"
+                      className="flex items-center gap-2 text-sm text-primary-foreground/70 transition hover:text-primary-foreground"
                     >
                       <LogOut className="h-4 w-4" /> Sair
                     </button>
@@ -448,13 +465,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 </>
               )}
 
+              {/* Clima — mobile */}
               {weather?.temperature !== undefined && (
                 <li className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground">
-                  <span>\u2600 {weather.temperature}\u00b0C</span>
+                  <span>☀ {weather.temperature}°C</span>
                   <span>|</span>
-                  <span>
-                    \ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m
-                  </span>
+                  <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
                 </li>
               )}
             </ul>
