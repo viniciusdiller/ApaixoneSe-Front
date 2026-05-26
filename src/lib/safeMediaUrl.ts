@@ -11,8 +11,7 @@
  *   3. Mantém URLs absolutas (http/https) intactas
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:6969";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export function safeMediaUrl(url: string | null | undefined): string {
   if (!url) return "";
