@@ -12,8 +12,8 @@ const navLinks = [
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
   { label: "Gastronomia", to: "/gastronomia" },
-  { label: "Hospedagem", to: "" },
-  { label: "Serviços Para o Turista", to: "/servicos" },
+  { label: "Hospedagem", to: "/hospedagens" },
+  { label: "Servi\u00e7os Para o Turista", to: "/servicos" },
   { label: "Explore Saqua", to: "https://meidesaqua.saquarema.rj.gov.br/" },
 ];
 
@@ -131,7 +131,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
     if (isPlaying) {
       setIsPlaying(false);
-      // Fade-Out de 1 segundo ao pausar
       fadeAudio(0, 1000).then(() => {
         audioRef.current?.pause();
       });
@@ -150,14 +149,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       audioRef.current
         .play()
         .then(() => {
-          // Fade-In de 1.5 segundos ao dar play (bem suave)
           fadeAudio(0.5, 1500);
         })
         .catch((error) => {
-          console.error("Erro ao reproduzir o áudio:", error);
+          console.error("Erro ao reproduzir o \u00e1udio:", error);
           setIsPlaying(false);
           alert(
-            "Não foi possível tocar o áudio. Verifique se o arquivo está na pasta 'public/sounds/ondas.mp3'.",
+            "N\u00e3o foi poss\u00edvel tocar o \u00e1udio. Verifique se o arquivo est\u00e1 na pasta 'public/sounds/ondas.mp3'.",
           );
         });
     }
@@ -237,9 +235,9 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           <div className="hidden items-center gap-4 md:flex">
             {weather?.temperature !== undefined && (
               <div className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-                <span>☀ {weather.temperature}°C</span>
+                <span>\u2600 {weather.temperature}\u00b0C</span>
                 <span className="opacity-60">|</span>
-                <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
+                <span>\ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
               </div>
             )}
 
@@ -280,9 +278,9 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               ))}
               {weather?.temperature !== undefined && (
                 <li className="flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground">
-                  <span>☀ {weather.temperature}°C</span>
+                  <span>\u2600 {weather.temperature}\u00b0C</span>
                   <span>|</span>
-                  <span>🌊 {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
+                  <span>\ud83c\udf0a {weather.waveHeight?.toFixed(1) ?? "--"}m</span>
                 </li>
               )}
             </ul>
