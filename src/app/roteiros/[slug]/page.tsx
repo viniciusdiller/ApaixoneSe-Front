@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Clock, BarChart2, MapPin } from "lucide-react";
 import { getRoteiroBySlug, roteiros } from "@/lib/roteiros";
 
@@ -27,12 +28,16 @@ export default function RoteiroDetailPage({ params }: Props) {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero do roteiro */}
-      <section
-        className={`relative flex min-h-[40vh] items-end bg-gradient-to-br ${roteiro.gradiente} px-4 pb-12 pt-32`}
-      >
-        {/* Textura decorativa */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_white_0%,_transparent_60%)]" />
+      {/* Hero do roteiro com a imagem da categoria */}
+      <section className="relative flex min-h-[45vh] items-end overflow-hidden px-4 pb-12 pt-32">
+        <Image
+          src={roteiro.imagem}
+          alt={roteiro.label}
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-black/40" />
 
         {/* Ícone decorativo */}
         <div className="absolute right-8 top-1/2 -translate-y-1/2 text-[120px] opacity-10 select-none">
@@ -41,25 +46,24 @@ export default function RoteiroDetailPage({ params }: Props) {
 
         <div className="container relative z-10 mx-auto">
           <Link
-            href="/roteiros"
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-white"
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Todos os Roteiros
+            Voltar à página inicial
           </Link>
 
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-white/60">
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
             Roteiro
           </p>
-          <h1 className="font-display text-5xl font-bold uppercase text-white drop-shadow-lg md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
             {roteiro.icon} {roteiro.label}
           </h1>
-          <p className="mt-4 max-w-xl text-white/80 text-lg">
+          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
             {roteiro.descricao}
           </p>
 
-          {/* Badge com total de atividades */}
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-1.5 text-sm font-medium text-primary-foreground backdrop-blur-sm">
             <MapPin className="h-4 w-4" />
             {roteiro.atividades.length} atividades disponíveis
           </div>
@@ -77,13 +81,11 @@ export default function RoteiroDetailPage({ params }: Props) {
             {roteiro.atividades.map((atividade, i) => (
               <div
                 key={i}
-                className="group rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
               >
-                <div className="mb-1 flex items-start justify-between gap-2">
-                  <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
-                    {atividade.nome}
-                  </h3>
-                </div>
+                <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
+                  {atividade.nome}
+                </h3>
 
                 <p className="mt-2 text-sm text-muted-foreground">
                   {atividade.descricao}
@@ -109,14 +111,13 @@ export default function RoteiroDetailPage({ params }: Props) {
             ))}
           </div>
 
-          {/* Botão voltar */}
           <div className="mt-12">
             <Link
-              href="/roteiros"
+              href="/"
               className="inline-flex items-center gap-2 rounded-full border-2 border-primary px-8 py-3 font-display text-sm uppercase tracking-wide text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
-              Outros Roteiros
+              Voltar ao Início
             </Link>
           </div>
         </div>

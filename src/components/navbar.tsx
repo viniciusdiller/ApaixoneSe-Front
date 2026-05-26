@@ -8,7 +8,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { GoogleTranslate } from "./google-translate";
 
 const navLinks = [
-  { label: "Roteiros", to: "/roteiros" },
   { label: "Praias", to: "/praias" },
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
@@ -77,7 +76,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
         currentStep++;
         let newVol = startVol + volStep * currentStep;
-
         newVol = Math.max(0, Math.min(newVol, 1));
         audioRef.current.volume = newVol;
 

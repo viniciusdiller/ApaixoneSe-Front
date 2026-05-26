@@ -3,8 +3,6 @@ export type Roteiro = {
   label: string;
   descricao: string;
   icon: string;
-  cor: string;
-  gradiente: string;
   imagem: string;
   atividades: Atividade[];
 };
@@ -22,8 +20,6 @@ export const roteiros: Roteiro[] = [
     label: "A Pé",
     descricao: "Percursos e trilhas para explorar Saquarema a pé, com contato direto com a natureza e a cultura local.",
     icon: "🥾",
-    cor: "bg-emerald-700",
-    gradiente: "from-emerald-900 to-emerald-600",
     imagem: "/images/itauna-surf.jpg",
     atividades: [
       { nome: "Trilha da Restinga", descricao: "Caminhada pelo ecossistema único de restinga com guia local.", duracao: "3h", dificuldade: "Moderada" },
@@ -37,8 +33,6 @@ export const roteiros: Roteiro[] = [
     label: "Esporte e Aventura",
     descricao: "Adrenalina pura em um dos destinos esportivos mais famosos do Brasil.",
     icon: "🏄",
-    cor: "bg-blue-700",
-    gradiente: "from-blue-900 to-cyan-600",
     imagem: "/images/itauna-surf.jpg",
     atividades: [
       { nome: "Surf em Itaúna", descricao: "Aulas e sessões livres nas famosas ondas de Itaúna, palco da WSL.", duracao: "2h", dificuldade: "Variada" },
@@ -53,8 +47,6 @@ export const roteiros: Roteiro[] = [
     label: "De Praias",
     descricao: "As praias de Saquarema são o coração da cidade — cada uma com uma personalidade única.",
     icon: "🏖️",
-    cor: "bg-amber-600",
-    gradiente: "from-amber-800 to-yellow-500",
     imagem: "/images/itauna-surf.jpg",
     atividades: [
       { nome: "Praia de Itaúna", descricao: "A mais famosa, com ondas de classe mundial e estrutura completa.", duracao: "Dia inteiro", dificuldade: "Fácil" },
@@ -69,8 +61,6 @@ export const roteiros: Roteiro[] = [
     label: "Cultural",
     descricao: "Mergulhe na história, na fé e na arte que moldaram a identidade de Saquarema.",
     icon: "🏛️",
-    cor: "bg-purple-700",
-    gradiente: "from-purple-900 to-indigo-600",
     imagem: "/images/igreja-nazare.jpg",
     atividades: [
       { nome: "Igreja de Nossa Senhora de Nazaré", descricao: "Um dos cartões-postais mais icônicos do Rio de Janeiro, do séc. XVII.", duracao: "1h", dificuldade: "Fácil" },
@@ -85,8 +75,6 @@ export const roteiros: Roteiro[] = [
     label: "Religioso",
     descricao: "Espiritualidade e devoção em lugares sagrados de grande beleza e tradição.",
     icon: "⛪",
-    cor: "bg-rose-700",
-    gradiente: "from-rose-900 to-pink-600",
     imagem: "/images/igreja-nazare.jpg",
     atividades: [
       { nome: "Igreja de Nossa Senhora de Nazaré", descricao: "Visita à mítica igrejinha branca sobre a pedra, símbolo da cidade.", duracao: "1h", dificuldade: "Fácil" },
@@ -100,8 +88,6 @@ export const roteiros: Roteiro[] = [
     label: "Rural",
     descricao: "Descubra o interior de Saquarema com fazendas, gastronomia do campo e tradições.",
     icon: "🌾",
-    cor: "bg-lime-700",
-    gradiente: "from-lime-900 to-green-500",
     imagem: "/images/gastronomia.jpg",
     atividades: [
       { nome: "Visita a Propriedades Rurais", descricao: "Conheça pequenos produtores locais de frutas, hortaliças e mel.", duracao: "3h", dificuldade: "Fácil" },
@@ -115,8 +101,6 @@ export const roteiros: Roteiro[] = [
     label: "Ecológico",
     descricao: "Natureza exuberante, lagoas, restingas e fauna local para os amantes do ecoturismo.",
     icon: "🌿",
-    cor: "bg-teal-700",
-    gradiente: "from-teal-900 to-emerald-500",
     imagem: "/images/itauna-surf.jpg",
     atividades: [
       { nome: "Lagoa de Saquarema", descricao: "Passeio de barco pela maior lagoa da região com observação de aves.", duracao: "2h", dificuldade: "Fácil" },
