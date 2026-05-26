@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { GoogleTranslate } from "./google-translate";
 
 const navLinks = [
+  { label: "Roteiros", to: "/roteiros" },
   { label: "Praias", to: "/praias" },
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
@@ -44,7 +45,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   useEffect(() => {
     audioRef.current = new Audio("/sounds/ondas.mp3");
     audioRef.current.volume = 0;
-    audioRef.current.loop = false; 
+    audioRef.current.loop = false;
 
     return () => {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
@@ -63,7 +64,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
 
       const startVol = audioRef.current.volume;
-      const steps = 30; 
+      const steps = 30;
       const stepTime = durationMs / steps;
       const volStep = (targetVol - startVol) / steps;
       let currentStep = 0;
@@ -120,7 +121,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             });
         });
       }
-    }, 300); 
+    }, 300);
 
     return () => {
       if (monitorIntervalRef.current) clearInterval(monitorIntervalRef.current);
@@ -132,7 +133,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
 
     if (isPlaying) {
       setIsPlaying(false);
-      // Fade-Out de 1 segundo ao pausar
       fadeAudio(0, 1000).then(() => {
         audioRef.current?.pause();
       });
@@ -151,7 +151,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       audioRef.current
         .play()
         .then(() => {
-          // Fade-In de 1.5 segundos ao dar play (bem suave)
           fadeAudio(0.5, 1500);
         })
         .catch((error) => {
@@ -174,9 +173,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}
     >
       <nav className="container mx-auto flex items-center justify-between px-4">
-        
         <div className="flex items-center gap-4 md:gap-0">
-          
           <button
             className="text-primary-foreground md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -223,7 +220,6 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         </ul>
 
         <div className="flex items-center gap-3 md:gap-4">
-          
           <GoogleTranslate />
 
           <button
