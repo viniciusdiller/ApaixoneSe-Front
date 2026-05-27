@@ -1,46 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { atividadesApi } from "@/lib/api";
-import type { Atividade, CreateAtividadeDto, TipoRoteiro } from "@/lib/api";
+import { planoViagemApi } from "@/lib/api";
+import type { PlanoViagem, CreatePlanoViagemDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
-const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
-  { value: "A_PE", label: "A Pé" },
-  { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
-  { value: "DE_PRAIAS", label: "De Praias" },
-  { value: "CULTURAL", label: "Cultural" },
-  { value: "RELIGIOSO", label: "Religioso" },
-  { value: "RURAL", label: "Rural" },
-  { value: "ECOLOGICO", label: "Ecológico" },
-];
+const empty: CreatePlanoViagemDto = { titulo: "", descricao: "" };
 
-const empty: CreateAtividadeDto = {
-  titulo: "",
-  descricao: "",
-  local: "",
-  roteiro: "A_PE",
-};
-
-export default function AdminAtividadesPage() {
-  const [items, setItems] = useState<Atividade[]>([]);
+export default function AdminPlanosPage() {
+  const [items, setItems] = useState<PlanoViagem[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{
     open: boolean;
-    editing: Atividade | null;
+    editing: PlanoViagem | null;
   }>({ open: false, editing: null });
-  const [viewing, setViewing] = useState<Atividade | null>(null);
-  const [form, setForm] = useState<CreateAtividadeDto>(empty);
+  const [viewing, setViewing] = useState<PlanoViagem | null>(null);
+  const [form, setForm] = useState<CreatePlanoViagemDto>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const load = () => {
     setLoading(true);
-    atividadesApi
+    planoViagemApi
       .getAll()
       .then(setItems)
       .finally(() => setLoading(false));
@@ -52,15 +37,8 @@ export default function AdminAtividadesPage() {
     setError("");
     setModal({ open: true, editing: null });
   };
-  const openEdit = (item: Atividade) => {
-    setForm({
-      titulo: item.titulo,
-      descricao: item.descricao,
-      local: item.local,
-      roteiro: item.roteiro,
-      latitude: item.latitude,
-      longitude: item.longitude,
-    });
+  const openEdit = (item: PlanoViagem) => {
+    setForm({ titulo: item.titulo, descricao: item.descricao });
     setError("");
     setModal({ open: true, editing: item });
   };
@@ -71,41 +49,47 @@ export default function AdminAtividadesPage() {
     setError("");
     setSaving(true);
     try {
-      const payload: CreateAtividadeDto = {
-        ...form,
-        latitude: form.latitude
-          ? parseFloat(String(form.latitude).replace(",", "."))
-          : undefined,
-        longitude: form.longitude
-          ? parseFloat(String(form.longitude).replace(",", "."))
-          : undefined,
+      const payload = {
+        titulo: form.titulo,
+        dataInicio: form.dataInicio.includes("T")
+          ? form.dataInicio
+          : `${form.dataInicio}T00:00:00Z`,
+        dataFim: form.dataFim,
+        usuarioId: form.usuarioId, // Se o seu backend exige o ID, mantenha. Se ele captura do token, REMOVA esta linha.
       };
 
       modal.editing
-        ? await atividadesApi.update(modal.editing.id, payload)
-        : await atividadesApi.create(payload);
+        ? await planoViagemApi.update(modal.editing.id, payload)
+        : await planoViagemApi.create(payload);
+
       closeModal();
       load();
     } catch (err: unknown) {
-      try {
-        const p = JSON.parse((err as Error).message);
-        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
-      } catch {
-        setError("Erro ao salvar.");
+      // (O mesmo bloco de tratamento de erro robusto que fizemos antes)
+      console.error("Erro detalhado:", err);
+      let msg = "Erro ao salvar.";
+      if (err instanceof Error) {
+        try {
+          const p = JSON.parse(err.message);
+          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message;
+        } catch {
+          msg = err.message;
+        }
       }
+      setError(msg);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (item: Atividade) => {
-    if (!confirm(`Excluir "${item.titulo}"?`)) return;
-    await atividadesApi.remove(item.id);
+  const handleDelete = async (item: PlanoViagem) => {
+    if (!confirm(`Excluir plano "${item.titulo}"?`)) return;
+    await planoViagemApi.remove(item.id);
     load();
   };
 
   const set =
-    (k: keyof CreateAtividadeDto) =>
+    (k: keyof CreatePlanoViagemDto) =>
     (
       e:
         | React.ChangeEvent<
@@ -117,15 +101,12 @@ export default function AdminAtividadesPage() {
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
-  const roteiroLabel = (v: TipoRoteiro) =>
-    ROTEIROS.find((r) => r.value === v)?.label ?? v;
-
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            Atividades
+          <h1 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">
+            Planos de Viagem
           </h1>
           <p className="text-sm text-muted-foreground">
             {items.length} registros
@@ -133,9 +114,9 @@ export default function AdminAtividadesPage() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> Nova Atividade
+          <Plus className="h-4 w-4" /> Novo Plano
         </button>
       </div>
 
@@ -146,11 +127,22 @@ export default function AdminAtividadesPage() {
           data={items}
           columns={[
             { key: "titulo", label: "Título" },
-            { key: "local", label: "Local" },
             {
-              key: "roteiro",
-              label: "Roteiro",
-              render: (_val, row) => roteiroLabel(row.roteiro),
+              key: "descricao",
+              label: "Descrição",
+              render: (_val, row) => (
+                <span className="line-clamp-1 max-w-xs">
+                  {row.descricao ?? "—"}
+                </span>
+              ),
+            },
+            {
+              key: "createdAt",
+              label: "Criado em",
+              render: (_val, row) =>
+                row.createdAt
+                  ? new Date(row.createdAt).toLocaleDateString("pt-BR")
+                  : "—",
             },
           ]}
           extraActions={(row) => (
@@ -177,21 +169,19 @@ export default function AdminAtividadesPage() {
 
       {/* Modal Visualização */}
       <AdminModal
-        title="Detalhes da Atividade"
+        title="Detalhes do Plano"
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
         {viewing && (
           <dl className="space-y-3 text-sm">
             <ViewRow label="Título" value={viewing.titulo} />
-            <ViewRow label="Local" value={viewing.local} />
-            <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
             <ViewRow label="Descrição" value={viewing.descricao} />
-            {viewing.latitude != null && (
-              <ViewRow label="Latitude" value={String(viewing.latitude)} />
-            )}
-            {viewing.longitude != null && (
-              <ViewRow label="Longitude" value={String(viewing.longitude)} />
+            {viewing.createdAt && (
+              <ViewRow
+                label="Criado em"
+                value={new Date(viewing.createdAt).toLocaleString("pt-BR")}
+              />
             )}
           </dl>
         )}
@@ -199,7 +189,7 @@ export default function AdminAtividadesPage() {
 
       {/* Modal Criar/Editar */}
       <AdminModal
-        title={modal.editing ? "Editar Atividade" : "Nova Atividade"}
+        title={modal.editing ? "Editar Plano" : "Novo Plano"}
         open={modal.open}
         onClose={closeModal}
       >
@@ -211,49 +201,11 @@ export default function AdminAtividadesPage() {
             required
           />
           <AdminFormField
-            label="Local"
-            value={form.local}
-            onChange={set("local")}
-            required
-          />
-          <AdminFormField
             label="Descrição"
-            value={form.descricao}
+            value={form.descricao ?? ""}
             onChange={set("descricao")}
             multiline
-            required
           />
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Roteiro *</label>
-            <select
-              value={form.roteiro}
-              onChange={set("roteiro")}
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
-              {ROTEIROS.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Latitude (opcional)"
-              value={String(form.latitude ?? "")}
-              onChange={set("latitude")}
-              type="number"
-              step="any"
-            />
-            <AdminFormField
-              label="Longitude (opcional)"
-              value={String(form.longitude ?? "")}
-              onChange={set("longitude")}
-              type="number"
-              step="any"
-            />
-          </div>
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}

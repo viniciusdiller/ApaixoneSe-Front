@@ -133,7 +133,7 @@ export default function AdminUsuariosPage() {
     setCreating(true);
     setCreateError("");
     try {
-      await usersApi.create({
+      await usersApi.register({
         nome: createForm.nome,
         usuario: createForm.usuario,
         email: createForm.email,
@@ -182,13 +182,13 @@ export default function AdminUsuariosPage() {
         email: editForm.email,
         perfil: editForm.perfil,
       };
-      if (editForm.senha.trim()) payload.senha = editForm.senha;
+      if (editForm.senha.trim()) payload.senha = editForm.senha.trim();
       await usersApi.update(editUser.id, payload);
       setEditUser(null);
       load();
     } catch (err: unknown) {
       setEditError(
-        err instanceof Error ? err.message : "Erro ao salvar alterações"
+        err instanceof Error ? err.message : "Erro ao salvar alterações",
       );
     } finally {
       setSaving(false);
@@ -205,7 +205,13 @@ export default function AdminUsuariosPage() {
   // ── abrir detalhes ──
   const openDetails = async (user: User) => {
     setDetailsLoading(true);
-    setDetails({ user, gastronomias: [], hospedagens: [], servicos: [], planos: [] });
+    setDetails({
+      user,
+      gastronomias: [],
+      hospedagens: [],
+      servicos: [],
+      planos: [],
+    });
     try {
       const [allGast, allHosp, allServ, allPlanos] = await Promise.all([
         gastronomiaApi.getAll(),
@@ -236,10 +242,16 @@ export default function AdminUsuariosPage() {
           <h1 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">
             Usuários
           </h1>
-          <p className="text-sm text-muted-foreground">{users.length} registros</p>
+          <p className="text-sm text-muted-foreground">
+            {users.length} registros
+          </p>
         </div>
         <button
-          onClick={() => { setCreateForm(EMPTY_CREATE); setCreateError(""); setCreateOpen(true); }}
+          onClick={() => {
+            setCreateForm(EMPTY_CREATE);
+            setCreateError("");
+            setCreateOpen(true);
+          }}
           className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-95"
         >
           <UserPlus size={16} />
@@ -335,16 +347,23 @@ export default function AdminUsuariosPage() {
             required
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">Perfil</label>
+            <label className="text-sm font-medium text-foreground">
+              Perfil
+            </label>
             <select
               value={createForm.perfil}
               onChange={(e) =>
-                setCreateForm((f) => ({ ...f, perfil: e.target.value as Perfil }))
+                setCreateForm((f) => ({
+                  ...f,
+                  perfil: e.target.value as Perfil,
+                }))
               }
               className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {PERFIS.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           </div>
@@ -392,7 +411,9 @@ export default function AdminUsuariosPage() {
             required
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">Perfil</label>
+            <label className="text-sm font-medium text-foreground">
+              Perfil
+            </label>
             <select
               value={editForm.perfil}
               onChange={(e) =>
@@ -401,15 +422,17 @@ export default function AdminUsuariosPage() {
               className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {PERFIS.map((p) => (
-                <option key={p} value={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p}
+                </option>
               ))}
             </select>
           </div>
           <AdminFormField
             label="Nova senha (deixe vazio para não alterar)"
             type="password"
-            value={editForm.senha}
-            onChange={(v) => setEditForm((f) => ({ ...f, senha: v }))}
+            value={editForm.senha || ""}
+            onChange={(v) => setEditForm((f) => ({ ...f, senha: v || "" }))}
           />
         </div>
       </AdminModal>
@@ -419,7 +442,10 @@ export default function AdminUsuariosPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div
             className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl shadow-2xl"
-            style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+            style={{
+              backgroundColor: "hsl(var(--card))",
+              border: "1px solid hsl(var(--border))",
+            }}
           >
             {/* header */}
             <div
@@ -435,7 +461,9 @@ export default function AdminUsuariosPage() {
                   @{details.user.usuario} · {details.user.email}
                 </p>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERFIL_BADGE[details.user.perfil]}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERFIL_BADGE[details.user.perfil]}`}
+              >
                 {details.user.perfil}
               </span>
               <button
@@ -452,36 +480,91 @@ export default function AdminUsuariosPage() {
                 <p className="text-sm text-muted-foreground">Carregando…</p>
               ) : (
                 <>
-                  <Section icon={<UtensilsCrossed size={16} />} title="Gastronomia" count={details.gastronomias.length}>
-                    {details.gastronomias.length === 0 ? <Empty /> : details.gastronomias.map((g) => (
-                      <EstabelecimentoCard key={g.id} nome={g.nome} sub={g.endereco} status={g.status} logo={g.logoUrl} />
-                    ))}
+                  <Section
+                    icon={<UtensilsCrossed size={16} />}
+                    title="Gastronomia"
+                    count={details.gastronomias.length}
+                  >
+                    {details.gastronomias.length === 0 ? (
+                      <Empty />
+                    ) : (
+                      details.gastronomias.map((g) => (
+                        <EstabelecimentoCard
+                          key={g.id}
+                          nome={g.nome}
+                          sub={g.endereco}
+                          status={g.status}
+                          logo={g.logoUrl}
+                        />
+                      ))
+                    )}
                   </Section>
 
-                  <Section icon={<BedDouble size={16} />} title="Hospedagem" count={details.hospedagens.length}>
-                    {details.hospedagens.length === 0 ? <Empty /> : details.hospedagens.map((h) => (
-                      <EstabelecimentoCard key={h.id} nome={h.nome} sub={h.endereco} status={h.status} logo={h.logoUrl} />
-                    ))}
+                  <Section
+                    icon={<BedDouble size={16} />}
+                    title="Hospedagem"
+                    count={details.hospedagens.length}
+                  >
+                    {details.hospedagens.length === 0 ? (
+                      <Empty />
+                    ) : (
+                      details.hospedagens.map((h) => (
+                        <EstabelecimentoCard
+                          key={h.id}
+                          nome={h.nome}
+                          sub={h.endereco}
+                          status={h.status}
+                          logo={h.logoUrl}
+                        />
+                      ))
+                    )}
                   </Section>
 
-                  <Section icon={<Briefcase size={16} />} title="Serviços Turísticos" count={details.servicos.length}>
-                    {details.servicos.length === 0 ? <Empty /> : details.servicos.map((s) => (
-                      <EstabelecimentoCard key={s.id} nome={s.nome} sub={s.tipo} status={s.status} logo={s.logoUrl ?? undefined} />
-                    ))}
+                  <Section
+                    icon={<Briefcase size={16} />}
+                    title="Serviços Turísticos"
+                    count={details.servicos.length}
+                  >
+                    {details.servicos.length === 0 ? (
+                      <Empty />
+                    ) : (
+                      details.servicos.map((s) => (
+                        <EstabelecimentoCard
+                          key={s.id}
+                          nome={s.nome}
+                          sub={s.tipo}
+                          status={s.status}
+                          logo={s.logoUrl ?? undefined}
+                        />
+                      ))
+                    )}
                   </Section>
 
-                  <Section icon={<Map size={16} />} title="Planos de Viagem" count={details.planos.length}>
-                    {details.planos.length === 0 ? <Empty /> : (
+                  <Section
+                    icon={<Map size={16} />}
+                    title="Planos de Viagem"
+                    count={details.planos.length}
+                  >
+                    {details.planos.length === 0 ? (
+                      <Empty />
+                    ) : (
                       <div className="space-y-2">
                         {details.planos.map((p) => (
                           <div
                             key={p.id}
                             className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
-                            style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
+                            style={{
+                              backgroundColor: "hsl(var(--muted))",
+                              border: "1px solid hsl(var(--border))",
+                            }}
                           >
-                            <span className="font-medium text-foreground">{p.titulo}</span>
+                            <span className="font-medium text-foreground">
+                              {p.titulo}
+                            </span>
                             <span className="text-xs text-muted-foreground">
-                              {new Date(p.dataInicio).toLocaleDateString("pt-BR")}
+                              {new Date(p.dataInicio).toLocaleDateString(
+                                "pt-BR",
+                              )}
                               {" → "}
                               {new Date(p.dataFim).toLocaleDateString("pt-BR")}
                             </span>
@@ -515,7 +598,10 @@ export default function AdminUsuariosPage() {
 
 // ── sub-componentes ────────────────────────────────────────────────────────
 function Section({
-  icon, title, count, children,
+  icon,
+  title,
+  count,
+  children,
 }: {
   icon: React.ReactNode;
   title: string;
@@ -542,7 +628,10 @@ function Section({
 }
 
 function EstabelecimentoCard({
-  nome, sub, status, logo,
+  nome,
+  sub,
+  status,
+  logo,
 }: {
   nome: string;
   sub: string;
@@ -552,7 +641,10 @@ function EstabelecimentoCard({
   return (
     <div
       className="flex items-center gap-3 rounded-lg px-3 py-2"
-      style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
+      style={{
+        backgroundColor: "hsl(var(--muted))",
+        border: "1px solid hsl(var(--border))",
+      }}
     >
       {logo ? (
         // eslint-disable-next-line @next/next/no-img-element
@@ -574,7 +666,9 @@ function EstabelecimentoCard({
         className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
         style={logo ? { display: "none" } : {}}
       >
-        <span className="text-xs font-bold">{nome.charAt(0).toUpperCase()}</span>
+        <span className="text-xs font-bold">
+          {nome.charAt(0).toUpperCase()}
+        </span>
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">{nome}</p>
@@ -587,6 +681,8 @@ function EstabelecimentoCard({
 
 function Empty() {
   return (
-    <p className="text-sm italic text-muted-foreground">Nenhum registro encontrado.</p>
+    <p className="text-sm italic text-muted-foreground">
+      Nenhum registro encontrado.
+    </p>
   );
 }
