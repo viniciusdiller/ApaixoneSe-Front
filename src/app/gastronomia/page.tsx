@@ -5,11 +5,12 @@ import { motion } from "framer-motion";
 import { pratosTipicos } from "@/lib/data";
 import { gastronomiaApi } from "@/lib/api/gastronomia";
 import type { Gastronomia } from "@/lib/api/types";
+// 1. IMPORTAMOS A FUNÇÃO SALVADORA AQUI:
+import { safeMediaUrl } from "@/lib/safeMediaUrl"; 
 
 export default function GastronomiaPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
   const [loading, setLoading] = useState(true);
-  // 1. Criamos um estado para guardar erros de conexão
   const [erroAtivo, setErroAtivo] = useState<boolean>(false);
 
   useEffect(() => {
@@ -17,11 +18,12 @@ export default function GastronomiaPage() {
       try {
         const data = await gastronomiaApi.getAll();
         const aprovados = data.filter(rest => rest.status === "APROVADO");
-        setRestaurantes(aprovados.length > 0 ? aprovados : data); 
-        setErroAtivo(false); // Deu certo, sem erros
+        
+        setRestaurantes(aprovados); 
+        setErroAtivo(false);
       } catch (error) {
         console.error("Erro ao buscar restaurantes da API:", error);
-        setErroAtivo(true); // Ocorreu um erro (ex: backend desligado)
+        setErroAtivo(true);
       } finally {
         setLoading(false);
       }
@@ -54,7 +56,6 @@ export default function GastronomiaPage() {
         </h2>
         
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* 2. Atualizamos a lógica para exibir o erro se o back estiver off */}
           {loading ? (
             <p className="col-span-full text-center text-muted-foreground">
               Preparando o cardápio com os melhores restaurantes...
@@ -80,15 +81,16 @@ export default function GastronomiaPage() {
           ) : (
             restaurantes.map((restaurante, i) => (
               <motion.article
-                key={restaurante.id} // Usamos o ID real do banco
+                key={restaurante.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 className="overflow-hidden rounded-2xl border border-border bg-card"
               >
+                {/* 3. USAMOS A FUNÇÃO AQUI PARA PUXAR A IMAGEM DO BACKEND: */}
                 <div
                   className="h-52 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${restaurante.logoUrl || '/images/gastronomia.jpg'})` }} // Fallback caso não tenha logo
+                  style={{ backgroundImage: `url(${safeMediaUrl(restaurante.logoUrl) || '/images/gastronomia.jpg'})` }}
                 />
                 <div className="p-5">
                   <h3 className="font-display text-2xl font-bold uppercase">
