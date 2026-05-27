@@ -34,11 +34,7 @@ export default function GuiasPage() {
       .then((data) =>
         setServicos(
           data.filter(
-            (s) =>
-              s.status === "APROVADO" &&
-              (s.tipo === "GUIA_TURISMO" ||
-                s.tipo === "ESPORTE_LAZER" ||
-                s.tipo === "LOCADORA_VEICULOS")
+            (s) => s.status === "APROVADO" && s.tipo === "GUIA_TURISMO"
           )
         )
       )
@@ -67,11 +63,11 @@ export default function GuiasPage() {
             Profissionais credenciados
           </p>
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
-            Guias & Atividades
+            Guias de Turismo
           </h1>
           <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
-            Conheça os guias de turismo, esportes, lazer e locadoras de
-            veículos credenciados em Saquarema.
+            Conheça os guias de turismo credenciados em Saquarema e descubra
+            os segredos do destino.
           </p>
         </div>
       </section>
@@ -82,8 +78,8 @@ export default function GuiasPage() {
             <p className="mb-8 text-sm text-muted-foreground">
               {servicos.length}{" "}
               {servicos.length === 1
-                ? "profissional encontrado"
-                : "profissionais encontrados"}
+                ? "guia encontrado"
+                : "guias encontrados"}
             </p>
           )}
 
@@ -91,7 +87,7 @@ export default function GuiasPage() {
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
               <p className="text-base font-medium">
-                Não foi possível carregar os profissionais.
+                Não foi possível carregar os guias.
               </p>
               <p className="mt-1 text-sm">
                 Verifique sua conexão e tente novamente.
@@ -111,10 +107,10 @@ export default function GuiasPage() {
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <span className="mb-3 text-5xl">🗺️</span>
               <p className="text-base font-medium">
-                Nenhum profissional disponível no momento.
+                Nenhum guia disponível no momento.
               </p>
               <p className="mt-1 text-sm">
-                Em breve novos parceiros serão adicionados.
+                Em breve novos profissionais serão adicionados.
               </p>
             </div>
           )}
