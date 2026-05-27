@@ -2,10 +2,30 @@
 
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { ArrowLeft, CalendarDays, MapPin } from "lucide-react";
+import { ArrowLeft, CalendarDays, MapPin, AlertCircle } from "lucide-react";
 import type { MesData } from "@/lib/eventos";
+import type { Evento } from "@/lib/api";
 
-export default function MesClient({ mesAtual }: { mesAtual: MesData }) {
+function formatarData(isoDate: string): string {
+  try {
+    const d = new Date(isoDate);
+    return d.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return isoDate;
+  }
+}
+
+interface Props {
+  mesAtual: MesData;
+  eventos: Evento[];
+  error?: boolean;
+}
+
+export default function MesClient({ mesAtual, eventos, error }: Props) {
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -61,16 +81,28 @@ export default function MesClient({ mesAtual }: { mesAtual: MesData }) {
             Programação
           </motion.h2>
 
-          {mesAtual.eventos && mesAtual.eventos.length > 0 ? (
+          {error && (
+            <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
+              <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
+              <p className="text-base font-medium">
+                Não foi possível carregar os eventos.
+              </p>
+              <p className="mt-1 text-sm">
+                Verifique sua conexão e tente novamente.
+              </p>
+            </div>
+          )}
+
+          {!error && eventos.length > 0 ? (
             <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
               className="grid grid-cols-1 gap-6 lg:grid-cols-2"
             >
-              {mesAtual.eventos.map((evento, index) => (
+              {eventos.map((evento, index) => (
                 <motion.div
-                  key={index}
+                  key={evento.id ?? index}
                   variants={itemVariants}
                   className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg sm:flex-row sm:items-center gap-6 relative overflow-hidden"
                 >
@@ -78,8 +110,13 @@ export default function MesClient({ mesAtual }: { mesAtual: MesData }) {
 
                   <div className="flex-1">
                     <h3 className="font-display text-xl font-bold text-foreground md:text-2xl">
-                      {evento.nome}
+                      {evento.titulo}
                     </h3>
+                    {evento.descricao && (
+                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                        {evento.descricao}
+                      </p>
+                    )}
                     {evento.local && (
                       <div className="mt-3 flex items-center gap-2 text-muted-foreground">
                         <MapPin className="h-4 w-4 text-accent" />
@@ -93,18 +130,20 @@ export default function MesClient({ mesAtual }: { mesAtual: MesData }) {
                   <div className="flex flex-col items-center justify-center rounded-xl bg-primary/5 px-6 py-4 text-primary sm:w-auto w-full sm:min-w-[140px]">
                     <CalendarDays className="mb-2 h-6 w-6 text-accent" />
                     <span className="font-display font-semibold text-center leading-tight">
-                      {evento.data}
+                      {formatarData(evento.data)}
                     </span>
                   </div>
                 </motion.div>
               ))}
             </motion.div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-border p-16 text-center text-muted-foreground bg-card/50">
-              <p className="text-lg">
-                A programação detalhada deste mês será divulgada em breve.
-              </p>
-            </div>
+            !error && (
+              <div className="rounded-2xl border border-dashed border-border p-16 text-center text-muted-foreground bg-card/50">
+                <p className="text-lg">
+                  A programação detalhada deste mês será divulgada em breve.
+                </p>
+              </div>
+            )
           )}
         </div>
       </section>
