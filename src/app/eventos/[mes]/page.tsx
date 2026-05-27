@@ -8,6 +8,11 @@ import { eventosApi } from "@/lib/api";
 import type { Evento } from "@/lib/api";
 import MesClient from "./MesClient";
 
+// Obrigatório com output: export — define as rotas estáticas geradas no build
+export function generateStaticParams() {
+  return Object.keys(dadosDosMeses).map((mes) => ({ mes }));
+}
+
 // Mapa de slug (pt-BR lowercase) para número do mês (1-12)
 const MES_NUMERO: Record<string, number> = {
   janeiro: 1,
@@ -49,7 +54,6 @@ export default function MesPage() {
             return false;
           }
         });
-        // Ordenar por data crescente
         filtrados.sort(
           (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
         );
