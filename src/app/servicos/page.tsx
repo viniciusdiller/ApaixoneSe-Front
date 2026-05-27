@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Map, Compass, Info, ArrowRight, FileText, ExternalLink } from "lucide-react";
+import { Map, Compass, Info, ArrowRight, Bike, Car } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 
@@ -19,6 +19,41 @@ export default function ServicosPage() {
       .finally(() => setCatLoading(false));
   }, []);
 
+  const cards = [
+    {
+      icon: <Map size={32} />,
+      title: "Guias de Turismo",
+      description:
+        "Conheça as histórias e os segredos do nosso destino com guias credenciados.",
+      label: "Ver profissionais",
+      href: "/servicos/guias",
+    },
+    {
+      icon: <Compass size={32} />,
+      title: "Agências",
+      description:
+        "Pacotes completos, passeios de barco e roteiros personalizados para você.",
+      label: "Ver agências",
+      href: "/servicos/agencias",
+    },
+    {
+      icon: <Bike size={32} />,
+      title: "Esporte & Lazer",
+      description:
+        "Atividades esportivas, aventura e lazer para toda a família em Saquarema.",
+      label: "Ver esportes",
+      href: "/servicos/esportes",
+    },
+    {
+      icon: <Car size={32} />,
+      title: "Locadoras de Veículos",
+      description:
+        "Alugue carros, motos ou bicicletas e explore o destino no seu próprio ritmo.",
+      label: "Ver locadoras",
+      href: "/servicos/locadoras",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <section className="relative flex flex-col items-center justify-center py-24 px-4 text-center bg-primary/5">
@@ -32,100 +67,72 @@ export default function ServicosPage() {
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Guias de Turismo */}
-          <div
-            onClick={() => router.push("/servicos/guias")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border bg-card shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer text-center"
-          >
-            <div className="p-4 rounded-full bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform">
-              <Map size={32} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2 text-foreground">
-              Guias de Turismo
-            </h2>
-            <p className="text-muted-foreground mb-6 text-sm">
-              Conheça as histórias e os segredos do nosso destino com guias
-              credenciados.
-            </p>
-            <div className="mt-auto flex items-center text-primary font-medium text-sm">
-              Ver profissionais{" "}
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-
-          {/* Agências */}
-          <div
-            onClick={() => router.push("/servicos/agencias")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border bg-card shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer text-center"
-          >
-            <div className="p-4 rounded-full bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform">
-              <Compass size={32} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2 text-foreground">
-              Agências
-            </h2>
-            <p className="text-muted-foreground mb-6 text-sm">
-              Pacotes completos, passeios de barco e roteiros personalizados
-              para você.
-            </p>
-            <div className="mt-auto flex items-center text-primary font-medium text-sm">
-              Ver agências{" "}
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-
-          {/* CAT */}
-          <div className="relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-default">
-            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4">
-              <Info size={32} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
-            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
-              Ponto de Informação
-            </span>
-
-            {catLoading && (
-              <div className="w-full space-y-2 animate-pulse">
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
-                <div className="h-3 w-4/6 rounded bg-muted" />
+        {/* Grid dos 4 serviços */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+          {cards.map((card) => (
+            <div
+              key={card.href}
+              onClick={() => router.push(card.href)}
+              className="group relative flex flex-col items-center p-8 rounded-2xl border bg-card shadow-sm hover:shadow-md hover:border-primary/50 transition-all cursor-pointer text-center"
+            >
+              <div className="p-4 rounded-full bg-primary/10 text-primary mb-4 group-hover:scale-110 transition-transform">
+                {card.icon}
               </div>
-            )}
-
-            {!catLoading && cat && (
-              <>
-                <p className="text-muted-foreground text-sm mb-4">
-                  {cat.texto}
-                </p>
-                {cat.arquivoUrl && (
-                  <a
-                    href={cat.arquivoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-2 text-sm font-medium text-primary transition-all hover:bg-primary/10 hover:border-primary/50"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <FileText size={14} />
-                    Ver documento
-                    <ExternalLink size={12} />
-                  </a>
-                )}
-              </>
-            )}
-
-            {!catLoading && !cat && (
-              <p className="text-muted-foreground text-sm">
-                Centro de Atendimento ao Turista. Venha nos visitar
-                presencialmente para mapas, dicas e suporte local gratuito.
+              <h2 className="text-2xl font-bold mb-2 text-foreground">
+                {card.title}
+              </h2>
+              <p className="text-muted-foreground mb-6 text-sm">
+                {card.description}
               </p>
-            )}
+              <div className="mt-auto flex items-center text-primary font-medium text-sm">
+                {card.label}
+                <ArrowRight
+                  size={16}
+                  className="ml-2 group-hover:translate-x-1 transition-transform"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CAT — caixa clicável separada, largura total */}
+        <div
+          onClick={() => router.push("/servicos/cat")}
+          className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+        >
+          <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
+            <Info size={32} />
+          </div>
+          <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
+          <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
+            Ponto de Informação
+          </span>
+
+          {catLoading && (
+            <div className="w-full max-w-md space-y-2 animate-pulse">
+              <div className="h-3 w-full rounded bg-muted" />
+              <div className="h-3 w-5/6 rounded bg-muted" />
+              <div className="h-3 w-4/6 rounded bg-muted" />
+            </div>
+          )}
+
+          {!catLoading && cat && (
+            <p className="text-muted-foreground text-sm max-w-xl">{cat.texto}</p>
+          )}
+
+          {!catLoading && !cat && (
+            <p className="text-muted-foreground text-sm">
+              Centro de Atendimento ao Turista. Venha nos visitar
+              presencialmente para mapas, dicas e suporte local gratuito.
+            </p>
+          )}
+
+          <div className="mt-4 flex items-center text-primary font-medium text-sm">
+            Saiba mais
+            <ArrowRight
+              size={16}
+              className="ml-2 group-hover:translate-x-1 transition-transform"
+            />
           </div>
         </div>
       </section>
