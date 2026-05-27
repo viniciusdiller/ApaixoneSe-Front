@@ -1,27 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { pratosTipicos } from "@/lib/data";
 import { gastronomiaApi } from "@/lib/api/gastronomia";
 import type { Gastronomia } from "@/lib/api/types";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { X, MapPin, Phone, Instagram } from "lucide-react"; // Ícones novos para o modal
 
 export default function GastronomiaPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
   const [loading, setLoading] = useState(true);
-  // 1. Criamos um estado para guardar erros de conexão
   const [erroAtivo, setErroAtivo] = useState<boolean>(false);
+
+  // NOVO ESTADO: Guarda qual restaurante foi clicado (começa vazio/null)
+  const [restauranteSelecionado, setRestauranteSelecionado] = useState<Gastronomia | null>(null);
 
   useEffect(() => {
     const fetchGastronomia = async () => {
       try {
         const data = await gastronomiaApi.getAll();
         const aprovados = data.filter(rest => rest.status === "APROVADO");
-        setRestaurantes(aprovados.length > 0 ? aprovados : data); 
-        setErroAtivo(false); // Deu certo, sem erros
+        setRestaurantes(aprovados); 
+        setErroAtivo(false);
       } catch (error) {
         console.error("Erro ao buscar restaurantes da API:", error);
-        setErroAtivo(true); // Ocorreu um erro (ex: backend desligado)
+        setErroAtivo(true);
       } finally {
         setLoading(false);
       }
@@ -29,6 +33,16 @@ export default function GastronomiaPage() {
 
     fetchGastronomia();
   }, []);
+
+  // trava a rolagem da página quando o pop-up está aberto
+  useEffect(() => {
+    if (restauranteSelecionado) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; }
+  }, [restauranteSelecionado]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,7 +68,6 @@ export default function GastronomiaPage() {
         </h2>
         
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          {/* 2. Atualizamos a lógica para exibir o erro se o back estiver off */}
           {loading ? (
             <p className="col-span-full text-center text-muted-foreground">
               Preparando o cardápio com os melhores restaurantes...
@@ -80,26 +93,30 @@ export default function GastronomiaPage() {
           ) : (
             restaurantes.map((restaurante, i) => (
               <motion.article
-                key={restaurante.id} // Usamos o ID real do banco
+                key={restaurante.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="overflow-hidden rounded-2xl border border-border bg-card"
+                className="overflow-hidden rounded-2xl border border-border bg-card flex flex-col"
               >
                 <div
-                  className="h-52 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${restaurante.logoUrl || '/images/gastronomia.jpg'})` }} // Fallback caso não tenha logo
+                  className="h-52 bg-cover bg-center shrink-0"
+                  style={{ backgroundImage: `url(${safeMediaUrl(restaurante.logoUrl) || '/images/gastronomia.jpg'})` }}
                 />
-                <div className="p-5">
+                <div className="p-5 flex flex-col grow">
                   <h3 className="font-display text-2xl font-bold uppercase">
                     {restaurante.nome}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2 grow">
                     {restaurante.especialidade 
                       ? `Especialidade: ${restaurante.especialidade}` 
                       : `Endereço: ${restaurante.endereco}`}
                   </p>
-                  <button className="mt-4 rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90">
+                  {/* 2. O GATILHO: Adicionamos o onClick aqui */}
+                  <button 
+                    onClick={() => setRestauranteSelecionado(restaurante)}
+                    className="mt-4 w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+                  >
                     Ver detalhes
                   </button>
                 </div>
@@ -116,19 +133,87 @@ export default function GastronomiaPage() {
           </h2>
           <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             {pratosTipicos.map((prato) => (
-              <li
-                key={prato.nome}
-                className="rounded-xl border border-border bg-card p-6"
-              >
-                <h3 className="font-display text-xl uppercase text-primary">
-                  {prato.nome}
-                </h3>
+              <li key={prato.nome} className="rounded-xl border border-border bg-card p-6">
+                <h3 className="font-display text-xl uppercase text-primary">{prato.nome}</h3>
                 <p className="mt-2 text-muted-foreground">{prato.descricao}</p>
               </li>
             ))}
           </ul>
         </div>
       </section>
+
+      {/* 3. A TELA DO MODAL (POP-UP) */}
+      <AnimatePresence>
+        {restauranteSelecionado && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            // Ao clicar fora da janelinha, fecha o modal (setta para null)
+            onClick={() => setRestauranteSelecionado(null)} 
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              // Evita que o clique DENTRO da janelinha feche o modal
+              onClick={(e) => e.stopPropagation()} 
+              className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-card shadow-2xl border border-border"
+            >
+              {/* Botão de Fechar */}
+              <button
+                onClick={() => setRestauranteSelecionado(null)}
+                className="absolute right-4 top-4 z-10 rounded-full bg-black/40 p-2 text-white transition hover:bg-black/60"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* Imagem de Capa */}
+              <div
+                className="h-48 sm:h-64 w-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${safeMediaUrl(restauranteSelecionado.logoUrl) || '/images/gastronomia.jpg'})` }}
+              />
+
+              {/* Conteúdo dos Detalhes */}
+              <div className="p-6 sm:p-8">
+                <h3 className="font-display text-3xl sm:text-4xl font-bold uppercase text-foreground mb-1">
+                  {restauranteSelecionado.nome}
+                </h3>
+                
+                {restauranteSelecionado.especialidade && (
+                  <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-6">
+                    {restauranteSelecionado.especialidade}
+                  </span>
+                )}
+
+                <div className="space-y-4 text-muted-foreground">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                    <p>{restauranteSelecionado.endereco}</p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 shrink-0 text-primary" />
+                    <p>{restauranteSelecionado.telefone || "Telefone não informado"}</p>
+                  </div>
+
+                  {restauranteSelecionado.instagram && (
+                    <div className="flex items-center gap-3">
+                      <Instagram className="h-5 w-5 shrink-0 text-primary" />
+                      <a 
+                        href={`https://instagram.com/${restauranteSelecionado.instagram.replace('@', '')}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="transition-colors hover:text-primary hover:underline"
+                      >
+                        {restauranteSelecionado.instagram}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
