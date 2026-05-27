@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -14,9 +14,10 @@ import {
   Tag,
   Waves,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
-
+import { useAuth } from "@/context/AuthContext";
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
@@ -25,12 +26,24 @@ const links = [
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
   { label: "Hospedagem", href: "/admin/hospedagem", icon: BedDouble },
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },
-  { label: "Planos de Viagem", href: "/admin/planos", icon: BookOpen },
+  {
+    label: "Planos de Viagem",
+    href: "/admin/planos-de-viagem",
+    icon: BookOpen,
+  },
   { label: "CAT", href: "/admin/cat", icon: Tag },
 ];
 
 export function AdminSidebar() {
+  const router = useRouter();
+  const { logout } = useAuth();
   const pathname = usePathname();
+
+  const handleLogout = () => {
+    logout();
+    localStorage.removeItem("token");
+    router.push("/");
+  };
 
   return (
     <aside className="sticky top-0 flex h-screen w-64 flex-shrink-0 flex-col border-r border-border bg-card">
@@ -77,6 +90,16 @@ export function AdminSidebar() {
 
       {/* Cronômetro de sessão */}
       <SessionTimer />
+
+      <div className="mt-auto pt-4">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
+        >
+          <LogOut size={20} />
+          Sair
+        </button>
+      </div>
 
       {/* Footer link */}
       <div className="border-t border-border p-4">
