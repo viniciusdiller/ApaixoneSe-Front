@@ -135,6 +135,15 @@ export default function LoginPage() {
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {loading ? "Entrando\u2026" : "Entrar"}
           </button>
+          <div className="text-center text-sm text-muted-foreground pt-2">
+              Ainda não tem uma conta?{" "}
+              <Link
+                href="/login/registro-usuario"
+                className="font-semibold text-primary underline-offset-4 transition-colors hover:underline"
+              >
+                Clique aqui
+              </Link>
+          </div>
         </form>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
