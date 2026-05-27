@@ -166,9 +166,10 @@ export default function RegisterPage() {
               </div>
 
               {error && (
-                <div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                  <p className="text-sm text-destructive">{error}</p>
+                <div className="flex items-center gap-2 px-1 py-2">
+                  {/* Trocamos 'text-destructive' por 'text-red-600' aqui também */}
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                  <p className="text-sm font-medium text-red-600">{error}</p>
                 </div>
               )}
 
