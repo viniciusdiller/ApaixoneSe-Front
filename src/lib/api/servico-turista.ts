@@ -1,22 +1,26 @@
 import { apiFetch } from "./config";
-import type { ServicoTurista, CreateServicoTuristaDto, UpdateServicoTuristaDto } from "./types";
+import type {
+  ServicoTurista,
+  CreateServicoTuristaDto,
+  UpdateServicoTuristaDto,
+} from "./types";
 
 export const servicoTuristaApi = {
   getAll: () => apiFetch<ServicoTurista[]>("/servico-turista"),
   getById: (id: string) => apiFetch<ServicoTurista>(`/servico-turista/${id}`),
 
   /** Aceita FormData (multipart com logo/foto) ou JSON puro */
-  create: (data: FormData | CreateServicoTuristaDto) =>
+  create: (data: FormData) =>
     apiFetch<ServicoTurista>("/servico-turista", {
       method: "POST",
-      body: data instanceof FormData ? data : JSON.stringify(data),
+      body: data,
     }),
 
   /** Aceita FormData (multipart com logo/foto) ou JSON puro */
-  update: (id: string, data: FormData | UpdateServicoTuristaDto) =>
+  update: (id: string, data: FormData) =>
     apiFetch<ServicoTurista>(`/servico-turista/${id}`, {
       method: "PUT",
-      body: data instanceof FormData ? data : JSON.stringify(data),
+      body: data,
     }),
 
   delete: (id: string) =>
