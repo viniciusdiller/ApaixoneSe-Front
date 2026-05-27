@@ -9,9 +9,15 @@ export const hospedagemApi = {
   getAll: () => apiFetch<Hospedagem[]>("/hospedagem"),
   getById: (id: string) => apiFetch<Hospedagem>(`/hospedagem/${id}`),
   create: (data: FormData) =>
-    apiFetch<Hospedagem>("/hospedagem", { method: "POST", body: data }),
+    apiFetch<CreateHospedagemDto>("/hospedagem", {
+      method: "POST",
+      body: data,
+    }),
   update: (id: string, data: FormData) =>
-    apiFetch<Hospedagem>("/hospedagem", { method: "POST", body: data }),
+    apiFetch<UpdateHospedagemDto>("/hospedagem", {
+      method: "PUT",
+      body: data,
+    }),
   remove: (id: string) =>
     apiFetch<void>(`/hospedagem/${id}`, { method: "DELETE" }),
 };

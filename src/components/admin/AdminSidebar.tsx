@@ -26,7 +26,11 @@ const links = [
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
   { label: "Hospedagem", href: "/admin/hospedagem", icon: BedDouble },
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },
-  { label: "Planos de Viagem", href: "/admin/planos", icon: BookOpen },
+  {
+    label: "Planos de Viagem",
+    href: "/admin/planos-de-viagem",
+    icon: BookOpen,
+  },
   { label: "CAT", href: "/admin/cat", icon: Tag },
 ];
 
