@@ -9,12 +9,14 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Eye, Pencil } from "lucide-react";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 const empty: CreateGastronomiaDto = {
   nome: "",
   telefone: "",
   endereco: "",
+  especialidade: "",
   cnpj: "",
   responsavelNome: "",
   responsavelCpf: "",
@@ -22,7 +24,6 @@ const empty: CreateGastronomiaDto = {
   logoUrl: "",
   usuarioId: "",
   instagram: "",
-  especialidade: "",
 };
 
 export default function AdminGastronomiaPage() {
@@ -35,9 +36,9 @@ export default function AdminGastronomiaPage() {
   }>({ open: false, editing: null });
   const [viewing, setViewing] = useState<Gastronomia | null>(null);
   const [form, setForm] = useState<CreateGastronomiaDto>(empty);
-  const [files, setFiles] = useState<{ logo?: File; documentoPdf?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [files, setFiles] = useState<{ logo?: File; documentoPdf?: File }>({});
 
   const load = () => {
     setLoading(true);
@@ -61,6 +62,7 @@ export default function AdminGastronomiaPage() {
       nome: item.nome,
       telefone: item.telefone,
       endereco: item.endereco,
+      especialidade: item.especialidade ?? "",
       cnpj: item.cnpj,
       responsavelNome: item.responsavelNome,
       responsavelCpf: item.responsavelCpf,
@@ -68,7 +70,6 @@ export default function AdminGastronomiaPage() {
       logoUrl: item.logoUrl,
       usuarioId: item.usuarioId,
       instagram: item.instagram ?? "",
-      especialidade: item.especialidade ?? "",
     });
     setFiles({});
     setError("");
@@ -82,14 +83,16 @@ export default function AdminGastronomiaPage() {
     setSaving(true);
     try {
       const formData = new FormData();
+
       formData.append("nome", form.nome);
       formData.append("telefone", form.telefone);
       formData.append("endereco", form.endereco);
+      if (form.especialidade)
+        formData.append("especialidade", form.especialidade);
       formData.append("cnpj", form.cnpj);
       formData.append("responsavelNome", form.responsavelNome);
       formData.append("responsavelCpf", form.responsavelCpf);
-      if (form.especialidade)
-        formData.append("especialidade", form.especialidade);
+
       if (form.instagram) formData.append("instagram", form.instagram);
 
       if (files.logo) formData.append("logo", files.logo);
@@ -99,7 +102,6 @@ export default function AdminGastronomiaPage() {
       modal.editing
         ? await gastronomiaApi.update(modal.editing.id, formData)
         : await gastronomiaApi.create(formData);
-
       closeModal();
       load();
     } catch (err: unknown) {
@@ -176,46 +178,60 @@ export default function AdminGastronomiaPage() {
             {
               key: "logoUrl",
               label: "Logo",
-              render: (r) => <MediaPreview url={r.logoUrl} label="Logo" />,
+              render: (_val, row) => (
+                <MediaPreview url={row.logoUrl} label="Logo" />
+              ),
             },
             { key: "nome", label: "Nome" },
             { key: "endereco", label: "Endereço" },
             {
               key: "documentoPdfUrl",
               label: "PDF",
-              render: (r) => (
-                <MediaPreview url={r.documentoPdfUrl} label="Documento" isPdf />
+              render: (_val, row) => (
+                <MediaPreview
+                  url={row.documentoPdfUrl}
+                  label="Documento"
+                  isPdf
+                />
               ),
             },
             {
               key: "status",
               label: "Status",
-              render: (r) => (
+              render: (_val, row) => (
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(r.status)}`}
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
                 >
-                  {r.status}
+                  {row.status}
                 </span>
               ),
             },
           ]}
           extraActions={(row) => (
-            <button
-              onClick={() => setViewing(row)}
-              title="Ver detalhes"
-              className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-            >
-              <Eye size={16} />
-            </button>
+            <>
+              <button
+                onClick={() => setViewing(row)}
+                title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+              >
+                <Eye size={16} />
+              </button>
+              <button
+                onClick={() => openEdit(row)}
+                title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+              >
+                <Pencil size={16} />
+              </button>
+            </>
           )}
-          onEdit={openEdit}
           onDelete={handleDelete}
         />
       )}
 
       {/* Modal Visualização */}
       <AdminModal
-        title="Detalhes do Estabelecimento"
+        title="Detalhes da Gastronomia"
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
@@ -225,7 +241,7 @@ export default function AdminGastronomiaPage() {
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={viewing.logoUrl}
+                  src={safeMediaUrl(viewing.logoUrl)}
                   alt={viewing.nome}
                   className="h-16 w-16 rounded-lg object-cover border border-border"
                 />
@@ -244,12 +260,12 @@ export default function AdminGastronomiaPage() {
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <ViewRow label="Telefone" value={viewing.telefone} />
               <ViewRow label="CNPJ" value={viewing.cnpj} />
-              <ViewRow label="Especialidade" value={viewing.especialidade} />
               <ViewRow label="Instagram" value={viewing.instagram} />
               <ViewRow label="Responsável" value={viewing.responsavelNome} />
               <ViewRow label="CPF Responsável" value={viewing.responsavelCpf} />
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
+            <ViewRow label="Especialidade" value={viewing.especialidade} />
             <ViewRow
               label="Usuário Dono"
               value={ownerName(viewing.usuarioId)}
@@ -260,7 +276,7 @@ export default function AdminGastronomiaPage() {
                   Documento
                 </dt>
                 <MediaPreview
-                  url={viewing.documentoPdfUrl}
+                  url={safeMediaUrl(viewing.documentoPdfUrl)}
                   label="Documento"
                   isPdf
                 />
@@ -272,7 +288,7 @@ export default function AdminGastronomiaPage() {
 
       {/* Modal Criar/Editar */}
       <AdminModal
-        title={modal.editing ? "Editar Gastronomia" : "Novo Estabelecimento"}
+        title={modal.editing ? "Editar Gastronomia" : "Nova Gastronomia"}
         open={modal.open}
         onClose={closeModal}
       >
@@ -297,19 +313,21 @@ export default function AdminGastronomiaPage() {
             onChange={set("endereco")}
             required
           />
+
           <div className="grid grid-cols-2 gap-3">
+            <AdminFormField
+              label="Especialidade"
+              value={form.especialidade ?? ""}
+              onChange={set("especialidade")}
+            />
             <AdminFormField
               label="CNPJ"
               value={form.cnpj}
               onChange={set("cnpj")}
               required
             />
-            <AdminFormField
-              label="Especialidade"
-              value={form.especialidade ?? ""}
-              onChange={set("especialidade")}
-            />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField
               label="Responsável (Nome)"
@@ -334,7 +352,7 @@ export default function AdminGastronomiaPage() {
             label="Logo do Estabelecimento"
             accept="image"
             currentUrl={form.logoUrl}
-            required={!modal.editing}
+            required={!modal.editing} // Mantido dinâmico para não obrigar re-upload na edição
             hint="PNG, JPG ou WEBP"
             onFileChange={(url, file) => {
               setField("logoUrl", url);
@@ -350,7 +368,7 @@ export default function AdminGastronomiaPage() {
             label="Documento (PDF)"
             accept="pdf"
             currentUrl={form.documentoPdfUrl}
-            required={!modal.editing}
+            required={!modal.editing} // Mantido dinâmico para não obrigar re-upload na edição
             hint="Apenas arquivos .pdf"
             onFileChange={(url, file) => {
               setField("documentoPdfUrl", url);
