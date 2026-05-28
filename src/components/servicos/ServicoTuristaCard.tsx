@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MapPin, Instagram, Globe, Languages } from "lucide-react";
+import { Phone, MapPin, Instagram, Languages, Route } from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
+import { ROTEIROS } from "@/lib/roteiros";
 
 const TIPO_LABEL: Record<TipoServicoTurista, string> = {
   GUIA_TURISMO: "Guia de Turismo",
@@ -30,6 +31,10 @@ export function ServicoTuristaCard({ servico, index }: Props) {
     : null;
   const instagramHref = instagramHandle
     ? `https://instagram.com/${instagramHandle}`
+    : null;
+
+  const roteiroLabel = servico.roteiro
+    ? ROTEIROS.find((r) => r.enum === servico.roteiro)?.label
     : null;
 
   return (
@@ -75,6 +80,14 @@ export function ServicoTuristaCard({ servico, index }: Props) {
         <div className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow">
           {TIPO_LABEL[servico.tipo]}
         </div>
+
+        {/* Badge roteiro */}
+        {roteiroLabel && (
+          <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground shadow">
+            <Route className="h-3 w-3" />
+            {roteiroLabel}
+          </div>
+        )}
       </div>
 
       <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -95,6 +108,17 @@ export function ServicoTuristaCard({ servico, index }: Props) {
           <div className="flex items-start gap-2">
             <Languages className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <span className="text-sm text-muted-foreground">{servico.idiomas}</span>
+          </div>
+        )}
+
+        {/* Roteiro vinculado — também no corpo do card */}
+        {roteiroLabel && (
+          <div className="flex items-center gap-2">
+            <Route className="h-4 w-4 shrink-0 text-primary" />
+            <span className="text-sm text-muted-foreground">
+              Roteiro:{" "}
+              <span className="font-medium text-foreground">{roteiroLabel}</span>
+            </span>
           </div>
         )}
 

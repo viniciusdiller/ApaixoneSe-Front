@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X } from "lucide-react";
+import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route } from "lucide-react";
 import { servicoTuristaApi } from "@/lib/api";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { ROTEIROS } from "@/lib/roteiros";
 
 interface Props {
   tipo: TipoServicoTurista;
@@ -53,6 +54,12 @@ export function ServicoTuristaListPage({
 
   const imgUrl = (s: ServicoTurista) =>
     safeMediaUrl(s.logoUrl ?? s.fotoUrl) || imagemFallback;
+
+  const getRoteiroLabel = (s: ServicoTurista) =>
+    s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.label ?? null : null;
+
+  const getRoteiroSlug = (s: ServicoTurista) =>
+    s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.slug ?? null : null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,7 +131,6 @@ export function ServicoTuristaListPage({
                 transition={{ delay: i * 0.1 }}
                 className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
               >
-                {/* Imagem: bg-contain para não cortar */}
                 <div
                   className="h-52 shrink-0 bg-contain bg-center bg-no-repeat"
                   style={{ backgroundImage: `url(${imgUrl(servico)})` }}
@@ -138,6 +144,20 @@ export function ServicoTuristaListPage({
                       servico.endereco ||
                       `Telefone: ${servico.telefone}`}
                   </p>
+
+                  {/* Roteiro vinculado */}
+                  {getRoteiroLabel(servico) && (
+                    <div className="mt-3 flex items-center gap-1.5">
+                      <Route className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span className="text-xs text-muted-foreground">
+                        Roteiro:{" "}
+                        <span className="font-semibold text-foreground">
+                          {getRoteiroLabel(servico)}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+
                   <button
                     onClick={() => setSelecionado(servico)}
                     className="mt-4 w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
@@ -172,7 +192,6 @@ export function ServicoTuristaListPage({
                 <X className="h-5 w-5" />
               </button>
 
-              {/* Imagem modal: bg-contain */}
               <div
                 className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
                 style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
@@ -183,16 +202,28 @@ export function ServicoTuristaListPage({
                   {selecionado.nome}
                 </h3>
 
+                {/* Badges: roteiro + idiomas */}
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {getRoteiroLabel(selecionado) && (
+                    <Link
+                      href={`/roteiros/${getRoteiroSlug(selecionado)}`}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
+                    >
+                      <Route className="h-3 w-3" />
+                      Roteiro {getRoteiroLabel(selecionado)}
+                    </Link>
+                  )}
+                  {selecionado.idiomas && (
+                    <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                      Idiomas: {selecionado.idiomas}
+                    </span>
+                  )}
+                </div>
+
                 {selecionado.descricao && (
                   <p className="mb-4 text-sm text-muted-foreground">
                     {selecionado.descricao}
                   </p>
-                )}
-
-                {selecionado.idiomas && (
-                  <span className="mb-4 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    Idiomas: {selecionado.idiomas}
-                  </span>
                 )}
 
                 <div className="mt-4 space-y-4 text-muted-foreground">
