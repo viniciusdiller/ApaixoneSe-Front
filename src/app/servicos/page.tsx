@@ -6,6 +6,13 @@ import { Map, Compass, Info, ArrowRight, Bike, Car } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 
+/** Trunca o texto mantendo palavras inteiras, cerca de `max` palavras. */
+function truncateWords(text: string, max = 10): string {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= max) return text;
+  return words.slice(0, max).join(" ") + "…";
+}
+
 export default function ServicosPage() {
   const router = useRouter();
   const [cat, setCat] = useState<Cat | null>(null);
@@ -112,12 +119,13 @@ export default function ServicosPage() {
             <div className="w-full max-w-md space-y-2 animate-pulse">
               <div className="h-3 w-full rounded bg-muted" />
               <div className="h-3 w-5/6 rounded bg-muted" />
-              <div className="h-3 w-4/6 rounded bg-muted" />
             </div>
           )}
 
           {!catLoading && cat && (
-            <p className="text-muted-foreground text-sm max-w-xl">{cat.texto}</p>
+            <p className="text-muted-foreground text-sm max-w-xl">
+              {truncateWords(cat.texto, 10)}
+            </p>
           )}
 
           {!catLoading && !cat && (
