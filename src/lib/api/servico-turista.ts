@@ -26,7 +26,7 @@ export const servicoTuristaApi = {
   /** Atualiza apenas campos simples via JSON (ex: { status: "APROVADO" }) — usado no painel admin */
   updateStatus: (id: string, data: Partial<UpdateServicoTuristaDto>) =>
     apiFetch<ServicoTurista>(`/servico-turista/${id}`, {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 

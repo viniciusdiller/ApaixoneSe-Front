@@ -26,7 +26,7 @@ export const gastronomiaApi = {
   /** Atualiza apenas campos simples via JSON (ex: { status: "APROVADO" }) — usado no painel admin */
   updateStatus: (id: string, data: Partial<UpdateGastronomiaDto>) =>
     apiFetch<Gastronomia>(`/gastronomia/${id}`, {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 

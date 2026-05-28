@@ -26,7 +26,7 @@ export const hospedagemApi = {
   /** Atualiza apenas campos simples via JSON (ex: { status: "APROVADO" }) — usado no painel admin */
   updateStatus: (id: string, data: Partial<UpdateHospedagemDto>) =>
     apiFetch<Hospedagem>(`/hospedagem/${id}`, {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(data),
     }),
 
