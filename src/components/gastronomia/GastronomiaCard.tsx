@@ -18,7 +18,11 @@ export function GastronomiaCard({ restaurante, index, onVerDetalhes }: Props) {
     <motion.article
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.07,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Banner com imagem ou fallback */}
@@ -29,7 +33,7 @@ export function GastronomiaCard({ restaurante, index, onVerDetalhes }: Props) {
           className="absolute inset-0 opacity-[0.04]"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 50%)",
+              "repeating-linear-gradient(45deg, currentColor 0, currentColor 1px, transparent 0, transparent 100%)",
             backgroundSize: "12px 12px",
           }}
         />
@@ -75,7 +79,9 @@ export function GastronomiaCard({ restaurante, index, onVerDetalhes }: Props) {
         {/* Endereço */}
         <div className="flex items-start gap-2">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          <span className="text-sm text-muted-foreground">{restaurante.endereco}</span>
+          <span className="text-sm text-muted-foreground">
+            {restaurante.endereco}
+          </span>
         </div>
 
         {/* Botão Ver detalhes */}

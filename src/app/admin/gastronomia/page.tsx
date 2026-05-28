@@ -118,7 +118,7 @@ export default function AdminGastronomiaPage() {
 
   const handleDelete = async (item: Gastronomia) => {
     if (!confirm(`Excluir "${item.nome}"?`)) return;
-    await gastronomiaApi.remove(item.id);
+    await gastronomiaApi.delete(item.id);
     load();
   };
 
