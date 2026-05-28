@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ArrowLeft, AlertCircle, Info } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 export default function CatPage() {
   const [cat, setCat] = useState<Cat | null>(null);
@@ -113,20 +114,23 @@ export default function CatPage() {
               </div>
 
               {/* Imagem/arquivo */}
-              {cat.arquivoUrl && (
-                <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-                  <div className="relative w-full">
-                    <Image
-                      src={cat.arquivoUrl}
-                      alt="Imagem do CAT"
-                      width={900}
-                      height={600}
-                      className="w-full object-cover"
-                      style={{ maxHeight: "500px", objectFit: "cover" }}
-                    />
+              {cat.arquivoUrl && (() => {
+                const src = safeMediaUrl(cat.arquivoUrl);
+                return src ? (
+                  <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                    <div className="relative w-full">
+                      <Image
+                        src={src}
+                        alt="Imagem do CAT"
+                        width={900}
+                        height={600}
+                        className="w-full object-cover"
+                        style={{ maxHeight: "500px", objectFit: "cover" }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
             </div>
           )}
         </div>
