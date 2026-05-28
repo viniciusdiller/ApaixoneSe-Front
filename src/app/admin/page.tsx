@@ -289,14 +289,15 @@ export default function AdminDashboardPage() {
     if (!activeItem) return;
     setActionLoading(true);
     try {
+      // Usa updateStatus (PATCH + JSON) em vez de update (PUT + FormData)
       if (activeItem.kind === "gastronomia") {
-        await gastronomiaApi.update(activeItem.data.id, { status });
+        await gastronomiaApi.updateStatus(activeItem.data.id, { status });
         setPendGast((p) => p.filter((x) => x.id !== activeItem.data.id));
       } else if (activeItem.kind === "hospedagem") {
-        await hospedagemApi.update(activeItem.data.id, { status });
+        await hospedagemApi.updateStatus(activeItem.data.id, { status });
         setPendHosp((p) => p.filter((x) => x.id !== activeItem.data.id));
       } else {
-        await servicoTuristaApi.update(activeItem.data.id, { status });
+        await servicoTuristaApi.updateStatus(activeItem.data.id, { status });
         setPendServ((p) => p.filter((x) => x.id !== activeItem.data.id));
       }
       setActiveItem(null);

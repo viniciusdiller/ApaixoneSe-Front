@@ -1,26 +1,19 @@
-import { dadosDosMeses } from "@/lib/eventos";
 import { notFound } from "next/navigation";
-import MesClient from "./MesClient";
+import { dadosDosMeses } from "@/lib/eventos";
+import { MesPageClient } from "./MesPageClient";
 
-export async function generateStaticParams() {
-  const meses = Object.keys(dadosDosMeses);
-  return meses.map((mes) => ({
-    mes: mes,
-  }));
+interface Props {
+  params: { mes: string };
 }
 
-interface MesPageProps {
-  params: {
-    mes: string;
-  };
+// Obrigatório com output: export — define as rotas estáticas geradas no build
+export function generateStaticParams() {
+  return Object.keys(dadosDosMeses).map((mes) => ({ mes }));
 }
 
-export default function MesPage({ params }: MesPageProps) {
+export default function MesPage({ params }: Props) {
   const mesAtual = dadosDosMeses[params.mes];
+  if (!mesAtual) notFound();
 
-  if (!mesAtual) {
-    notFound();
-  }
-
-  return <MesClient mesAtual={mesAtual} />;
+  return <MesPageClient mes={params.mes} mesAtual={mesAtual} />;
 }
