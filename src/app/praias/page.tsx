@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { ArrowRight, Filter, MapPin, Waves } from "lucide-react";
 import { useMemo, useState } from "react";
 import { praias } from "@/lib/Dados-Praia";
+import { lagoas } from "@/lib/Dados-Lagoa";
+import { LagoaCard } from "@/components/lagoa/LagoaCard";
 import { useWaveData } from "@/hooks/API-Marinha";
 
 const FILTER_OPTIONS = [
