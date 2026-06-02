@@ -15,6 +15,7 @@ const FILTER_OPTIONS = [
   { label: "Para Surf", value: "surf" },
   { label: "Para Família", value: "família" },
   { label: "Acessível", value: "acessivel" },
+  { label: "Bandeira Azul", value: "bandeira azul" }
 ];
 function WaveBadge({ lat, lng }: { lat: number; lng: number }) {
   const { data } = useWaveData({ lat, lng });
@@ -132,7 +133,7 @@ export default function PraiasPage() {
       <section className="px-4 pb-16 pt-8 bg-muted/20">
         <div className="container mx-auto max-w-6xl mb-10 text-center">
           <h2 className="font-display text-4xl font-bold uppercase text-foreground">
-            Nossas Lagoas
+            Lagoas
           </h2>
           <p className="mt-2 text-muted-foreground">
             Águas calmas perfeitas para relaxar e contemplar a natureza

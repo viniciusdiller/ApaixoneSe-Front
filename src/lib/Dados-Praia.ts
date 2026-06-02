@@ -27,7 +27,7 @@ export const praias = [
     descricao_curta: "Pico clássico da WSL com ondas de classe mundial.",
     descricao:
       "Itaúna é referência internacional do surf brasileiro, com ondas constantes e atmosfera vibrante durante todo o ano.",
-    filtros: ["surf"],
+    filtros: ["surf", "bandeira azul"],
     acessivel: true,
     dificuldade: "avançado",
     estacionamento: true,
@@ -43,7 +43,7 @@ export const praias = [
     descricao_curta: "Faixa extensa de areia com excelente estrutura urbana.",
     descricao:
       "A Praia da Vila combina mar aberto, calçadão e fácil acesso para famílias e visitantes.",
-    filtros: ["família"],
+    filtros: ["família", "bandeira azul"],
     acessivel: true,
     dificuldade: "iniciante",
     estacionamento: true,
