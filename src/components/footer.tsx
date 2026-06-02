@@ -73,7 +73,7 @@ export function Footer() {
                   <Facebook className="h-5 w-5" />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://www.youtube.com/prefeituradesaquaremaoficial" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
@@ -99,7 +99,7 @@ export function Footer() {
                   <Instagram className="h-5 w-5" />
                 </a>
                 <a 
-                  href="#" 
+                  href="https://www.facebook.com/TurismoSaquaremaRj/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
@@ -109,7 +109,7 @@ export function Footer() {
                 </a>
               </div>
             </div>
-            <div className="mt-7">
+            {/* <div className="mt-7">
               <p className="mb-2 text-xs text-primary-foreground/60">Receba as ondas no seu e-mail</p>
               <form
                 onSubmit={(e) => {
@@ -121,7 +121,7 @@ export function Footer() {
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="flex-1 rounded-l-full border-0 bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:ring-1 focus:ring-accent" required />
                 <button type="submit" className="rounded-r-full bg-accent px-4 py-2 text-accent-foreground transition-colors hover:bg-accent/90"><Send className="h-4 w-4" /></button>
               </form>
-            </div>
+            </div> */}
           </div>
         </div>
 
