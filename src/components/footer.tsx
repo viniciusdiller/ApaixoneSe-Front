@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Instagram, Send, Waves, Youtube } from "lucide-react";
+import { Facebook, Instagram, Send, Waves, Youtube, Globe } from "lucide-react";
 import { useState } from "react";
 
 export function Footer() {
@@ -36,23 +36,92 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-4 font-display text-sm uppercase tracking-wide text-accent">Conecte-se</h4>
-            <div className="mb-6 flex gap-3">
-              <a href="#" className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" aria-label="Instagram"><Instagram className="h-5 w-5" /></a>
-              <a href="#" className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" aria-label="Facebook"><Facebook className="h-5 w-5" /></a>
-              <a href="#" className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" aria-label="YouTube"><Youtube className="h-5 w-5" /></a>
+            <h4 className="mb-4 font-display text-sm uppercase tracking-wide text-accent">
+              Conecte-se
+            </h4>
+
+            <div className="mb-5">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">
+                Prefeitura de Saquarema
+              </span>
+              <div className="flex gap-3">
+                <a 
+                  href="https://www.saquarema.rj.gov.br/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
+                  aria-label="Site Oficial da Prefeitura"
+                >
+                  <Globe className="h-5 w-5" />
+                </a>
+                <a 
+                  href="https://www.instagram.com/prefeiturasaquarema/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
+                  aria-label="Instagram da Prefeitura"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a 
+                  href="https://www.facebook.com/PrefeituradeSaquarema/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
+                  aria-label="Facebook da Prefeitura"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
+                  aria-label="YouTube da Prefeitura"
+                >
+                  <Youtube className="h-5 w-5" />
+                </a>
+              </div>
             </div>
-            <p className="mb-2 text-xs text-primary-foreground/60">Receba as ondas no seu e-mail</p>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setEmail("");
-              }}
-              className="flex"
-            >
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="flex-1 rounded-l-full border-0 bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:ring-1 focus:ring-accent" required />
-              <button type="submit" className="rounded-r-full bg-accent px-4 py-2 text-accent-foreground transition-colors hover:bg-accent/90"><Send className="h-4 w-4" /></button>
-            </form>
+
+            <div>
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">
+                Secretaria de Turismo
+              </span>
+              <div className="flex gap-3">
+                <a 
+                  href="https://www.instagram.com/turismosaquaremarj/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
+                  aria-label="Instagram do Turismo"
+                >
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20" 
+                  aria-label="Facebook do Turismo"
+                >
+                  <Facebook className="h-5 w-5" />
+                </a>
+              </div>
+            </div>
+            <div className="mt-7">
+              <p className="mb-2 text-xs text-primary-foreground/60">Receba as ondas no seu e-mail</p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setEmail("");
+                }}
+                className="flex"
+              >
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" className="flex-1 rounded-l-full border-0 bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:ring-1 focus:ring-accent" required />
+                <button type="submit" className="rounded-r-full bg-accent px-4 py-2 text-accent-foreground transition-colors hover:bg-accent/90"><Send className="h-4 w-4" /></button>
+              </form>
+            </div>
           </div>
         </div>
 
