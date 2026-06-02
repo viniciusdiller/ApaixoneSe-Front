@@ -137,7 +137,7 @@ export function Footer() {
                   <Facebook className="h-5 w-5" />
                 </a>
                 <a
-                  href="#"
+                  href="https://www.youtube.com/prefeituradesaquaremaoficial"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20"
@@ -163,7 +163,7 @@ export function Footer() {
                   <Instagram className="h-5 w-5" />
                 </a>
                 <a
-                  href="#"
+                  href="https://www.facebook.com/TurismoSaquaremaRj/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="rounded-full bg-primary-foreground/10 p-2 transition-colors hover:bg-primary-foreground/20"
@@ -173,10 +173,8 @@ export function Footer() {
                 </a>
               </div>
             </div>
-            <div className="mt-7">
-              <p className="mb-2 text-xs text-primary-foreground/60">
-                Receba as ondas no seu e-mail
-              </p>
+            {/* <div className="mt-7">
+              <p className="mb-2 text-xs text-primary-foreground/60">Receba as ondas no seu e-mail</p>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -199,7 +197,7 @@ export function Footer() {
                   <Send className="h-4 w-4" />
                 </button>
               </form>
-            </div>
+            </div> */}
           </div>
         </div>
 
