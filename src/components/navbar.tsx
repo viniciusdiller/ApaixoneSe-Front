@@ -20,7 +20,7 @@ import { GoogleTranslate } from "./google-translate";
 import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
-  { label: "Praias", to: "/praias" },
+  { label: "Praias & Lagoas", to: "/praias" },
   { label: "Cultura", to: "/cultura" },
   { label: "Eventos", to: "/eventos" },
   { label: "Gastronomia", to: "/gastronomia" },

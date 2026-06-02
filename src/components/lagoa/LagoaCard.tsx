@@ -1,48 +1,64 @@
 import Link from "next/link";
+import Image from "next/image";
+import { ArrowRight, MapPin } from "lucide-react";
 import type { Lagoa } from "@/lib/Dados-Lagoa";
 
 export function LagoaCard({ lagoa }: { lagoa: Lagoa }) {
-  // Formata o filtro (ex: "por_do_sol" vira "Por Do Sol")
+  // Formata o filtro (ex: "por_do_sol" vira "por do sol")
   const formatarFiltro = (filtro: string) => {
     return filtro.split('_').join(' ');
   };
 
   return (
-    <Link href={`/lagoas/${lagoa.slug}`}>
-      <article className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:shadow-md cursor-pointer flex flex-col h-full">
-        <div
-          className="h-52 bg-cover bg-center shrink-0 transition-transform duration-500 group-hover:scale-105"
-          style={{ backgroundImage: `url(${lagoa.imagem})` }}
+    <Link
+      href={`/lagoas/${lagoa.slug}`}
+      className="group block overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-xl"
+    >
+      {/* Container da Imagem */}
+      <div className="relative h-48 overflow-hidden bg-primary/20">
+        <Image
+          src={lagoa.imagem}
+          alt={lagoa.nome}
+          width={400}
+          height={300}
+          className="h-full w-full object-cover"
         />
-        <div className="p-5 flex flex-col grow bg-card relative z-10">
-          <h3 className="font-display text-2xl font-bold uppercase">
-            {lagoa.nome}
-          </h3>
-          
-          {/* Mostra a descrição curta em vez da longa */}
-          <p className="mt-2 text-sm text-muted-foreground line-clamp-2 grow">
-            {lagoa.descricao_curta}
-          </p>
-
-          {/* Renderiza as tags dos filtros */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {lagoa.filtros.slice(0, 2).map((filtro, idx) => (
-              <span 
-                key={idx} 
-                className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold uppercase text-primary"
-              >
-                {formatarFiltro(filtro)}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-border">
-            <span className="text-sm font-semibold text-primary transition-colors hover:text-primary/80">
-              Explorar lagoa &rarr;
+        {/* Gradiente escuro sobreposto na imagem para dar leitura às tags */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+        
+        {/* Tags com os filtros posicionadas sobre a imagem */}
+        <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-1.5">
+          {lagoa.filtros.map((filtro, idx) => (
+            <span
+              key={idx}
+              className="rounded-md bg-restinga/20 px-2 py-0.5 text-xs font-medium text-restinga backdrop-blur-sm uppercase"
+            >
+              {formatarFiltro(filtro)}
             </span>
-          </div>
+          ))}
         </div>
-      </article>
+      </div>
+
+      {/* Conteúdo de Texto do Card */}
+      <div className="p-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="font-display text-xl font-bold uppercase text-foreground transition-colors group-hover:text-primary">
+              {lagoa.nome}
+            </h3>
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3" />
+              <span>Saquarema, RJ</span>
+            </div>
+          </div>
+          {/* Seta indicativa que muda de cor no hover do card */}
+          <ArrowRight className="mt-1 h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
+        </div>
+        
+        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+          {lagoa.descricao_curta}
+        </p>
+      </div>
     </Link>
   );
 }
