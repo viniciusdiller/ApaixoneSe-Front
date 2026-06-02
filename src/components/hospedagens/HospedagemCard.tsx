@@ -28,7 +28,11 @@ export function HospedagemCard({ hospedagem, index }: Props) {
     <motion.article
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.07,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Banner superior com logo centralizado */}
@@ -68,7 +72,7 @@ export function HospedagemCard({ hospedagem, index }: Props) {
         {/* Badge de destaque */}
         <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow">
           <Star className="h-3 w-3 fill-current" />
-          Parceiro
+          Cadastur
         </div>
       </div>
 
@@ -85,7 +89,9 @@ export function HospedagemCard({ hospedagem, index }: Props) {
         {/* Endere\u00e7o */}
         <div className="flex items-start gap-2">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-          <span className="text-sm text-muted-foreground">{hospedagem.endereco}</span>
+          <span className="text-sm text-muted-foreground">
+            {hospedagem.endereco}
+          </span>
         </div>
 
         {/* Diferencial */}
@@ -115,8 +121,7 @@ export function HospedagemCard({ hospedagem, index }: Props) {
               aria-label={`Instagram de ${hospedagem.nome}`}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-[0.98]"
             >
-              <Instagram className="h-4 w-4" />
-              @{instagramHandle}
+              <Instagram className="h-4 w-4" />@{instagramHandle}
             </a>
           )}
         </div>

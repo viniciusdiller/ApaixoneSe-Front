@@ -15,7 +15,7 @@ const FILTER_OPTIONS = [
   { label: "Para Surf", value: "surf" },
   { label: "Para Família", value: "família" },
   { label: "Acessível", value: "acessivel" },
-  { label: "Bandeira Azul", value: "bandeira azul" }
+  { label: "Bandeira Azul", value: "bandeira azul" },
 ];
 function WaveBadge({ lat, lng }: { lat: number; lng: number }) {
   const { data } = useWaveData({ lat, lng });
@@ -51,7 +51,8 @@ export default function PraiasPage() {
             Praias & Lagoas
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
-            Descubra as praias que fazem de Saquarema a Capital Nacional do Surf e paz e tranquilidade de nossas lagoas
+            Descubra as praias que fazem de Saquarema a Capital Nacional do
+            Esporte e paz e tranquilidade de nossas lagoas
           </p>
         </div>
       </section>
@@ -139,7 +140,7 @@ export default function PraiasPage() {
             Águas calmas perfeitas para relaxar e contemplar a natureza
           </p>
         </div>
-        
+
         <div className="container mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {lagoas.map((lagoa, i) => (
             <motion.div
@@ -162,7 +163,7 @@ export default function PraiasPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   {/* Removido o WaveBadge, pois lagoas não têm ondas para surf */}
-                  
+
                   <div className="absolute bottom-3 left-3 flex flex-wrap items-center gap-1.5">
                     {lagoa.filtros.map((f) => (
                       <span
@@ -170,7 +171,7 @@ export default function PraiasPage() {
                         className="rounded-md bg-restinga/20 px-2 py-0.5 text-xs font-medium text-restinga backdrop-blur-sm"
                       >
                         {/* Formatando o texto dos filtros (ex: "passeio_de_barco" vira "passeio de barco") */}
-                        {f.replace(/_/g, ' ')}
+                        {f.replace(/_/g, " ")}
                       </span>
                     ))}
                   </div>

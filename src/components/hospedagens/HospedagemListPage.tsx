@@ -3,7 +3,15 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertCircle,
+  MapPin,
+  Phone,
+  Instagram,
+  X,
+  Star,
+} from "lucide-react";
 import { hospedagemApi } from "@/lib/api";
 import type { Hospedagem } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -18,7 +26,7 @@ export function HospedagemListPage() {
     hospedagemApi
       .getAll()
       .then((data) =>
-        setHospedagens(data.filter((h) => h.status === "APROVADO"))
+        setHospedagens(data.filter((h) => h.status === "APROVADO")),
       )
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
@@ -26,7 +34,9 @@ export function HospedagemListPage() {
 
   useEffect(() => {
     document.body.style.overflow = selecionada ? "hidden" : "unset";
-    return () => { document.body.style.overflow = "unset"; };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [selecionada]);
 
   const imgUrl = (h: Hospedagem) =>
@@ -74,7 +84,8 @@ export function HospedagemListPage() {
                 Ops! Tivemos um imprevisto.
               </p>
               <p className="mt-2 text-muted-foreground">
-                Não conseguimos carregar as hospedagens. Tente novamente mais tarde.
+                Não conseguimos carregar as hospedagens. Tente novamente mais
+                tarde.
               </p>
             </div>
           ) : hospedagens.length === 0 ? (
@@ -103,7 +114,7 @@ export function HospedagemListPage() {
                 >
                   <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow">
                     <Star className="h-3 w-3 fill-current" />
-                    Parceiro
+                    Cadastur
                   </div>
                 </div>
                 <div className="flex grow flex-col p-5">
@@ -184,9 +195,10 @@ export function HospedagemListPage() {
                     <div className="flex items-center gap-3">
                       <Instagram className="h-5 w-5 shrink-0 text-primary" />
                       <a
-                        href={`https://instagram.com/${
-                          selecionada.instagram.replace("@", "")
-                        }`}
+                        href={`https://instagram.com/${selecionada.instagram.replace(
+                          "@",
+                          "",
+                        )}`}
                         target="_blank"
                         rel="noreferrer"
                         className="transition-colors hover:text-primary hover:underline"

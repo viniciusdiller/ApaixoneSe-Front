@@ -26,7 +26,7 @@ export const praias = [
     slug: "itauna",
     descricao_curta: "Pico clássico da WSL com ondas de classe mundial.",
     descricao:
-      "Itaúna é referência internacional do surf brasileiro, com ondas constantes e atmosfera vibrante durante todo o ano.",
+      "Itaúna é referência interNacional do Esporte brasileiro, com ondas constantes e atmosfera vibrante durante todo o ano.",
     filtros: ["surf", "bandeira azul"],
     acessivel: true,
     dificuldade: "avançado",

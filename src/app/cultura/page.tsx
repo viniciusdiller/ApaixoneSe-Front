@@ -54,13 +54,13 @@ export default function CulturaPage() {
               A história de Saquarema é escrita pelo constante encontro entre a
               terra e o oceano. Das raízes milenares preservadas nos sambaquis e
               a rica herança das pacatas vilas de pescadores, a cidade evoluiu
-              até ser eternizada mundialmente como a Capital Nacional do Surf.
-              Aqui, o patrimônio histórico abraça a religiosidade, simbolizada
-              pelo Círio mais antigo do Brasil e pela clássica Igreja de Nossa
-              Senhora de Nazareth. Seja pelas ondas perfeitas de Itaúna, pelo
-              legado musical do Templo do Rock ou pela energia de sua natureza,
-              Saquarema oferece uma verdadeira viagem no tempo em total sintonia
-              com o mar.
+              até ser eternizada mundialmente como a Capital Nacional do
+              Esporte. Aqui, o patrimônio histórico abraça a religiosidade,
+              simbolizada pelo Círio mais antigo do Brasil e pela clássica
+              Igreja de Nossa Senhora de Nazareth. Seja pelas ondas perfeitas de
+              Itaúna, pelo legado musical do Templo do Rock ou pela energia de
+              sua natureza, Saquarema oferece uma verdadeira viagem no tempo em
+              total sintonia com o mar.
             </p>
           </article>
           <article className="rounded-xl border border-border bg-card p-6">

@@ -221,7 +221,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 Saquarema/rj - BR
               </span>
               <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-                Capital Nacional do Surf
+                Capital Nacional do Esporte
               </span>
             </div>
           </Link>
@@ -398,7 +398,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
               ))}
 
               {/* Divisor visual */}
-              <li className="w-32 border-t border-primary-foreground/20" aria-hidden />
+              <li
+                className="w-32 border-t border-primary-foreground/20"
+                aria-hidden
+              />
 
               {/* Auth — visível apenas no hambúrguer (mobile) */}
               {!user ? (

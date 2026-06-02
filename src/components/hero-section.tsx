@@ -33,7 +33,7 @@ export function HeroSection() {
           <br />
           PELA Capital Nacional
           <br />
-          <span className="text-accent">do Surf</span>
+          <span className="text-accent">do Esporte</span>
         </motion.h1>
 
         <motion.p

@@ -37,7 +37,7 @@ function getWeatherLabel(code: number) {
 
 export function LiveSection() {
   const { data } = useWaveData(ITAUNA_COORDS);
-  const eventDate = new Date("2026-06-12T08:00:00Z");
+  const eventDate = new Date("2026-06-19T08:00:00Z");
   const daysLeft = Math.max(
     0,
     Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
