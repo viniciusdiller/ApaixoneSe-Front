@@ -26,7 +26,6 @@ const navLinks = [
   { label: "Gastronomia", to: "/gastronomia" },
   { label: "Hospedagem", to: "/hospedagens" },
   { label: "Serviços Para o Turista", to: "/servicos" },
-  { label: "Explore Saqua", to: "https://meidesaqua.saquarema.rj.gov.br/" },
 ];
 
 interface WeatherData {

@@ -173,7 +173,7 @@ export function Footer() {
                 </a>
               </div>
             </div>
-            {/* <div className="mt-7">
+            <div className="mt-7">
               <p className="mb-2 text-xs text-primary-foreground/60">Receba as ondas no seu e-mail</p>
               <form
                 onSubmit={(e) => {
@@ -197,7 +197,7 @@ export function Footer() {
                   <Send className="h-4 w-4" />
                 </button>
               </form>
-            </div> */}
+            </div>
           </div>
         </div>
 
