@@ -26,7 +26,6 @@ const navLinks = [
   { label: "Gastronomia", to: "/gastronomia" },
   { label: "Hospedagem", to: "/hospedagens" },
   { label: "Serviços Para o Turista", to: "/servicos" },
-  { label: "Explore Saqua", to: "https://meidesaqua.saquarema.rj.gov.br/" },
 ];
 
 interface WeatherData {
@@ -193,7 +192,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${bgClass}`}
     >
-      <nav className="container mx-auto flex items-center justify-between px-4">
+      <nav className="flex justify-between px-4">
         {/* Logo + hambúrguer */}
         <div className="flex items-center gap-4 md:gap-0">
           <button
@@ -286,6 +285,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                   title="Sair"
                   className="flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-1.5 text-xs text-primary-foreground transition hover:bg-primary-foreground/25"
                 >
+                  <p>Sair</p>
                   <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>
