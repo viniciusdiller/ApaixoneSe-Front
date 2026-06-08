@@ -289,17 +289,26 @@ export interface CreateItemPlanoViagemDto {
 }
 
 // ─── Cat ──────────────────────────────────────────────────────────────────
+/**
+ * Modelo CAT atualizado (commit: add vídeo no CAT — 08/06/2026)
+ * - arquivoUrl removido
+ * - imagensUrl: array de URLs de imagens (.webp convertidas pelo backend)
+ * - videoUrl: URL do vídeo original (.mp4, .mov etc.) — opcional
+ */
 export interface Cat {
   id: string;
   texto: string;
-  arquivoUrl: string;
+  imagensUrl: string[];
+  videoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface CreateCatDto {
   texto: string;
-  arquivoUrl: string;
+  /** Não enviado diretamente — imagens e vídeo chegam via FormData fields */
+  imagensUrl?: string[];
+  videoUrl?: string | null;
 }
 
 export type UpdateCatDto = Partial<CreateCatDto>;
