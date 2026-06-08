@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, UtensilsCrossed } from "lucide-react";
+import { MapPin, UtensilsCrossed, CheckCircle2, Circle } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { Gastronomia } from "@/lib/api/types";
 
@@ -9,9 +9,19 @@ interface Props {
   restaurante: Gastronomia;
   index: number;
   onVerDetalhes: (restaurante: Gastronomia) => void;
+  /** Se true, o usuário já fez check-in neste restaurante */
+  visitado?: boolean;
+  /** Callback para fazer toggle do check-in. Undefined = usuário não logado */
+  onToggleCheckin?: (id: string) => void;
 }
 
-export function GastronomiaCard({ restaurante, index, onVerDetalhes }: Props) {
+export function GastronomiaCard({
+  restaurante,
+  index,
+  onVerDetalhes,
+  visitado = false,
+  onToggleCheckin,
+}: Props) {
   const logoSrc = safeMediaUrl(restaurante.logoUrl);
 
   return (
@@ -25,6 +35,14 @@ export function GastronomiaCard({ restaurante, index, onVerDetalhes }: Props) {
       }}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
+      {/* Badge de visitado no canto superior esquerdo */}
+      {visitado && (
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full bg-green-500 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow">
+          <CheckCircle2 className="h-3 w-3" />
+          Visitei!
+        </div>
+      )}
+
       {/* Banner com imagem ou fallback */}
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
         {/* Padrão decorativo de fundo */}
@@ -84,14 +102,35 @@ export function GastronomiaCard({ restaurante, index, onVerDetalhes }: Props) {
           </span>
         </div>
 
-        {/* Botão Ver detalhes */}
-        <div className="mt-auto pt-1">
+        {/* Ações */}
+        <div className="mt-auto flex items-center justify-between gap-2 pt-1">
           <button
             onClick={() => onVerDetalhes(restaurante)}
-            className="w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+            className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
           >
             Ver detalhes
           </button>
+
+          {/* Botão de check-in — só aparece se o usuário estiver logado */}
+          {onToggleCheckin && (
+            <button
+              onClick={() => onToggleCheckin(restaurante.id)}
+              aria-label={visitado ? "Remover check-in" : "Marcar como visitado"}
+              title={visitado ? "Remover check-in" : "Já fui aqui!"}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-all duration-200 ${
+                visitado
+                  ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400"
+                  : "border-border bg-background text-muted-foreground hover:border-green-400 hover:text-green-600"
+              }`}
+            >
+              {visitado ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <Circle className="h-3.5 w-3.5" />
+              )}
+              {visitado ? "Visitei" : "Já fui"}
+            </button>
+          )}
         </div>
       </div>
     </motion.article>
