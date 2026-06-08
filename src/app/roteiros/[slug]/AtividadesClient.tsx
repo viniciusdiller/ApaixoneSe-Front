@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, MapPin, AlertCircle, CheckCircle2, Circle } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import type { RoteiroMeta } from "@/lib/roteiros";
 import { atividadesApi } from "@/lib/api";
@@ -164,23 +170,28 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
 
                     {/* Ações: mapa + check-in */}
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      {atividade.latitude != null && atividade.longitude != null && (
-                        <a
-                          href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-                        >
-                          <MapPin className="h-3.5 w-3.5" />
-                          Ver no mapa
-                        </a>
-                      )}
+                      {atividade.latitude != null &&
+                        atividade.longitude != null && (
+                          <a
+                            href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                          >
+                            <MapPin className="h-3.5 w-3.5" />
+                            Ver no mapa
+                          </a>
+                        )}
 
                       {/* Botão check-in — somente logados */}
                       {isLogado && (
                         <button
                           onClick={() => toggleAtividade(atividade.id)}
-                          aria-label={visitado ? "Remover check-in" : "Marcar como realizada"}
+                          aria-label={
+                            visitado
+                              ? "Remover check-in"
+                              : "Marcar como realizada"
+                          }
                           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${
                             visitado
                               ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400"
@@ -192,7 +203,7 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
                           ) : (
                             <Circle className="h-3.5 w-3.5" />
                           )}
-                          {visitado ? "Fiz esta!" : "Já fiz"}
+                          {visitado ? "Fiz esta!" : "Não fiz"}
                         </button>
                       )}
                     </div>

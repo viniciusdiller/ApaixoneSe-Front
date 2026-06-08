@@ -115,7 +115,9 @@ export function GastronomiaCard({
           {onToggleCheckin && (
             <button
               onClick={() => onToggleCheckin(restaurante.id)}
-              aria-label={visitado ? "Remover check-in" : "Marcar como visitado"}
+              aria-label={
+                visitado ? "Remover check-in" : "Marcar como visitado"
+              }
               title={visitado ? "Remover check-in" : "Já fui aqui!"}
               className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold transition-all duration-200 ${
                 visitado
@@ -128,7 +130,7 @@ export function GastronomiaCard({
               ) : (
                 <Circle className="h-3.5 w-3.5" />
               )}
-              {visitado ? "Visitei" : "Já fui"}
+              {visitado ? "Visitei" : "Não visitei"}
             </button>
           )}
         </div>

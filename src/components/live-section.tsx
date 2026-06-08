@@ -12,7 +12,10 @@ import { useWaveData } from "@/hooks/API-Marinha";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { eventoPrincipalApi, type EventoPrincipal } from "@/lib/api/eventoPrincipal";
+import {
+  eventoPrincipalApi,
+  type EventoPrincipal,
+} from "@/lib/api/eventoPrincipal";
 
 const ITAUNA_COORDS = { lat: -22.9329, lng: -42.4823 };
 
@@ -42,14 +45,16 @@ function diasRestantes(dataIso: string): number {
   return Math.max(
     0,
     Math.ceil(
-      (new Date(dataIso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    )
+      (new Date(dataIso).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    ),
   );
 }
 
 export function LiveSection() {
   const { data } = useWaveData(ITAUNA_COORDS);
-  const [evento, setEvento] = useState<EventoPrincipal | null | undefined>(undefined);
+  const [evento, setEvento] = useState<EventoPrincipal | null | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     eventoPrincipalApi
@@ -175,7 +180,7 @@ export function LiveSection() {
                       {dias} <span className="text-lg">dias</span>
                     </p>
                     <p className="mt-3 text-sm text-primary-foreground/70">
-                      para o{" "}
+                      para{" "}
                       <strong className="text-accent">{evento.titulo}</strong>
                     </p>
                     {evento.etapa && (
