@@ -9,7 +9,12 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
-const empty: CreatePlanoViagemDto = { titulo: "", descricao: "" };
+const empty: CreatePlanoViagemDto = { 
+  titulo: "", 
+  dataInicio: "", 
+  dataFim: "", 
+  usuarioId: "" 
+};
 
 export default function AdminPlanosPage() {
   const [items, setItems] = useState<PlanoViagem[]>([]);
@@ -38,7 +43,12 @@ export default function AdminPlanosPage() {
     setModal({ open: true, editing: null });
   };
   const openEdit = (item: PlanoViagem) => {
-    setForm({ titulo: item.titulo, descricao: item.descricao });
+    setForm({ 
+      titulo: item.titulo,
+      dataInicio: item.dataInicio,
+      dataFim: item.dataFim,
+      usuarioId: item.usuarioId 
+    });
     setError("");
     setModal({ open: true, editing: item });
   };
@@ -128,15 +138,6 @@ export default function AdminPlanosPage() {
           columns={[
             { key: "titulo", label: "Título" },
             {
-              key: "descricao",
-              label: "Descrição",
-              render: (_val, row) => (
-                <span className="line-clamp-1 max-w-xs">
-                  {row.descricao ?? "—"}
-                </span>
-              ),
-            },
-            {
               key: "createdAt",
               label: "Criado em",
               render: (_val, row) =>
@@ -176,7 +177,6 @@ export default function AdminPlanosPage() {
         {viewing && (
           <dl className="space-y-3 text-sm">
             <ViewRow label="Título" value={viewing.titulo} />
-            <ViewRow label="Descrição" value={viewing.descricao} />
             {viewing.createdAt && (
               <ViewRow
                 label="Criado em"
@@ -199,12 +199,6 @@ export default function AdminPlanosPage() {
             value={form.titulo}
             onChange={set("titulo")}
             required
-          />
-          <AdminFormField
-            label="Descrição"
-            value={form.descricao ?? ""}
-            onChange={set("descricao")}
-            multiline
           />
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
