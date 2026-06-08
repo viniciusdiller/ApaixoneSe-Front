@@ -1,18 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { planoViagemApi } from "@/lib/api";
-import type { PlanoViagem, CreatePlanoViagemDto } from "@/lib/api";
+import { planoViagemApi, usersApi } from "@/lib/api";
+import type { PlanoViagem, CreatePlanoViagemDto, User } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
-const empty: CreatePlanoViagemDto = { titulo: "", descricao: "" };
+const empty: CreatePlanoViagemDto = { 
+  titulo: "", 
+  dataInicio: "", 
+  dataFim: "", 
+  usuarioId: "" 
+};
 
 export default function AdminPlanosPage() {
   const [items, setItems] = useState<PlanoViagem[]>([]);
+  const [usuarios, setUsuarios] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{
     open: boolean;
@@ -25,9 +31,15 @@ export default function AdminPlanosPage() {
 
   const load = () => {
     setLoading(true);
-    planoViagemApi
-      .getAll()
-      .then(setItems)
+    Promise
+      .all([
+        planoViagemApi.getAll(),
+        usersApi.getAll()
+      ])
+      .then(([planosData, usuariosData]) => {
+        setItems(planosData);
+        setUsuarios(usuariosData);
+      })
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
@@ -38,7 +50,12 @@ export default function AdminPlanosPage() {
     setModal({ open: true, editing: null });
   };
   const openEdit = (item: PlanoViagem) => {
-    setForm({ titulo: item.titulo, descricao: item.descricao });
+    setForm({ 
+      titulo: item.titulo,
+      dataInicio: item.dataInicio,
+      dataFim: item.dataFim,
+      usuarioId: item.usuarioId 
+    });
     setError("");
     setModal({ open: true, editing: item });
   };
@@ -48,35 +65,29 @@ export default function AdminPlanosPage() {
     e.preventDefault();
     setError("");
     setSaving(true);
+    
     try {
-      const payload = {
+      // 1. Monta o payload APENAS com campos permitidos pelo back-end
+      // (titulo, dataInicio, dataFim). O usuarioId é pego pelo token no servidor.
+      const payload: any = {
         titulo: form.titulo,
-        dataInicio: form.dataInicio.includes("T")
-          ? form.dataInicio
-          : `${form.dataInicio}T00:00:00Z`,
-        dataFim: form.dataFim,
-        usuarioId: form.usuarioId, // Se o seu backend exige o ID, mantenha. Se ele captura do token, REMOVA esta linha.
+        dataInicio: new Date(form.dataInicio).toISOString(),
+        dataFim: new Date(form.dataFim).toISOString(),
       };
 
-      modal.editing
-        ? await planoViagemApi.update(modal.editing.id, payload)
-        : await planoViagemApi.create(payload);
+      // 2. Executa a requisição sem enviar usuarioId
+      if (modal.editing) {
+        await planoViagemApi.update(modal.editing.id, payload);
+      } else {
+        await planoViagemApi.create(payload);
+      }
 
       closeModal();
       load();
-    } catch (err: unknown) {
-      // (O mesmo bloco de tratamento de erro robusto que fizemos antes)
+    } catch (err: any) {
       console.error("Erro detalhado:", err);
-      let msg = "Erro ao salvar.";
-      if (err instanceof Error) {
-        try {
-          const p = JSON.parse(err.message);
-          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message;
-        } catch {
-          msg = err.message;
-        }
-      }
-      setError(msg);
+      const msg = err.response?.data?.message || "Erro ao salvar.";
+      setError(Array.isArray(msg) ? msg.join(", ") : msg);
     } finally {
       setSaving(false);
     }
@@ -128,15 +139,6 @@ export default function AdminPlanosPage() {
           columns={[
             { key: "titulo", label: "Título" },
             {
-              key: "descricao",
-              label: "Descrição",
-              render: (_val, row) => (
-                <span className="line-clamp-1 max-w-xs">
-                  {row.descricao ?? "—"}
-                </span>
-              ),
-            },
-            {
               key: "createdAt",
               label: "Criado em",
               render: (_val, row) =>
@@ -176,7 +178,6 @@ export default function AdminPlanosPage() {
         {viewing && (
           <dl className="space-y-3 text-sm">
             <ViewRow label="Título" value={viewing.titulo} />
-            <ViewRow label="Descrição" value={viewing.descricao} />
             {viewing.createdAt && (
               <ViewRow
                 label="Criado em"
@@ -195,17 +196,48 @@ export default function AdminPlanosPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField
-            label="Título"
+            label="Título *"
             value={form.titulo}
             onChange={set("titulo")}
             required
           />
-          <AdminFormField
-            label="Descrição"
-            value={form.descricao ?? ""}
-            onChange={set("descricao")}
-            multiline
-          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <AdminFormField
+              type="date"
+              label="Data de Início *"
+              value={form.dataInicio.split("T")[0]} // Pega só a parte da data YYYY-MM-DD
+              onChange={set("dataInicio")}
+              required
+            />
+            <AdminFormField
+              type="date"
+              label="Data de Fim *"
+              value={form.dataFim.split("T")[0]}
+              onChange={set("dataFim")}
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Usuario vinculado *
+            </label>
+            <select
+              value={form.usuarioId}
+              onChange={set("usuarioId")}
+              required
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              <option value="" disabled>Selecione um cliente...</option>
+              {usuarios.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nome} ({u.email})
+                </option>
+              ))}
+            </select>
+          </div>
+
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}
