@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { hospedagemApi, usersApi } from "@/lib/api";
+import { HOSPEDAGEM_TAGS } from "@/lib/api/hospedagem";
 import type { Hospedagem, CreateHospedagemDto, User } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
@@ -9,7 +10,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil } from "lucide-react";
+import { Plus, Eye, Pencil, Tag } from "lucide-react";
 
 const empty: CreateHospedagemDto = {
   nome: "",
@@ -23,6 +24,7 @@ const empty: CreateHospedagemDto = {
   logoUrl: "",
   usuarioId: "",
   instagram: "",
+  tags: [],
 };
 
 export default function AdminHospedagemPage() {
@@ -56,7 +58,16 @@ export default function AdminHospedagemPage() {
     setError("");
     setModal({ open: true, editing: null });
   };
+
   const openEdit = (item: Hospedagem) => {
+    const existingTags: string[] = (() => {
+      const raw = item.tags;
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw as string[];
+      try { return JSON.parse(raw as unknown as string) as string[]; }
+      catch { return []; }
+    })();
+
     setForm({
       nome: item.nome,
       telefone: item.telefone,
@@ -69,12 +80,26 @@ export default function AdminHospedagemPage() {
       logoUrl: item.logoUrl,
       usuarioId: item.usuarioId,
       instagram: item.instagram ?? "",
+      tags: existingTags,
     });
     setFiles({});
     setError("");
     setModal({ open: true, editing: item });
   };
+
   const closeModal = () => setModal({ open: false, editing: null });
+
+  const toggleTag = (tag: string) => {
+    setForm((prev) => {
+      const current = prev.tags ?? [];
+      return {
+        ...prev,
+        tags: current.includes(tag)
+          ? current.filter((t) => t !== tag)
+          : [...current, tag],
+      };
+    });
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +118,18 @@ export default function AdminHospedagemPage() {
 
       if (form.instagram) formData.append("instagram", form.instagram);
 
+      // Serializa tags como JSON string para o backend fazer JSON.parse
+      if (form.tags && form.tags.length > 0) {
+        formData.append("tags", JSON.stringify(form.tags));
+      }
+
       if (files.logo) formData.append("logo", files.logo);
-      if (files.documentoPdf)
-        formData.append("documentoPdf", files.documentoPdf);
+      if (files.documentoPdf) formData.append("documentoPdf", files.documentoPdf);
+
       modal.editing
         ? await hospedagemApi.update(modal.editing.id, formData)
         : await hospedagemApi.create(formData);
+
       closeModal();
       load();
     } catch (err: unknown) {
@@ -182,23 +213,41 @@ export default function AdminHospedagemPage() {
             { key: "nome", label: "Nome" },
             { key: "endereco", label: "Endereço" },
             {
+              key: "tags",
+              label: "Tags",
+              render: (_val, row) => {
+                const t: string[] = (() => {
+                  const raw = row.tags;
+                  if (!raw) return [];
+                  if (Array.isArray(raw)) return raw as string[];
+                  try { return JSON.parse(raw as unknown as string) as string[]; }
+                  catch { return []; }
+                })();
+                if (t.length === 0) return <span className="text-muted-foreground text-xs">—</span>;
+                return (
+                  <div className="flex flex-wrap gap-1">
+                    {t.slice(0, 3).map((tag) => (
+                      <span key={tag} className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">{tag}</span>
+                    ))}
+                    {t.length > 3 && (
+                      <span className="text-xs text-muted-foreground">+{t.length - 3}</span>
+                    )}
+                  </div>
+                );
+              },
+            },
+            {
               key: "documentoPdfUrl",
               label: "PDF",
               render: (_val, row) => (
-                <MediaPreview
-                  url={row.documentoPdfUrl}
-                  label="Documento"
-                  isPdf
-                />
+                <MediaPreview url={row.documentoPdfUrl} label="Documento" isPdf />
               ),
             },
             {
               key: "status",
               label: "Status",
               render: (_val, row) => (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
-                >
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}>
                   {row.status}
                 </span>
               ),
@@ -246,9 +295,7 @@ export default function AdminHospedagemPage() {
                   <p className="font-display font-bold text-lg uppercase tracking-wide">
                     {viewing.nome}
                   </p>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}
-                  >
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>
                     {viewing.status}
                   </span>
                 </div>
@@ -262,24 +309,39 @@ export default function AdminHospedagemPage() {
               <ViewRow label="CPF Responsável" value={viewing.responsavelCpf} />
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
-            <ViewRow
-              label="Texto Diferencial"
-              value={viewing.textoDiferencial}
-            />
-            <ViewRow
-              label="Usuário Dono"
-              value={ownerName(viewing.usuarioId)}
-            />
+            <ViewRow label="Texto Diferencial" value={viewing.textoDiferencial} />
+            <ViewRow label="Usuário Dono" value={ownerName(viewing.usuarioId)} />
+            {/* Tags na visualização */}
+            {(() => {
+              const t: string[] = (() => {
+                const raw = viewing.tags;
+                if (!raw) return [];
+                if (Array.isArray(raw)) return raw as string[];
+                try { return JSON.parse(raw as unknown as string) as string[]; }
+                catch { return []; }
+              })();
+              if (t.length === 0) return null;
+              return (
+                <div className="flex flex-col gap-1.5">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Tag className="h-3.5 w-3.5" /> Comodidades
+                  </dt>
+                  <div className="flex flex-wrap gap-1.5">
+                    {t.map((tag) => (
+                      <span key={tag} className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
             {viewing.documentoPdfUrl && (
               <div className="flex flex-col gap-0.5">
                 <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Documento
                 </dt>
-                <MediaPreview
-                  url={viewing.documentoPdfUrl}
-                  label="Documento"
-                  isPdf
-                />
+                <MediaPreview url={viewing.documentoPdfUrl} label="Documento" isPdf />
               </div>
             )}
           </div>
@@ -294,58 +356,50 @@ export default function AdminHospedagemPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Nome"
-              value={form.nome}
-              onChange={set("nome")}
-              required
-            />
-            <AdminFormField
-              label="Telefone"
-              value={form.telefone}
-              onChange={set("telefone")}
-              required
-            />
+            <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
+            <AdminFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
           </div>
-          <AdminFormField
-            label="Endereço"
-            value={form.endereco}
-            onChange={set("endereco")}
-            required
-          />
-          <AdminFormField
-            label="Texto Diferencial"
-            value={form.textoDiferencial}
-            onChange={set("textoDiferencial")}
-            multiline
-            required
-          />
+          <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
+          <AdminFormField label="Texto Diferencial" value={form.textoDiferencial} onChange={set("textoDiferencial")} multiline required />
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="CNPJ"
-              value={form.cnpj}
-              onChange={set("cnpj")}
-              required
-            />
-            <AdminFormField
-              label="Instagram"
-              value={form.instagram ?? ""}
-              onChange={set("instagram")}
-            />
+            <AdminFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} required />
+            <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Responsável (Nome)"
-              value={form.responsavelNome}
-              onChange={set("responsavelNome")}
-              required
-            />
-            <AdminFormField
-              label="Responsável (CPF)"
-              value={form.responsavelCpf}
-              onChange={set("responsavelCpf")}
-              required
-            />
+            <AdminFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} required />
+            <AdminFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} required />
+          </div>
+
+          {/* Seletor de Tags */}
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Tag className="h-3.5 w-3.5" />
+              Comodidades (opcional)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {HOSPEDAGEM_TAGS.map((tag) => {
+                const active = (form.tags ?? []).includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-all ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+            {(form.tags ?? []).length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {(form.tags ?? []).length} comodidade(s) selecionada(s)
+              </p>
+            )}
           </div>
 
           <FileUploadField

@@ -1,35 +1,58 @@
-import { apiFetch } from "./config";
-import type {
-  Hospedagem,
-  CreateHospedagemDto,
-  UpdateHospedagemDto,
-} from "./types";
+import { api } from "./client";
+
+export const HOSPEDAGEM_TAGS = [
+  "Wi-Fi",
+  "Piscina",
+  "Ar-condicionado",
+  "Estacionamento",
+  "Pet Friendly",
+  "Café da manhã",
+  "Academia",
+  "Beira-mar",
+  "Chalé",
+  "Bangalô",
+] as const;
+
+export type HospedagemTag = (typeof HOSPEDAGEM_TAGS)[number];
+
+export interface Hospedagem {
+  id: string;
+  nome: string;
+  telefone: string;
+  endereco: string;
+  textoDiferencial: string;
+  cnpj: string;
+  responsavelNome: string;
+  responsavelCpf: string;
+  documentoPdfUrl: string;
+  logoUrl: string;
+  usuarioId: string;
+  instagram?: string | null;
+  status: string;
+  tags?: string[] | null;
+}
+
+export interface CreateHospedagemDto {
+  nome: string;
+  telefone: string;
+  endereco: string;
+  textoDiferencial: string;
+  cnpj: string;
+  responsavelNome: string;
+  responsavelCpf: string;
+  documentoPdfUrl: string;
+  logoUrl: string;
+  usuarioId: string;
+  instagram?: string;
+  tags?: string[];
+}
 
 export const hospedagemApi = {
-  getAll: () => apiFetch<Hospedagem[]>("/hospedagem"),
-  getById: (id: string) => apiFetch<Hospedagem>(`/hospedagem/${id}`),
-
-  /** Cria com FormData (multipart com logo) */
-  create: (data: FormData) =>
-    apiFetch<CreateHospedagemDto>("/hospedagem", {
-      method: "POST",
-      body: data,
-    }),
-
-  /** Atualiza com FormData (multipart com logo) — usado nos formulários de edição */
-  update: (id: string, data: FormData) =>
-    apiFetch<UpdateHospedagemDto>(`/hospedagem/${id}`, {
-      method: "PUT",
-      body: data,
-    }),
-
-  /** Atualiza apenas campos simples via JSON (ex: { status: "APROVADO" }) — usado no painel admin */
-  updateStatus: (id: string, data: Partial<UpdateHospedagemDto>) =>
-    apiFetch<Hospedagem>(`/hospedagem/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(data),
-    }),
-
-  delete: (id: string) =>
-    apiFetch<void>(`/hospedagem/${id}`, { method: "DELETE" }),
+  getAll: () => api.get<Hospedagem[]>("/hospedagem"),
+  getById: (id: string) => api.get<Hospedagem>(`/hospedagem/${id}`),
+  create: (formData: FormData) =>
+    api.postFormData<Hospedagem>("/hospedagem", formData),
+  update: (id: string, formData: FormData) =>
+    api.patchFormData<Hospedagem>(`/hospedagem/${id}`, formData),
+  delete: (id: string) => api.delete<void>(`/hospedagem/${id}`),
 };
