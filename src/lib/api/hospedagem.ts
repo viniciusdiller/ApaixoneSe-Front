@@ -1,5 +1,5 @@
 import { apiFetch } from "./config";
-import type { Hospedagem, CreateHospedagemDto } from "./types";
+import type { Hospedagem, CreateHospedagemDto, UpdateHospedagemDto } from "./types";
 
 export const HOSPEDAGEM_TAGS = [
   "Wi-Fi",
@@ -20,16 +20,25 @@ export const hospedagemApi = {
   getAll: () => apiFetch<Hospedagem[]>("/hospedagem"),
   getById: (id: string) => apiFetch<Hospedagem>(`/hospedagem/${id}`),
 
+  /** Cria com FormData (multipart com logo/pdf/tags) */
   create: (data: FormData) =>
     apiFetch<Hospedagem>("/hospedagem", {
       method: "POST",
       body: data,
     }),
 
+  /** Atualiza com FormData (multipart) */
   update: (id: string, data: FormData) =>
     apiFetch<Hospedagem>(`/hospedagem/${id}`, {
       method: "PUT",
       body: data,
+    }),
+
+  /** Atualiza apenas campos simples via JSON (ex: { status: "APROVADO" }) — usado no painel admin */
+  updateStatus: (id: string, data: Partial<UpdateHospedagemDto>) =>
+    apiFetch<Hospedagem>(`/hospedagem/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
     }),
 
   delete: (id: string) =>
