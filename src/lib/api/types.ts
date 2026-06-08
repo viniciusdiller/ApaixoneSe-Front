@@ -159,6 +159,9 @@ export interface Hospedagem {
   logoUrl: string;
   status: StatusEstabelecimento;
   usuarioId: string;
+  /** Campo adicionado no backend (commit feat: add Tags Hospedagem).
+   *  O Prisma salva como Json — o backend pode retornar string[] ou JSON string. */
+  tags?: string[] | null;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   createdAt?: string;
   updatedAt?: string;
@@ -176,6 +179,8 @@ export interface CreateHospedagemDto {
   documentoPdfUrl: string;
   logoUrl: string;
   usuarioId: string;
+  /** Tags de comodidades — serializado como JSON.stringify(string[]) no FormData */
+  tags?: string[];
 }
 
 export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
