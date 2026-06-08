@@ -15,20 +15,15 @@ import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
-// ─── Carrossel ───────────────────────────────────────────────────────────────
-function Carousel({
-  urls,
-  tall = false,
-}: {
-  urls: string[];
-  tall?: boolean; // true = layout vertical (ocupa mais altura)
-}) {
+// ─── Carrossel de imagens ────────────────────────────────────────────────────
+function Carousel({ urls }: { urls: string[] }) {
   const [idx, setIdx] = useState(0);
   const total = urls.length;
 
   const prev = () => setIdx((i) => (i - 1 + total) % total);
   const next = () => setIdx((i) => (i + 1) % total);
 
+  // keyboard
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") prev();
@@ -40,13 +35,21 @@ function Carousel({
 
   if (total === 0) return null;
 
+  if (total === 1) {
+    const src = safeMediaUrl(urls[0]);
+    return src ? (
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
+        <Image src={src} alt="Foto do CAT" fill className="object-cover" />
+      </div>
+    ) : null;
+  }
+
   const src = safeMediaUrl(urls[idx]);
-  // Layout vertical → tela quase cheia; horizontal → 16/9 confortável
-  const aspectClass = tall ? "aspect-[3/2] lg:aspect-[16/9]" : "aspect-[4/3] lg:aspect-[16/10]";
 
   return (
     <div className="select-none space-y-3">
-      <div className={`relative ${aspectClass} w-full overflow-hidden rounded-2xl border border-border bg-muted shadow-md`}>
+      {/* Slide principal */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
         {src && (
           <Image
             src={src}
@@ -56,61 +59,60 @@ function Carousel({
           />
         )}
 
-        {total > 1 && (
-          <>
-            <button
-              onClick={prev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
-              aria-label="Anterior"
-            >
-              <ChevronLeft size={22} />
-            </button>
-            <button
-              onClick={next}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
-              aria-label="Próxima"
-            >
-              <ChevronRight size={22} />
-            </button>
-            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white backdrop-blur-sm">
-              {idx + 1} / {total}
-            </span>
-          </>
-        )}
+        {/* Setas */}
+        <button
+          onClick={prev}
+          className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+          aria-label="Anterior"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          onClick={next}
+          className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+          aria-label="Próxima"
+        >
+          <ChevronRight size={20} />
+        </button>
+
+        {/* Contador */}
+        <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white backdrop-blur-sm">
+          {idx + 1} / {total}
+        </span>
       </div>
 
-      {total > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {urls.map((url, i) => {
-            const s = safeMediaUrl(url);
-            return s ? (
-              <button
-                key={i}
-                onClick={() => setIdx(i)}
-                className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                  i === idx
-                    ? "border-primary opacity-100"
-                    : "border-transparent opacity-55 hover:opacity-90"
-                }`}
-              >
-                <Image src={s} alt={`Thumb ${i + 1}`} fill className="object-cover" />
-              </button>
-            ) : null;
-          })}
-        </div>
-      )}
+      {/* Thumbnails */}
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {urls.map((url, i) => {
+          const s = safeMediaUrl(url);
+          return s ? (
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                i === idx
+                  ? "border-primary opacity-100"
+                  : "border-transparent opacity-60 hover:opacity-100"
+              }`}
+            >
+              <Image src={s} alt={`Thumb ${i + 1}`} fill className="object-cover" />
+            </button>
+          ) : null;
+        })}
+      </div>
     </div>
   );
 }
 
-// ─── Bloco de vídeo (reutilizável) ───────────────────────────────────────────
-function VideoBlock({ url, sticky = false }: { url: string; sticky?: boolean }) {
+// ─── Vídeo sticky ────────────────────────────────────────────────────────────
+function StickyVideo({ url }: { url: string }) {
   const src = safeMediaUrl(url);
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoBoxRef = useRef<HTMLDivElement>(null);
 
+  // Lógica sticky manual: o vídeo gruda no topo e sobe assim que
+  // a coluna pai terminar (i.e., encontra o footer).
   useEffect(() => {
-    if (!sticky) return;
     const wrap = wrapRef.current;
     const box = videoBoxRef.current;
     if (!wrap || !box) return;
@@ -118,43 +120,47 @@ function VideoBlock({ url, sticky = false }: { url: string; sticky?: boolean }) 
     const onScroll = () => {
       const wrapRect = wrap.getBoundingClientRect();
       const boxH = box.offsetHeight;
-      const top = 96;
+      const top = 96; // offset do header (24px) + margem
+
       if (wrapRect.top > top) {
+        // ainda acima do ponto de grudar
         box.style.position = "relative";
         box.style.top = "0";
-        box.style.width = "";
       } else if (wrapRect.bottom - boxH < top) {
+        // coluna acabou: ancorar na base
         box.style.position = "absolute";
         box.style.top = `${wrap.offsetHeight - boxH}px`;
-        box.style.width = "";
       } else {
+        // fixo na tela
         box.style.position = "fixed";
         box.style.top = `${top}px`;
         box.style.width = `${wrap.offsetWidth}px`;
       }
     };
+
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [sticky]);
+  }, []);
 
   if (!src) return null;
 
-  const inner = (
-    <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-md">
-      <div className="flex items-center gap-2 border-b border-border/40 bg-black/60 px-4 py-2.5">
-        <Video size={14} className="text-white/60" />
-        <span className="text-xs text-white/60">Vídeo</span>
-      </div>
-      <video src={src} controls className="w-full" style={{ maxHeight: sticky ? "400px" : undefined }} />
-    </div>
-  );
-
-  if (!sticky) return inner;
-
   return (
-    <div ref={wrapRef} className="relative">
-      <div ref={videoBoxRef} className="w-full">{inner}</div>
+    <div ref={wrapRef} className="relative hidden lg:block">
+      <div ref={videoBoxRef} className="w-full">
+        <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-lg">
+          <div className="flex items-center gap-2 border-b border-border/40 bg-black/60 px-4 py-2">
+            <Video size={14} className="text-white/60" />
+            <span className="text-xs text-white/60">Vídeo</span>
+          </div>
+          <video
+            src={src}
+            controls
+            className="w-full"
+            style={{ maxHeight: "360px" }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -164,8 +170,6 @@ export default function CatPage() {
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  // Preferência de layout salva pelo admin via localStorage
-  const [orientation, setOrientation] = useState<"horizontal" | "vertical">("horizontal");
 
   useEffect(() => {
     catApi
@@ -173,15 +177,10 @@ export default function CatPage() {
       .then((data) => setCat(data[0] ?? null))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-
-    // Lê preferência do admin
-    const saved = localStorage.getItem("cat_layout_orientation");
-    if (saved === "vertical") setOrientation("vertical");
   }, []);
 
   const imagens = cat?.imagensUrl ?? [];
   const hasVideo = !!cat?.videoUrl;
-  const isVertical = orientation === "vertical";
 
   return (
     <main className="min-h-screen bg-background">
@@ -223,11 +222,14 @@ export default function CatPage() {
           {loading && (
             <div className="animate-pulse space-y-6">
               <div className="h-6 w-40 rounded bg-muted" />
-              <div className="aspect-[16/9] w-full rounded-2xl bg-muted" />
-              <div className="space-y-3">
-                <div className="h-4 w-full rounded bg-muted" />
-                <div className="h-4 w-5/6 rounded bg-muted" />
-                <div className="h-4 w-4/6 rounded bg-muted" />
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
+                <div className="space-y-4">
+                  <div className="h-4 w-full rounded bg-muted" />
+                  <div className="h-4 w-5/6 rounded bg-muted" />
+                  <div className="h-4 w-4/6 rounded bg-muted" />
+                  <div className="aspect-[4/3] w-full rounded-2xl bg-muted" />
+                </div>
+                <div className="hidden aspect-video rounded-2xl bg-muted lg:block" />
               </div>
             </div>
           )}
@@ -249,36 +251,13 @@ export default function CatPage() {
             </div>
           )}
 
-          {/* ─── Layout VERTICAL: tudo em coluna única, imagem grande ─── */}
-          {!loading && !error && cat && isVertical && (
-            <div className="space-y-8">
-              {/* Texto */}
-              <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Info size={20} />
-                  </div>
-                  <h2 className="text-xl font-bold text-foreground">Sobre o CAT</h2>
-                </div>
-                <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-                  {cat.texto}
-                </p>
-              </div>
+          {/* ── Layout split ── */}
+          {!loading && !error && cat && (
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
 
-              {/* Imagens full width — tall */}
-              {imagens.length > 0 && <Carousel urls={imagens} tall />}
-
-              {/* Vídeo full width */}
-              {hasVideo && cat.videoUrl && <VideoBlock url={cat.videoUrl} />}
-            </div>
-          )}
-
-          {/* ─── Layout HORIZONTAL: split coluna esquerda + vídeo sticky ─── */}
-          {!loading && !error && cat && !isVertical && (
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_440px]">
-
-              {/* Esquerda: texto + carrossel */}
+              {/* Coluna esquerda: texto + carrossel */}
               <div className="space-y-8">
+                {/* Texto */}
                 <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
                   <div className="mb-5 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -291,28 +270,34 @@ export default function CatPage() {
                   </p>
                 </div>
 
+                {/* Carrossel ou imagem única */}
                 {imagens.length > 0 && <Carousel urls={imagens} />}
 
-                {/* Vídeo mobile */}
+                {/* Vídeo mobile (abaixo das imagens em telas pequenas) */}
                 {hasVideo && cat.videoUrl && (
                   <div className="block lg:hidden">
-                    <VideoBlock url={cat.videoUrl} />
+                    {(() => {
+                      const src = safeMediaUrl(cat.videoUrl!);
+                      return src ? (
+                        <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-sm">
+                          <div className="flex items-center gap-2 border-b border-border/40 bg-black/60 px-4 py-2">
+                            <Video size={14} className="text-white/60" />
+                            <span className="text-xs text-white/60">Vídeo</span>
+                          </div>
+                          <video src={src} controls className="w-full" />
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 )}
               </div>
 
-              {/* Direita: vídeo sticky desktop */}
-              {hasVideo && cat.videoUrl ? (
-                <div className="hidden lg:block">
-                  <VideoBlock url={cat.videoUrl} sticky />
-                </div>
-              ) : (
-                // Sem vídeo: ocupa 1 coluna e mostra só texto
-                <div className="hidden lg:block" />
+              {/* Coluna direita: vídeo sticky (desktop only) */}
+              {hasVideo && cat.videoUrl && (
+                <StickyVideo url={cat.videoUrl} />
               )}
             </div>
           )}
-
         </div>
       </section>
     </main>
