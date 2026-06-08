@@ -28,6 +28,14 @@ function diasRestantes(dataIso: string): number {
   );
 }
 
+/**
+ * Converte "YYYY-MM-DD" (vindo do input[type=date]) para
+ * "YYYY-MM-DDT00:00:00.000Z" que o Prisma/backend exige.
+ */
+function toISODate(dateStr: string): string {
+  return new Date(`${dateStr}T00:00:00.000Z`).toISOString();
+}
+
 const formVazio: EventoPrincipalCreateDTO = {
   titulo: "",
   etapa: "",
@@ -44,7 +52,6 @@ export default function AdminEventoPrincipalPage() {
   const [modoEdicao, setModoEdicao] = useState(false);
   const [form, setForm] = useState<EventoPrincipalCreateDTO>(formVazio);
 
-  // Carrega evento atual
   const carregar = () => {
     setLoading(true);
     eventoPrincipalApi
@@ -68,7 +75,7 @@ export default function AdminEventoPrincipalPage() {
     setForm({
       titulo: evento.titulo,
       etapa: evento.etapa ?? "",
-      // converte ISO para YYYY-MM-DD para o input[type=date]
+      // Garante que o input[type=date] receba exatamente YYYY-MM-DD
       data: evento.data.split("T")[0],
     });
     setModoEdicao(true);
@@ -92,7 +99,8 @@ export default function AdminEventoPrincipalPage() {
       const payload: EventoPrincipalCreateDTO = {
         titulo: form.titulo.trim(),
         etapa: form.etapa?.trim() || undefined,
-        data: form.data,
+        // ✅ Converte YYYY-MM-DD → ISO-8601 completo exigido pelo Prisma
+        data: toISODate(form.data),
       };
       if (evento) {
         await eventoPrincipalApi.update(evento.id, payload);
@@ -185,7 +193,6 @@ export default function AdminEventoPrincipalPage() {
                 <p className="mt-1 text-sm text-muted-foreground">{evento.etapa}</p>
               )}
             </div>
-            {/* Dias restantes */}
             <div className="shrink-0 rounded-full bg-primary/10 px-4 py-2 text-center">
               <p className="font-display text-3xl font-bold leading-none text-primary">
                 {diasRestantes(evento.data)}
@@ -204,7 +211,6 @@ export default function AdminEventoPrincipalPage() {
             })}
           </p>
 
-          {/* Ações */}
           <div className="mt-6 flex gap-3">
             <button
               onClick={abrirEditar}
@@ -249,7 +255,7 @@ export default function AdminEventoPrincipalPage() {
         </div>
       )}
 
-      {/* Formulário criar / editar */}
+      {/* Formulário */}
       {modoEdicao && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -261,7 +267,6 @@ export default function AdminEventoPrincipalPage() {
           </h2>
 
           <div className="space-y-4">
-            {/* Título */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-foreground" htmlFor="titulo">
                 Título <span className="text-destructive">*</span>
@@ -276,7 +281,6 @@ export default function AdminEventoPrincipalPage() {
               />
             </div>
 
-            {/* Etapa */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-foreground" htmlFor="etapa">
                 Etapa <span className="text-muted-foreground">(opcional)</span>
@@ -291,7 +295,6 @@ export default function AdminEventoPrincipalPage() {
               />
             </div>
 
-            {/* Data */}
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-foreground" htmlFor="data">
                 Data do evento <span className="text-destructive">*</span>
@@ -306,7 +309,6 @@ export default function AdminEventoPrincipalPage() {
             </div>
           </div>
 
-          {/* Botões */}
           <div className="mt-6 flex gap-3">
             <button
               onClick={salvar}
@@ -331,7 +333,6 @@ export default function AdminEventoPrincipalPage() {
         </motion.div>
       )}
 
-      {/* Botão criar quando já existe evento e não está em modo edição */}
       {!loading && evento && !modoEdicao && (
         <p className="text-center text-xs text-muted-foreground">
           ⚠️ Só pode existir 1 evento principal por vez. Edite ou remova o atual para criar um novo.
