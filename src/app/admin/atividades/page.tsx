@@ -58,8 +58,8 @@ export default function AdminAtividadesPage() {
       descricao: item.descricao,
       local: item.local,
       roteiro: item.roteiro,
-      latitude: item.latitude,
-      longitude: item.longitude,
+      latitude: item.latitude ?? undefined,
+      longitude: item.longitude ?? undefined,
     });
     setError("");
     setModal({ open: true, editing: item });
