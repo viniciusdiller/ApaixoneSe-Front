@@ -11,6 +11,8 @@ import {
 import { useWaveData } from "@/hooks/API-Marinha";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { eventoPrincipalApi, type EventoPrincipal } from "@/lib/api/eventoPrincipal";
 
 const ITAUNA_COORDS = { lat: -22.9329, lng: -42.4823 };
 
@@ -35,13 +37,30 @@ function getWeatherLabel(code: number) {
   return "⛈ Tempestade";
 }
 
+/** Calcula dias restantes até uma data (mínimo 0) */
+function diasRestantes(dataIso: string): number {
+  return Math.max(
+    0,
+    Math.ceil(
+      (new Date(dataIso).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    )
+  );
+}
+
 export function LiveSection() {
   const { data } = useWaveData(ITAUNA_COORDS);
-  const eventDate = new Date("2026-06-19T08:00:00Z");
-  const daysLeft = Math.max(
-    0,
-    Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
-  );
+  const [evento, setEvento] = useState<EventoPrincipal | null | undefined>(undefined);
+
+  useEffect(() => {
+    eventoPrincipalApi
+      .getAll()
+      .then((lista) => setEvento(lista.length > 0 ? lista[0] : null))
+      .catch(() => setEvento(null));
+  }, []);
+
+  // null = carregado mas sem evento; undefined = ainda carregando
+  const eventoCarregado = evento !== undefined;
+  const dias = evento ? diasRestantes(evento.data) : 0;
 
   return (
     <section className="bg-foreground px-4 py-16">
@@ -62,6 +81,7 @@ export function LiveSection() {
             </>
           ) : (
             <>
+              {/* Card 1: Ondas */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -88,6 +108,7 @@ export function LiveSection() {
                 </div>
               </motion.div>
 
+              {/* Card 2: Clima */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -114,6 +135,7 @@ export function LiveSection() {
                 </div>
               </motion.div>
 
+              {/* Card 3: Evento Principal (dinâmico) */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -125,23 +147,59 @@ export function LiveSection() {
                     Próximo Evento
                   </span>
                 </div>
-                <p className="font-display text-4xl font-bold text-primary-foreground">
-                  {daysLeft} <span className="text-lg">dias</span>
-                </p>
-                <p className="mt-3 text-sm text-primary-foreground/70">
-                  para o{" "}
-                  <strong className="text-accent">Saquarema Pro 2026</strong>
-                </p>
-                <p className="mt-1 text-xs text-primary-foreground/50">
-                  WSL Championship Tour
-                </p>
+
+                {/* Carregando */}
+                {!eventoCarregado && (
+                  <div className="flex items-center gap-2 text-primary-foreground/40">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <span className="text-sm">Carregando...</span>
+                  </div>
+                )}
+
+                {/* Sem evento cadastrado — fallback estático */}
+                {eventoCarregado && !evento && (
+                  <>
+                    <p className="font-display text-4xl font-bold text-primary-foreground">
+                      Em breve
+                    </p>
+                    <p className="mt-3 text-sm text-primary-foreground/70">
+                      Nenhum evento agendado no momento.
+                    </p>
+                  </>
+                )}
+
+                {/* Com evento cadastrado */}
+                {eventoCarregado && evento && (
+                  <>
+                    <p className="font-display text-4xl font-bold text-primary-foreground">
+                      {dias} <span className="text-lg">dias</span>
+                    </p>
+                    <p className="mt-3 text-sm text-primary-foreground/70">
+                      para o{" "}
+                      <strong className="text-accent">{evento.titulo}</strong>
+                    </p>
+                    {evento.etapa && (
+                      <p className="mt-1 text-xs text-primary-foreground/50">
+                        {evento.etapa}
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-primary-foreground/40">
+                      {new Date(evento.data).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        timeZone: "UTC",
+                      })}
+                    </p>
+                  </>
+                )}
               </motion.div>
             </>
           )}
         </div>
       </div>
 
-      <div className="">
+      <div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
