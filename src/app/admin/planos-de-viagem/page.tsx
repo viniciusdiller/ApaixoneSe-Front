@@ -65,35 +65,29 @@ export default function AdminPlanosPage() {
     e.preventDefault();
     setError("");
     setSaving(true);
+    
     try {
-      const payload = {
+      // 1. Monta o payload APENAS com campos permitidos pelo back-end
+      // (titulo, dataInicio, dataFim). O usuarioId é pego pelo token no servidor.
+      const payload: any = {
         titulo: form.titulo,
-        dataInicio: form.dataInicio.includes("T")
-          ? form.dataInicio
-          : `${form.dataInicio}T00:00:00Z`,
-        dataFim: form.dataFim,
-        usuarioId: form.usuarioId, // Se o seu backend exige o ID, mantenha. Se ele captura do token, REMOVA esta linha.
+        dataInicio: new Date(form.dataInicio).toISOString(),
+        dataFim: new Date(form.dataFim).toISOString(),
       };
 
-      modal.editing
-        ? await planoViagemApi.update(modal.editing.id, payload)
-        : await planoViagemApi.create(payload);
+      // 2. Executa a requisição sem enviar usuarioId
+      if (modal.editing) {
+        await planoViagemApi.update(modal.editing.id, payload);
+      } else {
+        await planoViagemApi.create(payload);
+      }
 
       closeModal();
       load();
-    } catch (err: unknown) {
-      // (O mesmo bloco de tratamento de erro robusto que fizemos antes)
+    } catch (err: any) {
       console.error("Erro detalhado:", err);
-      let msg = "Erro ao salvar.";
-      if (err instanceof Error) {
-        try {
-          const p = JSON.parse(err.message);
-          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message;
-        } catch {
-          msg = err.message;
-        }
-      }
-      setError(msg);
+      const msg = err.response?.data?.message || "Erro ao salvar.";
+      setError(Array.isArray(msg) ? msg.join(", ") : msg);
     } finally {
       setSaving(false);
     }
@@ -202,7 +196,7 @@ export default function AdminPlanosPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField
-            label="Título"
+            label="Título *"
             value={form.titulo}
             onChange={set("titulo")}
             required
@@ -211,14 +205,14 @@ export default function AdminPlanosPage() {
           <div className="grid grid-cols-2 gap-4">
             <AdminFormField
               type="date"
-              label="Data de Início"
+              label="Data de Início *"
               value={form.dataInicio.split("T")[0]} // Pega só a parte da data YYYY-MM-DD
               onChange={set("dataInicio")}
               required
             />
             <AdminFormField
               type="date"
-              label="Data de Fim"
+              label="Data de Fim *"
               value={form.dataFim.split("T")[0]}
               onChange={set("dataFim")}
               required
@@ -227,7 +221,7 @@ export default function AdminPlanosPage() {
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Vincular a qual Cliente?
+              Usuario vinculado *
             </label>
             <select
               value={form.usuarioId}
