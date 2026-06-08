@@ -24,66 +24,64 @@ import Image from "next/image";
 // ─── tipos internos ───────────────────────────────────────────────────────────
 
 /**
- * Representa uma imagem no gerenciador:
- * - mode "existing": já está no servidor; url = URL salva
- * - mode "new":      recém selecionada pelo usuário; file = File local; preview = ObjectURL
+ * mode "existing": imagem já salva no servidor (não re-enviada)
+ * mode "new":      arquivo recém selecionado
+ * mode "deleted":  existia no servidor, foi removida pelo admin
+ *                  (frontend guarda para não exibir —
+ *                   o backend não tem endpoint de delete unitário,
+ *                   então a exclusão efetiva ocorre quando o admin
+ *                   salvar e o backend sobrescrever com as novas imagens)
  */
 type ManagedImage =
   | { mode: "existing"; url: string }
-  | { mode: "new"; file: File; preview: string };
+  | { mode: "new"; file: File; preview: string }
+  | { mode: "deleted"; url: string };
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// ─── buildFormData ──────────────────────────────────────────────────────────────
 
 /**
- * Monta o FormData para criar/atualizar um CAT.
+ * Monta o FormData com base no que o backend aceita:
+ *   texto   → sempre enviado
+ *   imagens → SOMENTE quando há arquivos novos OU houve exclusões
+ *             (nesse caso enviamos todos os arquivos novos; as existentes
+ *              não deletadas ficarão no banco porque o backend não as toca
+ *              quando imagensUrl vier vazio)
+ *   video   → SOMENTE quando o admin selecionou um novo arquivo
+ *             (não enviar = manter o vídeo existente)
  *
- * Estratégia:
- *  - "texto"             → sempre enviado
- *  - "imagens"           → apenas os arquivos NOVOS (File)
- *  - "imagensMantidasUrls" → JSON.stringify das URLs existentes que devem ser MANTIDAS
- *    O backend deve receber essa lista e deletar do storage as que não estiverem nela.
- *    Se o campo não existir no backend ainda, as imagens existentes serão sobrescritas;
- *    nesse caso a lógica de "manter" fica no front por enquanto.
- *  - "video"             → File novo (se selecionado)
- *  - "removerVideo"      → "true" (se o admin pediu para remover)
+ * NOTA sobre exclusão de imagens:
+ *   O backend atual NÃO tem endpoint de exclusão unitária de imagem.
+ *   Quando o admin "exclui" uma imagem existente e envia novas, o backend
+ *   sobrescreve imagensUrl com as novas. Imagens existentes que não foram
+ *   excluídas pelo admin continuam no banco (não são reenviadas — o
+ *   backend só substitui quando recebe novos arquivos).
+ *   Para exclusão unitária real, será necessário um endpoint dedicado no back.
  */
 function buildFormData(
   texto: string,
   images: ManagedImage[],
-  video: File | null,
-  removeVideo: boolean,
+  newVideo: File | null,
 ): FormData {
   const fd = new FormData();
   fd.append("texto", texto);
 
-  const keptUrls: string[] = [];
-  const newFiles: File[] = [];
+  // Apenas arquivos novos (não re-enviamos os existentes)
+  const newFiles = images.filter((i) => i.mode === "new") as {
+    mode: "new";
+    file: File;
+    preview: string;
+  }[];
 
-  images.forEach((img) => {
-    if (img.mode === "existing") keptUrls.push(img.url);
-    else newFiles.push(img.file);
-  });
+  newFiles.forEach(({ file }) => fd.append("imagens", file));
 
-  // URLs existentes mantidas
-  fd.append("imagensMantidasUrls", JSON.stringify(keptUrls));
-
-  // Arquivos novos
-  newFiles.forEach((f) => fd.append("imagens", f));
-
-  if (video) fd.append("video", video);
-  if (removeVideo) fd.append("removerVideo", "true");
+  // Vídeo: só envia se o admin selecionou um novo arquivo
+  if (newVideo) fd.append("video", newVideo);
 
   return fd;
 }
 
 // ─── ImageManager ─────────────────────────────────────────────────────────────
 
-/**
- * Gerenciador granular de imagens:
- * - Exibe as imagens existentes com botão de excluir individual
- * - Permite adicionar novas imagens (sem remover as existentes)
- * - Exibe preview das novas antes de salvar
- */
 function ImageManager({
   images,
   onChange,
@@ -93,24 +91,39 @@ function ImageManager({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const visible = images.filter((i) => i.mode !== "deleted");
+  const total = visible.length;
+
   const addFiles = (files: FileList | null) => {
     if (!files) return;
-    const valid: ManagedImage[] = Array.from(files)
+    const added: ManagedImage[] = Array.from(files)
       .filter((f) => f.type.startsWith("image/"))
-      .map((f) => ({ mode: "new" as const, file: f, preview: URL.createObjectURL(f) }));
-    onChange([...images, ...valid]);
+      .map((f) => ({
+        mode: "new" as const,
+        file: f,
+        preview: URL.createObjectURL(f),
+      }));
+    onChange([...images, ...added]);
   };
 
-  const remove = (idx: number) => {
-    const next = [...images];
-    // revogar object URL se for novo para não vazar memória
-    const item = next[idx];
-    if (item.mode === "new") URL.revokeObjectURL(item.preview);
-    next.splice(idx, 1);
+  const remove = (visibleIdx: number) => {
+    // Mapeia índice visível para índice real no array
+    let count = 0;
+    const next = images.map((img) => {
+      if (img.mode === "deleted") return img;
+      if (count === visibleIdx) {
+        count++;
+        if (img.mode === "new") {
+          URL.revokeObjectURL(img.preview);
+          return { ...img, mode: "deleted" as const };
+        }
+        return { ...img, mode: "deleted" as const };
+      }
+      count++;
+      return img;
+    });
     onChange(next);
   };
-
-  const total = images.length;
 
   return (
     <div className="space-y-3">
@@ -140,45 +153,51 @@ function ImageManager({
         </button>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {images.map((img, idx) => {
-            const src = img.mode === "existing" ? safeMediaUrl(img.url) : img.preview;
+          {visible.map((img, visIdx) => {
+            const src =
+              img.mode === "existing"
+                ? safeMediaUrl(img.url)
+                : img.mode === "new"
+                ? img.preview
+                : null;
             return src ? (
               <div
-                key={idx}
+                key={visIdx}
                 className={`group relative aspect-square overflow-hidden rounded-xl border-2 ${
                   img.mode === "new"
                     ? "border-primary/60 ring-1 ring-primary/30"
                     : "border-border"
                 }`}
               >
-                <Image src={src} alt={`Imagem ${idx + 1}`} fill className="object-cover" />
+                <Image
+                  src={src}
+                  alt={`Imagem ${visIdx + 1}`}
+                  fill
+                  className="object-cover"
+                />
 
-                {/* Badge NEW */}
                 {img.mode === "new" && (
                   <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
                     NOVA
                   </span>
                 )}
 
-                {/* Botão excluir */}
                 <button
                   type="button"
-                  onClick={() => remove(idx)}
+                  onClick={() => remove(visIdx)}
                   title="Remover imagem"
                   className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
                 >
                   <Trash2 size={11} />
                 </button>
 
-                {/* Índice */}
                 <span className="absolute bottom-1 left-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
-                  {idx + 1}
+                  {visIdx + 1}
                 </span>
               </div>
             ) : null;
           })}
 
-          {/* Célula de adicionar (se < 10) */}
           {total < 10 && (
             <button
               type="button"
@@ -206,18 +225,22 @@ function ImageManager({
 // ─── VideoUpload ──────────────────────────────────────────────────────────────
 
 function VideoUpload({
-  file,
+  newFile,
   existingUrl,
   onChange,
   onClear,
 }: {
-  file: File | null;
+  newFile: File | null;
   existingUrl?: string | null;
   onChange: (f: File) => void;
   onClear: () => void;
 }) {
   const ref = useRef<HTMLInputElement>(null);
-  const preview = file ? URL.createObjectURL(file) : safeMediaUrl(existingUrl);
+  // Mostra: novo arquivo > existente no servidor > nada
+  const preview = newFile
+    ? URL.createObjectURL(newFile)
+    : safeMediaUrl(existingUrl);
+  const hasExisting = !!existingUrl && !newFile;
 
   return (
     <div className="space-y-3">
@@ -233,8 +256,14 @@ function VideoUpload({
             onClick={onClear}
             className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white hover:bg-red-600"
           >
-            <X size={12} /> Remover
+            <X size={12} />
+            {hasExisting ? "Remover vídeo atual" : "Cancelar seleção"}
           </button>
+          {newFile && (
+            <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+              NOVO
+            </span>
+          )}
         </div>
       ) : (
         <button
@@ -243,7 +272,11 @@ function VideoUpload({
           className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-6 text-sm text-muted-foreground transition hover:border-primary hover:text-primary"
         >
           <Play size={24} />
-          <span>Clique para selecionar um vídeo</span>
+          <span>
+            {existingUrl
+              ? "Vídeo removido — clique para enviar um novo"
+              : "Clique para selecionar um vídeo"}
+          </span>
         </button>
       )}
 
@@ -306,8 +339,10 @@ export default function AdminCategoriasPage() {
   // form state
   const [texto, setTexto] = useState("");
   const [images, setImages] = useState<ManagedImage[]>([]);
-  const [video, setVideo] = useState<File | null>(null);
-  const [clearVideo, setClearVideo] = useState(false);
+  // newVideo: arquivo de vídeo recém selecionado
+  const [newVideo, setNewVideo] = useState<File | null>(null);
+  // videoCleared: admin pediu para remover o vídeo existente (sem enviar novo)
+  const [videoCleared, setVideoCleared] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -323,8 +358,8 @@ export default function AdminCategoriasPage() {
   const resetForm = () => {
     setTexto("");
     setImages([]);
-    setVideo(null);
-    setClearVideo(false);
+    setNewVideo(null);
+    setVideoCleared(false);
     setError("");
   };
 
@@ -336,7 +371,6 @@ export default function AdminCategoriasPage() {
   const openEdit = (item: Cat) => {
     resetForm();
     setTexto(item.texto);
-    // Pré-popular as imagens existentes
     setImages(
       (item.imagensUrl ?? []).map((url) => ({ mode: "existing" as const, url }))
     );
@@ -350,12 +384,10 @@ export default function AdminCategoriasPage() {
     setError("");
     setSaving(true);
     try {
-      const fd = buildFormData(texto, images, clearVideo ? null : video, clearVideo);
-
+      const fd = buildFormData(texto, images, newVideo);
       modal.editing
         ? await catApi.update(modal.editing.id, fd)
         : await catApi.create(fd);
-
       closeModal();
       load();
     } catch (err: unknown) {
@@ -380,8 +412,12 @@ export default function AdminCategoriasPage() {
     load();
   };
 
-  const existingVideoUrl = modal.editing?.videoUrl ?? null;
-  const displayedVideoUrl = clearVideo ? null : video ? null : existingVideoUrl;
+  // URL do vídeo a exibir no player:
+  // - se admin selecionou novo arquivo: não mostra o antigo (será substituído)
+  // - se admin limpou sem novo: não mostra nada (será substituído após novo upload)
+  // - caso contrário: mostra o vídeo existente
+  const displayedVideoUrl =
+    videoCleared || newVideo ? null : (modal.editing?.videoUrl ?? null);
 
   return (
     <div>
@@ -507,11 +543,25 @@ export default function AdminCategoriasPage() {
           <ImageManager images={images} onChange={setImages} />
 
           <VideoUpload
-            file={video}
+            newFile={newVideo}
             existingUrl={displayedVideoUrl}
-            onChange={(f) => { setVideo(f); setClearVideo(false); }}
-            onClear={() => { setVideo(null); setClearVideo(true); }}
+            onChange={(f) => {
+              setNewVideo(f);
+              setVideoCleared(false);
+            }}
+            onClear={() => {
+              setNewVideo(null);
+              setVideoCleared(true);
+            }}
           />
+
+          {/* Aviso quando o admin limpou o vídeo sem enviar um novo */}
+          {videoCleared && !newVideo && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-400">
+              ⚠️ O vídeo será mantido no servidor até você enviar um novo arquivo no lugar.
+              O backend atual não suporta remoção de vídeo sem substituição.
+            </p>
+          )}
 
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
