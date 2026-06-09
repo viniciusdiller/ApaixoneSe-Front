@@ -163,7 +163,7 @@ export default function AdminServicosPage() {
 
   const tipoLabel = (v: TipoServicoTurista) =>
     TIPOS_SERVICO.find((t) => t.value === v)?.label ?? v;
-  const roteiroLabel = (v?: TipoRoteiro) =>
+  const roteiroLabel = (v?: TipoRoteiro | null) =>
     v ? (ROTEIROS.find((r) => r.value === v)?.label ?? v) : "—";
   const ownerName = (id: string) => {
     const u = users.find((u) => u.id === id);

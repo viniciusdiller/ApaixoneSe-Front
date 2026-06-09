@@ -31,35 +31,59 @@ export const locaisCulturais = [
     nome: "Igreja de Nossa Senhora de Nazareth",
     descricao:
       "Erguida no século XVII, é o principal marco histórico da cidade e abriga o Círio mais antigo do Brasil.",
+    texto:
+      `A história da Igreja de Nossa Senhora de Nazareth remonta a 1630... 
+      
+      (Adicione a história completa aqui. Você pode usar quebras de linha normalmente).`,
     imagem: "/images/igreja-nazare.jpg",
   },
   {
     nome: "Templo do Rock",
     descricao:
       "Antiga casa do lendário roqueiro Serguei, transformada em um museu repleto de fotos e objetos pessoais.",
+    texto:
+      `Serguei escolheu Saquarema para viver sua liberdade... 
+      
+      (Adicione a história completa aqui).`,
     imagem: "/images/templo-rock.jpg",
   },
   {
     nome: "Sambaqui da Beirada",
     descricao:
       "Sítio arqueológico em Barra Nova que preserva vestígios e a história de populações pré-históricas.",
+    texto: 
+      `Os povos sambaquianos viveram no litoral do Rio de Janeiro há milhares de anos... 
+      
+      (Adicione a história completa aqui).`,
     imagem: "/images/placeholder.svg",
   },
   {
     nome: "Caminhos de Darwin (Beachrocks)",
     descricao:
       "Formação geológica raríssima em Jaconé, visitada e descrita por Charles Darwin em 1832.",
+    texto: 
+      `Em sua passagem pelo Brasil, o naturalista Charles Darwin ficou fascinado por estas pedras... 
+      
+      (Adicione a história completa aqui).`,
     imagem: "/images/placeholder.svg",
   },
   {
     nome: "Casa da Pedra",
     descricao:
       "Ponto turístico e cultural, palco de eventos e exposições que celebram a arte e a história local.",
+    texto: 
+      `Construída com elementos rústicos, a Casa da Pedra é um marco da arquitetura... 
+      
+      (Adicione a história completa aqui).`,
     imagem: "/images/placeholder.svg",
   },
   {
     nome: "Teatro Mario Lagos",
     descricao:
       "Espaço cultural que recebe peças de teatro, shows e eventos artísticos, promovendo a cultura local.",
+    texto: 
+      `Sendo o coração das artes cênicas na cidade, o teatro já recebeu grandes nomes... 
+      
+      (Adicione a história completa aqui).`,
   },
 ];
