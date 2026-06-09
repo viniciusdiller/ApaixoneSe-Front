@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MapPin, Instagram, Star, Tag } from "lucide-react";
+import { Phone, MapPin, Instagram, Star, Tag, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { Hospedagem } from "@/lib/api";
@@ -39,6 +39,14 @@ export function HospedagemCard({ hospedagem, index }: Props) {
   const instagramHref = instagramHandle
     ? `https://instagram.com/${instagramHandle}`
     : null;
+
+  const siteUrl = (hospedagem as Hospedagem & { site?: string }).site;
+  const siteHref = siteUrl
+    ? siteUrl.startsWith("http")
+      ? siteUrl
+      : `https://${siteUrl}`
+    : null;
+  const siteLabel = siteUrl ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
 
   return (
     <motion.article
@@ -102,6 +110,20 @@ export function HospedagemCard({ hospedagem, index }: Props) {
             {hospedagem.endereco}
           </span>
         </div>
+
+        {siteHref && siteLabel && (
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 shrink-0 text-primary" />
+            <a
+              href={siteHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline truncate"
+            >
+              {siteLabel}
+            </a>
+          </div>
+        )}
 
         <div className="rounded-xl border border-border/60 bg-muted/40 px-4 py-3">
           <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">

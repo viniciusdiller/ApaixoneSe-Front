@@ -25,6 +25,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock,
+  Globe,
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
@@ -53,7 +54,7 @@ const REQUER_COMPROVANTE: TipoServicoTurista[] = [
   "LOCADORA_VEICULOS",
 ];
 
-const empty: CreateServicoTuristaDto = {
+const empty: CreateServicoTuristaDto & { site?: string } = {
   tipo: "GUIA_TURISMO",
   nome: "",
   telefone: "",
@@ -66,6 +67,7 @@ const empty: CreateServicoTuristaDto = {
   logoUrl: "",
   fotoUrl: "",
   validade: "",
+  site: "",
 };
 
 // ─── helpers de validade ───────────────────────────────────────────────────────
@@ -161,7 +163,7 @@ export default function AdminServicosPage() {
     { open: false, editing: null }
   );
   const [viewing, setViewing] = useState<ServicoTurista | null>(null);
-  const [form, setForm] = useState<CreateServicoTuristaDto>(empty);
+  const [form, setForm] = useState<typeof empty>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [files, setFiles] = useState<{ logo?: File; foto?: File; comprovante?: File }>({});
@@ -184,6 +186,7 @@ export default function AdminServicosPage() {
   };
 
   const openEdit = (item: ServicoTurista) => {
+    const s = item as ServicoTurista & { site?: string };
     setForm({
       tipo: item.tipo,
       nome: item.nome,
@@ -198,6 +201,7 @@ export default function AdminServicosPage() {
       logoUrl: item.logoUrl ?? "",
       fotoUrl: item.fotoUrl ?? "",
       validade: item.validade ? item.validade.slice(0, 10) : "",
+      site: s.site ?? "",
     });
     setFiles({});
     setError("");
@@ -229,6 +233,7 @@ export default function AdminServicosPage() {
       formData.append("roteiro", form.roteiro || "");
       formData.append("idiomas", form.idiomas || "");
       formData.append("instagram", form.instagram || "");
+      if (form.site) formData.append("site", form.site);
 
       // Validade (só envia se preenchida)
       if (form.validade) formData.append("validade", form.validade);
@@ -264,13 +269,13 @@ export default function AdminServicosPage() {
   };
 
   const set =
-    (k: keyof CreateServicoTuristaDto) =>
+    (k: keyof typeof empty) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | string) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
-  const setField = (k: keyof CreateServicoTuristaDto, value: string) =>
+  const setField = (k: keyof typeof empty, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
   const tipoLabel = (v: TipoServicoTurista) =>
@@ -397,6 +402,23 @@ export default function AdminServicosPage() {
               <ViewRow label="Idiomas" value={viewing.idiomas} />
               <ViewRow label="Instagram" value={viewing.instagram} />
               <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
+              {(viewing as ServicoTurista & { site?: string }).site && (
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Globe className="h-3.5 w-3.5" /> Site
+                  </dt>
+                  <dd className="text-sm">
+                    <a
+                      href={(viewing as ServicoTurista & { site?: string }).site!.startsWith("http") ? (viewing as ServicoTurista & { site?: string }).site! : `https://${(viewing as ServicoTurista & { site?: string }).site}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {(viewing as ServicoTurista & { site?: string }).site}
+                    </a>
+                  </dd>
+                </div>
+              )}
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Descrição" value={viewing.descricao} />
@@ -458,6 +480,7 @@ export default function AdminServicosPage() {
           </div>
           <AdminFormField label="Endereço" value={form.endereco ?? ""} onChange={set("endereco")} />
           <AdminFormField label="CNPJ" value={form.cnpj ?? ""} onChange={set("cnpj")} />
+          <AdminFormField label="Site" value={form.site ?? ""} onChange={set("site")} />
           <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
 
           {/* Roteiro */}

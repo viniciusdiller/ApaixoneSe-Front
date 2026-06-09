@@ -21,6 +21,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock,
+  Globe,
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
@@ -86,7 +87,7 @@ function ComprovanteBotao({ url }: { url?: string | null }) {
 }
 
 // ─── estado inicial ────────────────────────────────────────────────────────
-const empty: CreateHospedagemDto & { validade?: string } = {
+const empty: CreateHospedagemDto & { validade?: string; site?: string } = {
   nome: "",
   telefone: "",
   endereco: "",
@@ -100,6 +101,7 @@ const empty: CreateHospedagemDto & { validade?: string } = {
   instagram: "",
   tags: [],
   validade: "",
+  site: "",
 };
 
 const statusClass = (s: string) =>
@@ -149,6 +151,8 @@ export default function AdminHospedagemPage() {
       catch { return []; }
     })();
 
+    const h = item as Hospedagem & { validade?: string; site?: string };
+
     setForm({
       nome: item.nome,
       telefone: item.telefone,
@@ -162,9 +166,8 @@ export default function AdminHospedagemPage() {
       usuarioId: item.usuarioId,
       instagram: item.instagram ?? "",
       tags: existingTags,
-      validade: (item as Hospedagem & { validade?: string }).validade
-        ? (item as Hospedagem & { validade?: string }).validade!.slice(0, 10)
-        : "",
+      validade: h.validade ? h.validade.slice(0, 10) : "",
+      site: h.site ?? "",
     });
     setFiles({});
     setError("");
@@ -196,6 +199,7 @@ export default function AdminHospedagemPage() {
       if (form.instagram) fd.append("instagram", form.instagram);
       if (form.tags && form.tags.length > 0) fd.append("tags", JSON.stringify(form.tags));
       if (form.validade) fd.append("validade", form.validade);
+      if (form.site) fd.append("site", form.site);
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -344,6 +348,23 @@ export default function AdminHospedagemPage() {
               <ViewRow label="Instagram" value={viewing.instagram} />
               <ViewRow label="Responsável" value={viewing.responsavelNome} />
               <ViewRow label="CPF Responsável" value={viewing.responsavelCpf} />
+              {(viewing as Hospedagem & { site?: string }).site && (
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    <Globe className="h-3.5 w-3.5" /> Site
+                  </dt>
+                  <dd className="text-sm">
+                    <a
+                      href={(viewing as Hospedagem & { site?: string }).site!.startsWith("http") ? (viewing as Hospedagem & { site?: string }).site! : `https://${(viewing as Hospedagem & { site?: string }).site}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      {(viewing as Hospedagem & { site?: string }).site}
+                    </a>
+                  </dd>
+                </div>
+              )}
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Texto Diferencial" value={viewing.textoDiferencial} />
@@ -406,6 +427,7 @@ export default function AdminHospedagemPage() {
             <AdminFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} required />
             <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
           </div>
+          <AdminFormField label="Site" value={form.site ?? ""} onChange={set("site")} />
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} required />
             <AdminFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} required />
