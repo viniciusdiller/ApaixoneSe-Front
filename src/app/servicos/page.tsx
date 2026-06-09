@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Map, Compass, Info, ArrowRight, Bike, Car, Banknote } from "lucide-react";
+import { Map, Compass, Info, ArrowRight, Bike, Car, Banknote, FileText } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 
@@ -66,6 +66,14 @@ export default function ServicosPage() {
         "Troque sua moeda com segurança em casas de câmbio credenciadas em Saquarema.",
       label: "Ver casas de câmbio",
       href: "/servicos/casa-de-cambio",
+    },
+    {
+      icon: <FileText size={32} />,
+      title: "Taxa de Turismo",
+      description:
+        "Autorização de acesso de ônibus, micro-ônibus e vans ao município. Saiba as taxas e como emitir.",
+      label: "Ver informações",
+      href: "/servicos/taxa-de-turismo",
     },
   ];
 
