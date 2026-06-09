@@ -23,6 +23,11 @@ const links = [
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
+  {
+    label: "Evento Principal",
+    href: "/admin/evento-principal",
+    icon: Calendar,
+  },
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
   { label: "Hospedagem", href: "/admin/hospedagem", icon: BedDouble },
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },

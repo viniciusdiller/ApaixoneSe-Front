@@ -2,18 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, MapPin, Phone, Instagram, X, UtensilsCrossed } from "lucide-react";
+import { AlertCircle, MapPin, Phone, Instagram, X, UtensilsCrossed, CheckCircle2 } from "lucide-react";
 import { gastronomiaApi } from "@/lib/api/gastronomia";
 import type { Gastronomia } from "@/lib/api/types";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { pratosTipicos } from "@/lib/data";
 import { GastronomiaCard } from "./GastronomiaCard";
+import { useVisitas } from "@/hooks/useVisitas";
 
 export function GastronomiaListPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
   const [selecionado, setSelecionado] = useState<Gastronomia | null>(null);
+
+  const { gastronomiasVisitadas, isLogado, toggleGastronomia } = useVisitas();
 
   useEffect(() => {
     gastronomiaApi
@@ -33,9 +36,13 @@ export function GastronomiaListPage() {
   const imgUrl = (r: Gastronomia) =>
     safeMediaUrl(r.logoUrl) || "/images/gastronomia.jpg";
 
+  const isVisitadoModal = selecionado
+    ? gastronomiasVisitadas.has(selecionado.id)
+    : false;
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero — mesmo padrão de HospedagemListPage e ServicoTuristaListPage */}
+      {/* Hero */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
         <span
           aria-hidden
@@ -58,9 +65,16 @@ export function GastronomiaListPage() {
 
       {/* Lista de restaurantes */}
       <section className="container mx-auto px-4 py-16">
-        <h2 className="font-display text-4xl font-bold uppercase text-foreground">
-          Restaurantes
-        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="font-display text-4xl font-bold uppercase text-foreground">
+            Restaurantes
+          </h2>
+          {isLogado && (
+            <p className="text-sm text-muted-foreground">
+              ✓ Marque os restaurantes que você já visitou!
+            </p>
+          )}
+        </div>
 
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {loading ? (
@@ -94,6 +108,8 @@ export function GastronomiaListPage() {
                 restaurante={restaurante}
                 index={i}
                 onVerDetalhes={setSelecionado}
+                visitado={gastronomiasVisitadas.has(restaurante.id)}
+                onToggleCheckin={isLogado ? toggleGastronomia : undefined}
               />
             ))
           )}
@@ -117,7 +133,7 @@ export function GastronomiaListPage() {
         </div>
       </section>
 
-      {/* Modal — mesmo padrão de HospedagemListPage e ServicoTuristaListPage */}
+      {/* Modal */}
       <AnimatePresence>
         {selecionado && (
           <div
@@ -138,16 +154,36 @@ export function GastronomiaListPage() {
                 <X className="h-5 w-5" />
               </button>
 
-              {/* Imagem modal: bg-contain */}
+              {/* Imagem modal */}
               <div
                 className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
                 style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
               />
 
               <div className="p-6 sm:p-8">
-                <h3 className="mb-1 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
-                  {selecionado.nome}
-                </h3>
+                <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+                  <h3 className="font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
+                    {selecionado.nome}
+                  </h3>
+
+                  {/* Botão de check-in no modal */}
+                  {isLogado && (
+                    <button
+                      onClick={() => toggleGastronomia(selecionado.id)}
+                      className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                        isVisitadoModal
+                          ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400"
+                          : "border-border bg-background text-muted-foreground hover:border-green-400 hover:text-green-600"
+                      }`}
+                    >
+                      {isVisitadoModal ? (
+                        <><CheckCircle2 className="h-4 w-4" /> Visitei este lugar!</>
+                      ) : (
+                        <><CheckCircle2 className="h-4 w-4 opacity-40" /> Já fui aqui!</>
+                      )}
+                    </button>
+                  )}
+                </div>
 
                 {selecionado.especialidade && (
                   <span className="mb-5 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">

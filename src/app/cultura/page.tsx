@@ -1,9 +1,15 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { locaisCulturais } from "@/lib/data";
+import { X } from "lucide-react";
+import Image from "next/image";
 
 export default function CulturaPage() {
+  // Estado para armazenar qual local foi clicado. Se for null, o pop-up fica fechado.
+  const [localSelecionado, setLocalSelecionado] = useState<typeof locaisCulturais[0] | null>(null);
+
   return (
     <div className="min-h-screen bg-background">
       <section className="relative flex h-[55vh] items-center justify-center overflow-hidden pt-20">
@@ -28,18 +34,28 @@ export default function CulturaPage() {
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
           {locaisCulturais.map((local, i) => (
-            <motion.article
+            <motion.div
               key={local.nome}
               initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-xl border border-border bg-card p-6"
             >
-              <h3 className="font-display text-2xl uppercase">{local.nome}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {local.descricao}
-              </p>
-            </motion.article>
+              <article
+                onClick={() => setLocalSelecionado(local)}
+                className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <h3 className="relative z-10 font-display text-2xl uppercase transition-colors group-hover:text-primary">
+                  {local.nome}
+                </h3>
+                <p className="relative z-10 mt-2 text-sm text-muted-foreground line-clamp-3">
+                  {local.descricao}
+                </p>
+                <p className="relative z-10 mt-4 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+                  Ler mais &rarr;
+                </p>
+              </article>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -86,6 +102,59 @@ export default function CulturaPage() {
           </article>
         </div>
       </section>
+
+      <AnimatePresence>
+        {localSelecionado && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setLocalSelecionado(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+            />
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-card shadow-2xl border border-border"
+            >
+              <button
+                onClick={() => setLocalSelecionado(null)}
+                className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground backdrop-blur-md transition-colors hover:bg-background"
+                aria-label="Fechar"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {localSelecionado.imagem && localSelecionado.imagem !== "/images/placeholder.svg" && (
+                <div className="relative h-64 w-full bg-primary/20">
+                  <Image
+                    src={localSelecionado.imagem}
+                    alt={localSelecionado.nome}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+              )}
+
+              <div className="p-8">
+                <h3 className="font-display text-3xl font-bold uppercase text-foreground">
+                  {localSelecionado.nome}
+                </h3>
+                
+                <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                    {localSelecionado.texto || localSelecionado.descricao}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

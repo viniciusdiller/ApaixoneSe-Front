@@ -28,6 +28,22 @@ function resolveUrl(url?: string | null): string | undefined {
   return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
+/** Parseia tags independente de vir como string[] ou JSON string */
+function parseTags(raw: string[] | null | undefined): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw as string[];
+  try { return JSON.parse(raw as unknown as string) as string[]; }
+  catch { return []; }
+}
+
+const TAG_COLORS = [
+  "bg-primary/10 text-primary border-primary/20",
+  "bg-blue-100 text-blue-700 border-blue-200",
+  "bg-emerald-100 text-emerald-700 border-emerald-200",
+  "bg-amber-100 text-amber-700 border-amber-200",
+  "bg-rose-100 text-rose-700 border-rose-200",
+];
+
 type PendingItem =
   | { kind: "gastronomia"; data: Gastronomia }
   | { kind: "hospedagem"; data: Hospedagem }
@@ -112,6 +128,7 @@ function PendingDetailModal({
   const docUrl = resolveUrl("documentoPdfUrl" in data ? (data.documentoPdfUrl ?? undefined) : undefined);
   const especialidade = item.kind === "gastronomia" ? (item.data.especialidade ?? undefined) : undefined;
   const diferencial = item.kind === "hospedagem" ? item.data.textoDiferencial : undefined;
+  const hospTags = item.kind === "hospedagem" ? parseTags(item.data.tags) : [];
   const tipo = item.kind === "servico" ? item.data.tipo.replaceAll("_", " ") : undefined;
   const descricao = item.kind === "servico" ? (item.data.descricao ?? undefined) : undefined;
   const idiomas = item.kind === "servico" ? (item.data.idiomas ?? undefined) : undefined;
@@ -168,6 +185,27 @@ function PendingDetailModal({
             {descricao && <DetailRow icon={<FileText size={14} />} label="Descrição" value={descricao} />}
             {idiomas && <DetailRow icon={<FileText size={14} />} label="Idiomas" value={idiomas} />}
           </div>
+
+          {/* Tags de comodidades (apenas Hospedagem) */}
+          {hospTags.length > 0 && (
+            <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Tag size={12} /> Comodidades
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {hospTags.map((tag, idx) => (
+                  <span
+                    key={tag}
+                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                      TAG_COLORS[idx % TAG_COLORS.length]
+                    }`}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {docUrl && (
             <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
@@ -289,7 +327,6 @@ export default function AdminDashboardPage() {
     if (!activeItem) return;
     setActionLoading(true);
     try {
-      // Usa updateStatus (PATCH + JSON) em vez de update (PUT + FormData)
       if (activeItem.kind === "gastronomia") {
         await gastronomiaApi.updateStatus(activeItem.data.id, { status });
         setPendGast((p) => p.filter((x) => x.id !== activeItem.data.id));
