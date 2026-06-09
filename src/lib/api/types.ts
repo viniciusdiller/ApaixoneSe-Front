@@ -62,7 +62,7 @@ export interface LoginResponse {
   user: User;
 }
 
-// ─── Atividades ───────────────────────────────────────────────────────────
+// ─── Atividades ───────────────────────────────────────────────────────────────
 export interface Atividade {
   id: string;
   titulo: string;
@@ -86,7 +86,7 @@ export interface CreateAtividadeDto {
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
 
-// ─── Eventos ──────────────────────────────────────────────────────────────
+// ─── Eventos ───────────────────────────────────────────────────────────────
 export interface Evento {
   id: string;
   titulo: string;
@@ -106,7 +106,7 @@ export interface CreateEventoDto {
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;
 
-// ─── Gastronomia ──────────────────────────────────────────────────────────
+// ─── Gastronomia ──────────────────────────────────────────────────────────────
 export interface Gastronomia {
   id: string;
   nome: string;
@@ -144,12 +144,13 @@ export interface UpdateGastronomiaDto extends Partial<CreateGastronomiaDto> {
   status?: StatusEstabelecimento;
 }
 
-// ─── Hospedagem ───────────────────────────────────────────────────────────
+// ─── Hospedagem ───────────────────────────────────────────────────────────────
 export interface Hospedagem {
   id: string;
   nome: string;
   telefone: string;
   instagram?: string | null;
+  site?: string | null;
   endereco: string;
   textoDiferencial: string;
   cnpj: string;
@@ -159,6 +160,9 @@ export interface Hospedagem {
   logoUrl: string;
   status: StatusEstabelecimento;
   usuarioId: string;
+  /** Campo adicionado no backend (commit feat: add Tags Hospedagem).
+   *  O Prisma salva como Json — o backend pode retornar string[] ou JSON string. */
+  tags?: string[] | null;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   createdAt?: string;
   updatedAt?: string;
@@ -168,6 +172,7 @@ export interface CreateHospedagemDto {
   nome: string;
   telefone: string;
   instagram?: string;
+  site?: string;
   endereco: string;
   textoDiferencial: string;
   cnpj: string;
@@ -176,19 +181,22 @@ export interface CreateHospedagemDto {
   documentoPdfUrl: string;
   logoUrl: string;
   usuarioId: string;
+  /** Tags de comodidades — serializado como JSON.stringify(string[]) no FormData */
+  tags?: string[];
 }
 
 export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
   status?: StatusEstabelecimento;
 }
 
-// ─── Serviço Turista ──────────────────────────────────────────────────────
+// ─── Serviço Turista ──────────────────────────────────────────────────────────────
 export interface ServicoTurista {
   id: string;
   tipo: TipoServicoTurista;
   nome: string;
   telefone: string;
   instagram?: string | null;
+  site?: string | null;
   descricao?: string | null;
   endereco?: string | null;
   cnpj?: string | null;
@@ -199,6 +207,18 @@ export interface ServicoTurista {
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  /**
+   * URL do comprovante Cadastur (PDF ou imagem .webp).
+   * Obrigatório para todos os tipos exceto ESPORTE_LAZER.
+   * Adicionado no commit: Comprovante OK para todos (08/06/2026)
+   */
+  comprovanteUrl?: string | null;
+  /**
+   * Data de validade do Cadastur.
+   * Apenas ADMIN pode alterar via update.
+   * Adicionado no commit: adicionado data de validade (08/06/2026)
+   */
+  validade?: string | null; // ISO date string "YYYY-MM-DD" ou datetime completo
   createdAt?: string;
   updatedAt?: string;
 }
@@ -208,6 +228,7 @@ export interface CreateServicoTuristaDto {
   nome: string;
   telefone: string;
   instagram?: string;
+  site?: string;
   descricao?: string;
   endereco?: string;
   cnpj?: string;
@@ -216,6 +237,10 @@ export interface CreateServicoTuristaDto {
   logoUrl?: string;
   fotoUrl?: string;
   usuarioId: string;
+  /** Enviado via FormData como field 'comprovante' (File). Não enviado como string. */
+  comprovanteUrl?: string;
+  /** Enviado como string "YYYY-MM-DD" no FormData. Só admin pode alterar em updates. */
+  validade?: string;
 }
 
 export interface UpdateServicoTuristaDto
@@ -223,7 +248,7 @@ export interface UpdateServicoTuristaDto
   status?: StatusEstabelecimento;
 }
 
-// ─── Plano de Viagem ──────────────────────────────────────────────────────
+// ─── Plano de Viagem ────────────────────────────────────────────��──────────────────
 export interface PlanoViagem {
   id: string;
   titulo: string;
@@ -245,7 +270,7 @@ export interface CreatePlanoViagemDto {
 
 export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
 
-// ─── Item Plano Viagem ────────────────────────────────────────────────────
+// ─── Item Plano Viagem ──────────────────────────────────────────────────────────────
 export interface ItemPlanoViagem {
   id: string;
   dataHoraAgendada: string;
@@ -283,18 +308,62 @@ export interface CreateItemPlanoViagemDto {
   servicoTuristaId?: string;
 }
 
-// ─── Cat ──────────────────────────────────────────────────────────────────
+// ─── Cat ────────────────────────────────────────────────────────────────────
+/**
+ * Modelo CAT atualizado (commit: add vídeo no CAT — 08/06/2026)
+ * - arquivoUrl removido
+ * - imagensUrl: array de URLs de imagens (.webp convertidas pelo backend)
+ * - videoUrl: URL do vídeo original (.mp4, .mov etc.) — opcional
+ */
 export interface Cat {
   id: string;
   texto: string;
-  arquivoUrl: string;
+  imagensUrl: string[];
+  videoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface CreateCatDto {
   texto: string;
-  arquivoUrl: string;
+  /** Não enviado diretamente — imagens e vídeo chegam via FormData fields */
+  imagensUrl?: string[];
+  videoUrl?: string | null;
 }
 
 export type UpdateCatDto = Partial<CreateCatDto>;
+
+// ─── Evento Principal ──────────────────────────────────────────────────────────────
+export interface EventoPrincipal {
+  id: string;
+  titulo: string;
+  etapa?: string | null;
+  data: string; // ISO datetime
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateEventoPrincipalDto {
+  titulo: string;
+  etapa?: string;
+  data: string;
+}
+
+export type UpdateEventoPrincipalDto = Partial<CreateEventoPrincipalDto>;
+
+// ─── Visitas ──────────────────────────────────────────────────────────────────
+/**
+ * Resposta de GET /visitas/minhas
+ * Contém apenas os IDs dos itens que o usuário logado já visitou.
+ */
+export interface MinhasVisitas {
+  gastronomias: string[];
+  atividades: string[];
+}
+
+/**
+ * Resposta de POST /visitas/gastronomia/:id  ou  POST /visitas/atividade/:id
+ */
+export interface ToggleVisitaResponse {
+  status: "adicionado" | "removido";
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MapPin, Instagram, Languages, Route } from "lucide-react";
+import { Phone, MapPin, Instagram, Languages, Route, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
@@ -36,6 +36,14 @@ export function ServicoTuristaCard({ servico, index }: Props) {
   const roteiroLabel = servico.roteiro
     ? ROTEIROS.find((r) => r.enum === servico.roteiro)?.label
     : null;
+
+  const siteUrl = (servico as ServicoTurista & { site?: string }).site;
+  const siteHref = siteUrl
+    ? siteUrl.startsWith("http")
+      ? siteUrl
+      : `https://${siteUrl}`
+    : null;
+  const siteLabel = siteUrl ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
 
   return (
     <motion.article
@@ -101,6 +109,20 @@ export function ServicoTuristaCard({ servico, index }: Props) {
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <span className="text-sm text-muted-foreground">{servico.endereco}</span>
+          </div>
+        )}
+
+        {siteHref && siteLabel && (
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 shrink-0 text-primary" />
+            <a
+              href={siteHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline truncate"
+            >
+              {siteLabel}
+            </a>
           </div>
         )}
 

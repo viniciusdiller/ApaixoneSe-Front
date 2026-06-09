@@ -9,11 +9,11 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
-const empty: CreatePlanoViagemDto = { 
-  titulo: "", 
-  dataInicio: "", 
-  dataFim: "", 
-  usuarioId: "" 
+const empty: CreatePlanoViagemDto = {
+  titulo: "",
+  dataInicio: "",
+  dataFim: "",
+  usuarioId: "",
 };
 
 export default function AdminPlanosPage() {
@@ -31,11 +31,7 @@ export default function AdminPlanosPage() {
 
   const load = () => {
     setLoading(true);
-    Promise
-      .all([
-        planoViagemApi.getAll(),
-        usersApi.getAll()
-      ])
+    Promise.all([planoViagemApi.getAll(), usersApi.getAll()])
       .then(([planosData, usuariosData]) => {
         setItems(planosData);
         setUsuarios(usuariosData);
@@ -50,11 +46,11 @@ export default function AdminPlanosPage() {
     setModal({ open: true, editing: null });
   };
   const openEdit = (item: PlanoViagem) => {
-    setForm({ 
+    setForm({
       titulo: item.titulo,
       dataInicio: item.dataInicio,
       dataFim: item.dataFim,
-      usuarioId: item.usuarioId 
+      usuarioId: item.usuarioId,
     });
     setError("");
     setModal({ open: true, editing: item });
@@ -65,7 +61,7 @@ export default function AdminPlanosPage() {
     e.preventDefault();
     setError("");
     setSaving(true);
-    
+
     try {
       // 1. Monta o payload APENAS com campos permitidos pelo back-end
       // (titulo, dataInicio, dataFim). O usuarioId é pego pelo token no servidor.
@@ -229,7 +225,9 @@ export default function AdminPlanosPage() {
               required
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
-              <option value="" disabled>Selecione um cliente...</option>
+              <option value="" disabled>
+                Selecione um cliente...
+              </option>
               {usuarios.map((u) => (
                 <option key={u.id} value={u.id}>
                   {u.nome} ({u.email})

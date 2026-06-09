@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route } from "lucide-react";
+import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe } from "lucide-react";
 import { servicoTuristaApi } from "@/lib/api";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -18,6 +18,11 @@ interface Props {
   labelSingular: string;
   labelPlural: string;
   imagemFallback: string;
+}
+
+function buildSiteHref(site?: string | null): string | null {
+  if (!site) return null;
+  return site.startsWith("http") ? site : `https://${site}`;
 }
 
 export function ServicoTuristaListPage({
@@ -123,142 +128,178 @@ export function ServicoTuristaListPage({
               </p>
             </div>
           ) : (
-            servicos.map((servico, i) => (
-              <motion.article
-                key={servico.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
-              >
-                <div
-                  className="h-52 shrink-0 bg-contain bg-center bg-no-repeat"
-                  style={{ backgroundImage: `url(${imgUrl(servico)})` }}
-                />
-                <div className="flex grow flex-col p-5">
-                  <h3 className="font-display text-2xl font-bold uppercase">
-                    {servico.nome}
-                  </h3>
-                  <p className="mt-2 grow text-sm text-muted-foreground line-clamp-2">
-                    {servico.descricao ||
-                      servico.endereco ||
-                      `Telefone: ${servico.telefone}`}
-                  </p>
+            servicos.map((servico, i) => {
+              const siteHref = buildSiteHref(servico.site);
+              return (
+                <motion.article
+                  key={servico.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
+                >
+                  <div
+                    className="h-52 shrink-0 bg-contain bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${imgUrl(servico)})` }}
+                  />
+                  <div className="flex grow flex-col p-5">
+                    <h3 className="font-display text-2xl font-bold uppercase">
+                      {servico.nome}
+                    </h3>
+                    <p className="mt-2 grow text-sm text-muted-foreground line-clamp-2">
+                      {servico.descricao ||
+                        servico.endereco ||
+                        `Telefone: ${servico.telefone}`}
+                    </p>
 
-                  {/* Roteiro vinculado */}
-                  {getRoteiroLabel(servico) && (
-                    <div className="mt-3 flex items-center gap-1.5">
-                      <Route className="h-3.5 w-3.5 shrink-0 text-primary" />
-                      <span className="text-xs text-muted-foreground">
-                        Roteiro:{" "}
-                        <span className="font-semibold text-foreground">
-                          {getRoteiroLabel(servico)}
+                    {/* Roteiro vinculado */}
+                    {getRoteiroLabel(servico) && (
+                      <div className="mt-3 flex items-center gap-1.5">
+                        <Route className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        <span className="text-xs text-muted-foreground">
+                          Roteiro:{" "}
+                          <span className="font-semibold text-foreground">
+                            {getRoteiroLabel(servico)}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                  )}
+                      </div>
+                    )}
 
-                  <button
-                    onClick={() => setSelecionado(servico)}
-                    className="mt-4 w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
-                  >
-                    Ver detalhes
-                  </button>
-                </div>
-              </motion.article>
-            ))
+                    {/* Site no card */}
+                    {siteHref && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <Globe className="h-4 w-4 shrink-0 text-primary" />
+                        <a
+                          href={siteHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline truncate"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {servico.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        </a>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => setSelecionado(servico)}
+                      className="mt-4 w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
+                    >
+                      Ver detalhes
+                    </button>
+                  </div>
+                </motion.article>
+              );
+            })
           )}
         </div>
       </section>
 
       {/* Modal */}
       <AnimatePresence>
-        {selecionado && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-            onClick={() => setSelecionado(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+        {selecionado && (() => {
+          const siteHref = buildSiteHref(selecionado.site);
+          return (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+              onClick={() => setSelecionado(null)}
             >
-              <button
-                onClick={() => setSelecionado(null)}
-                className="absolute right-4 top-4 z-10 rounded-full bg-black/40 p-2 text-white transition hover:bg-black/60"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
               >
-                <X className="h-5 w-5" />
-              </button>
+                <button
+                  onClick={() => setSelecionado(null)}
+                  className="absolute right-4 top-4 z-10 rounded-full bg-black/40 p-2 text-white transition hover:bg-black/60"
+                >
+                  <X className="h-5 w-5" />
+                </button>
 
-              <div
-                className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
-                style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
-              />
+                <div
+                  className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
+                  style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
+                />
 
-              <div className="p-6 sm:p-8">
-                <h3 className="mb-1 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
-                  {selecionado.nome}
-                </h3>
+                <div className="p-6 sm:p-8">
+                  <h3 className="mb-1 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
+                    {selecionado.nome}
+                  </h3>
 
-                {/* Badges: roteiro + idiomas */}
-                <div className="mb-4 flex flex-wrap gap-2">
-                  {getRoteiroLabel(selecionado) && (
-                    <Link
-                      href={`/roteiros/${getRoteiroSlug(selecionado)}`}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
-                    >
-                      <Route className="h-3 w-3" />
-                      Roteiro {getRoteiroLabel(selecionado)}
-                    </Link>
-                  )}
-                  {selecionado.idiomas && (
-                    <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      Idiomas: {selecionado.idiomas}
-                    </span>
-                  )}
-                </div>
-
-                {selecionado.descricao && (
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    {selecionado.descricao}
-                  </p>
-                )}
-
-                <div className="mt-4 space-y-4 text-muted-foreground">
-                  {selecionado.endereco && (
-                    <div className="flex items-start gap-3">
-                      <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                      <p>{selecionado.endereco}</p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 shrink-0 text-primary" />
-                    <p>{selecionado.telefone || "Telefone não informado"}</p>
+                  {/* Badges: roteiro + idiomas */}
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {getRoteiroLabel(selecionado) && (
+                      <Link
+                        href={`/roteiros/${getRoteiroSlug(selecionado)}`}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
+                      >
+                        <Route className="h-3 w-3" />
+                        Roteiro {getRoteiroLabel(selecionado)}
+                      </Link>
+                    )}
+                    {selecionado.idiomas && (
+                      <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                        Idiomas: {selecionado.idiomas}
+                      </span>
+                    )}
                   </div>
 
-                  {selecionado.instagram && (
-                    <div className="flex items-center gap-3">
-                      <Instagram className="h-5 w-5 shrink-0 text-primary" />
-                      <a
-                        href={`https://instagram.com/${
-                          selecionado.instagram.replace("@", "")
-                        }`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="transition-colors hover:text-primary hover:underline"
-                      >
-                        {selecionado.instagram}
-                      </a>
-                    </div>
+                  {selecionado.descricao && (
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      {selecionado.descricao}
+                    </p>
                   )}
+
+                  <div className="mt-4 space-y-4 text-muted-foreground">
+                    {selecionado.endereco && (
+                      <div className="flex items-start gap-3">
+                        <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                        <p>{selecionado.endereco}</p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5 shrink-0 text-primary" />
+                      <p>{selecionado.telefone || "Telefone não informado"}</p>
+                    </div>
+
+                    {selecionado.instagram && (
+                      <div className="flex items-center gap-3">
+                        <Instagram className="h-5 w-5 shrink-0 text-primary" />
+                        <a
+                          href={`https://instagram.com/${
+                            selecionado.instagram.replace("@", "")
+                          }`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="transition-colors hover:text-primary hover:underline"
+                        >
+                          {selecionado.instagram}
+                        </a>
+                      </div>
+                    )}
+
+                    {siteHref && (
+                      <div className="flex items-center gap-3">
+                        <Globe className="h-5 w-5 shrink-0 text-primary" />
+                        <a
+                          href={siteHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="transition-colors hover:text-primary hover:underline truncate"
+                        >
+                          {selecionado.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

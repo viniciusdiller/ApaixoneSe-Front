@@ -1,24 +1,35 @@
 import { apiFetch } from "./config";
-import type {
-  Hospedagem,
-  CreateHospedagemDto,
-  UpdateHospedagemDto,
-} from "./types";
+import type { Hospedagem, CreateHospedagemDto, UpdateHospedagemDto } from "./types";
+
+export const HOSPEDAGEM_TAGS = [
+  "Wi-Fi",
+  "Piscina",
+  "Ar-condicionado",
+  "Estacionamento",
+  "Pet Friendly",
+  "Caf\u00e9 da manh\u00e3",
+  "Academia",
+  "Beira-mar",
+  "Chal\u00e9",
+  "Bangal\u00f4",
+] as const;
+
+export type HospedagemTag = (typeof HOSPEDAGEM_TAGS)[number];
 
 export const hospedagemApi = {
   getAll: () => apiFetch<Hospedagem[]>("/hospedagem"),
   getById: (id: string) => apiFetch<Hospedagem>(`/hospedagem/${id}`),
 
-  /** Cria com FormData (multipart com logo) */
+  /** Cria com FormData (multipart com logo/pdf/tags) */
   create: (data: FormData) =>
-    apiFetch<CreateHospedagemDto>("/hospedagem", {
+    apiFetch<Hospedagem>("/hospedagem", {
       method: "POST",
       body: data,
     }),
 
-  /** Atualiza com FormData (multipart com logo) — usado nos formulários de edição */
+  /** Atualiza com FormData (multipart) */
   update: (id: string, data: FormData) =>
-    apiFetch<UpdateHospedagemDto>(`/hospedagem/${id}`, {
+    apiFetch<Hospedagem>(`/hospedagem/${id}`, {
       method: "PUT",
       body: data,
     }),

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MapPin, Instagram, Star } from "lucide-react";
+import { Phone, MapPin, Instagram, Star, Tag, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { Hospedagem } from "@/lib/api";
@@ -11,10 +11,26 @@ interface Props {
   index: number;
 }
 
+// Paleta de cores ciclada para as badges de tags
+const TAG_COLORS = [
+  "bg-primary/10 text-primary border-primary/20",
+  "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+  "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+  "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+  "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800",
+];
+
 export function HospedagemCard({ hospedagem, index }: Props) {
   const logoSrc = safeMediaUrl(hospedagem.logoUrl);
 
-  const telefoneFormatado = hospedagem.telefone;
+  const tags: string[] = (() => {
+    const raw = hospedagem.tags;
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw as string[];
+    try { return JSON.parse(raw as unknown as string) as string[]; }
+    catch { return []; }
+  })();
+
   const telefoneHref = `tel:${hospedagem.telefone.replace(/\D/g, "")}`;
 
   const instagramHandle = hospedagem.instagram
@@ -23,6 +39,14 @@ export function HospedagemCard({ hospedagem, index }: Props) {
   const instagramHref = instagramHandle
     ? `https://instagram.com/${instagramHandle}`
     : null;
+
+  const siteUrl = (hospedagem as Hospedagem & { site?: string }).site;
+  const siteHref = siteUrl
+    ? siteUrl.startsWith("http")
+      ? siteUrl
+      : `https://${siteUrl}`
+    : null;
+  const siteLabel = siteUrl ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
 
   return (
     <motion.article
@@ -37,7 +61,6 @@ export function HospedagemCard({ hospedagem, index }: Props) {
     >
       {/* Banner superior com logo centralizado */}
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-transparent">
-        {/* Padr\u00e3o decorativo de fundo */}
         <div
           aria-hidden
           className="absolute inset-0 opacity-[0.04]"
@@ -57,7 +80,6 @@ export function HospedagemCard({ hospedagem, index }: Props) {
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          /* Fallback: iniciais do nome */
           <div className="flex h-full items-center justify-center">
             <span className="font-display text-5xl font-bold uppercase tracking-wider text-primary/20">
               {hospedagem.nome
@@ -69,24 +91,19 @@ export function HospedagemCard({ hospedagem, index }: Props) {
           </div>
         )}
 
-        {/* Badge de destaque */}
         <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow">
           <Star className="h-3 w-3 fill-current" />
           Cadastur
         </div>
       </div>
 
-      {/* Divisor com gradiente */}
       <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-      {/* Conte\u00fado principal */}
       <div className="flex flex-1 flex-col gap-4 p-5">
-        {/* Nome */}
         <h3 className="font-display text-xl font-bold uppercase leading-tight tracking-wide text-card-foreground">
           {hospedagem.nome}
         </h3>
 
-        {/* Endere\u00e7o */}
         <div className="flex items-start gap-2">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <span className="text-sm text-muted-foreground">
@@ -94,25 +111,52 @@ export function HospedagemCard({ hospedagem, index }: Props) {
           </span>
         </div>
 
-        {/* Diferencial */}
+        {siteHref && siteLabel && (
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 shrink-0 text-primary" />
+            <a
+              href={siteHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline truncate"
+            >
+              {siteLabel}
+            </a>
+          </div>
+        )}
+
         <div className="rounded-xl border border-border/60 bg-muted/40 px-4 py-3">
           <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
             {hospedagem.textoDiferencial}
           </p>
         </div>
 
-        {/* A\u00e7\u00f5es — sempre no rodap\u00e9 do card */}
+        {/* Tags de comodidades */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+            {tags.map((tag, i) => (
+              <span
+                key={tag}
+                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                  TAG_COLORS[i % TAG_COLORS.length]
+                }`}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="mt-auto flex flex-wrap gap-2 pt-1">
-          {/* Telefone — sempre presente */}
           <a
             href={telefoneHref}
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.98]"
           >
             <Phone className="h-4 w-4" />
-            {telefoneFormatado}
+            {hospedagem.telefone}
           </a>
 
-          {/* Instagram — s\u00f3 aparece se n\u00e3o for null */}
           {instagramHref && instagramHandle && (
             <a
               href={instagramHref}

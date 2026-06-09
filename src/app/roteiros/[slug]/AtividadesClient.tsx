@@ -3,11 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, MapPin, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  AlertCircle,
+  CheckCircle2,
+  Circle,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import type { RoteiroMeta } from "@/lib/roteiros";
 import { atividadesApi } from "@/lib/api";
 import type { Atividade } from "@/lib/api";
+import { useVisitas } from "@/hooks/useVisitas";
 
 function AtividadeSkeleton() {
   return (
@@ -24,6 +31,8 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  const { atividadesVisitadas, isLogado, toggleAtividade } = useVisitas();
 
   useEffect(() => {
     setLoading(true);
@@ -69,17 +78,24 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
       {/* Atividades */}
       <section className="px-4 py-16">
         <div className="container mx-auto max-w-5xl">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-3xl font-bold uppercase text-foreground">
               Atividades
             </h2>
-            {!loading && !error && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                <MapPin className="h-4 w-4" />
-                {atividades.length}{" "}
-                {atividades.length === 1 ? "atividade" : "atividades"}
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {isLogado && !loading && !error && atividades.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  ✓ Marque as atividades que você já realizou!
+                </p>
+              )}
+              {!loading && !error && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+                  <MapPin className="h-4 w-4" />
+                  {atividades.length}{" "}
+                  {atividades.length === 1 ? "atividade" : "atividades"}
+                </span>
+              )}
+            </div>
           </div>
 
           {error && (
@@ -115,42 +131,85 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
 
           {!loading && !error && atividades.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-2">
-              {atividades.map((atividade, i) => (
-                <motion.div
-                  key={atividade.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: i * 0.06 }}
-                  className="rounded-xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
-                    {atividade.titulo}
-                  </h3>
-                  {atividade.local && (
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 shrink-0" />
-                      <span>{atividade.local}</span>
-                    </div>
-                  )}
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    {atividade.descricao}
-                  </p>
-                  {atividade.latitude != null &&
-                    atividade.longitude != null && (
-                      <div className="mt-4">
-                        <a
-                          href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-                        >
-                          <MapPin className="h-3.5 w-3.5" />
-                          Ver no mapa
-                        </a>
+              {atividades.map((atividade, i) => {
+                const visitado = atividadesVisitadas.has(atividade.id);
+                return (
+                  <motion.div
+                    key={atividade.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: i * 0.06 }}
+                    className={`relative rounded-xl border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md ${
+                      visitado
+                        ? "border-green-400/60 bg-green-50/30 dark:bg-green-950/10"
+                        : "border-border"
+                    }`}
+                  >
+                    {/* Badge "Fiz esta!" no canto */}
+                    {visitado && (
+                      <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-green-500 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow">
+                        <CheckCircle2 className="h-3 w-3" />
+                        Fiz esta!
                       </div>
                     )}
-                </motion.div>
-              ))}
+
+                    <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
+                      {atividade.titulo}
+                    </h3>
+
+                    {atividade.local && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span>{atividade.local}</span>
+                      </div>
+                    )}
+
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      {atividade.descricao}
+                    </p>
+
+                    {/* Ações: mapa + check-in */}
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      {atividade.latitude != null &&
+                        atividade.longitude != null && (
+                          <a
+                            href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                          >
+                            <MapPin className="h-3.5 w-3.5" />
+                            Ver no mapa
+                          </a>
+                        )}
+
+                      {/* Botão check-in — somente logados */}
+                      {isLogado && (
+                        <button
+                          onClick={() => toggleAtividade(atividade.id)}
+                          aria-label={
+                            visitado
+                              ? "Remover check-in"
+                              : "Marcar como realizada"
+                          }
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${
+                            visitado
+                              ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400"
+                              : "border-border bg-background text-muted-foreground hover:border-green-400 hover:text-green-600"
+                          }`}
+                        >
+                          {visitado ? (
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          ) : (
+                            <Circle className="h-3.5 w-3.5" />
+                          )}
+                          {visitado ? "Fiz esta!" : "Não fiz"}
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
 
