@@ -10,6 +10,7 @@ import {
   X,
   Star,
   Tag,
+  Globe,
 } from "lucide-react";
 import { hospedagemApi } from "@/lib/api";
 import type { Hospedagem } from "@/lib/api";
@@ -30,6 +31,11 @@ const TAG_COLORS = [
   "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
   "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800",
 ];
+
+function buildSiteHref(site?: string | null): string | null {
+  if (!site) return null;
+  return site.startsWith("http") ? site : `https://${site}`;
+}
 
 export function HospedagemListPage() {
   const [hospedagens, setHospedagens] = useState<Hospedagem[]>([]);
@@ -114,6 +120,7 @@ export function HospedagemListPage() {
           ) : (
             hospedagens.map((h, i) => {
               const tags = parseTags(h.tags);
+              const siteHref = buildSiteHref(h.site);
               return (
                 <motion.article
                   key={h.id}
@@ -140,6 +147,22 @@ export function HospedagemListPage() {
                     <p className="mt-2 grow text-sm text-muted-foreground line-clamp-2">
                       {h.textoDiferencial}
                     </p>
+
+                    {/* Site no card */}
+                    {siteHref && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <Globe className="h-4 w-4 shrink-0 text-primary" />
+                        <a
+                          href={siteHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline truncate"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {h.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        </a>
+                      </div>
+                    )}
 
                     {/* Tags no card */}
                     {tags.length > 0 && (
@@ -176,6 +199,7 @@ export function HospedagemListPage() {
       <AnimatePresence>
         {selecionada && (() => {
           const tags = parseTags(selecionada.tags);
+          const siteHref = buildSiteHref(selecionada.site);
           return (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
@@ -254,6 +278,20 @@ export function HospedagemListPage() {
                           className="transition-colors hover:text-primary hover:underline"
                         >
                           {selecionada.instagram}
+                        </a>
+                      </div>
+                    )}
+
+                    {siteHref && (
+                      <div className="flex items-center gap-3">
+                        <Globe className="h-5 w-5 shrink-0 text-primary" />
+                        <a
+                          href={siteHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="transition-colors hover:text-primary hover:underline truncate"
+                        >
+                          {selecionada.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                         </a>
                       </div>
                     )}
