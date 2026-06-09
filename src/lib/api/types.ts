@@ -210,15 +210,13 @@ export interface ServicoTurista {
   /**
    * URL do comprovante Cadastur (PDF ou imagem .webp).
    * Obrigatório para todos os tipos exceto ESPORTE_LAZER.
-   * Adicionado no commit: Comprovante OK para todos (08/06/2026)
    */
   comprovanteUrl?: string | null;
   /**
    * Data de validade do Cadastur.
    * Apenas ADMIN pode alterar via update.
-   * Adicionado no commit: adicionado data de validade (08/06/2026)
    */
-  validade?: string | null; // ISO date string "YYYY-MM-DD" ou datetime completo
+  validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -237,9 +235,7 @@ export interface CreateServicoTuristaDto {
   logoUrl?: string;
   fotoUrl?: string;
   usuarioId: string;
-  /** Enviado via FormData como field 'comprovante' (File). Não enviado como string. */
   comprovanteUrl?: string;
-  /** Enviado como string "YYYY-MM-DD" no FormData. Só admin pode alterar em updates. */
   validade?: string;
 }
 
@@ -248,7 +244,7 @@ export interface UpdateServicoTuristaDto
   status?: StatusEstabelecimento;
 }
 
-// ─── Plano de Viagem ────────────────────────────────────────────��──────────────────
+// ─── Plano de Viagem ──────────────────────────────────────────────────────────────
 export interface PlanoViagem {
   id: string;
   titulo: string;
@@ -326,7 +322,6 @@ export interface Cat {
 
 export interface CreateCatDto {
   texto: string;
-  /** Não enviado diretamente — imagens e vídeo chegam via FormData fields */
   imagensUrl?: string[];
   videoUrl?: string | null;
 }
@@ -338,7 +333,7 @@ export interface EventoPrincipal {
   id: string;
   titulo: string;
   etapa?: string | null;
-  data: string; // ISO datetime
+  data: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -352,18 +347,50 @@ export interface CreateEventoPrincipalDto {
 export type UpdateEventoPrincipalDto = Partial<CreateEventoPrincipalDto>;
 
 // ─── Visitas ──────────────────────────────────────────────────────────────────
-/**
- * Resposta de GET /visitas/minhas
- * Contém apenas os IDs dos itens que o usuário logado já visitou.
- */
 export interface MinhasVisitas {
   gastronomias: string[];
   atividades: string[];
 }
 
-/**
- * Resposta de POST /visitas/gastronomia/:id  ou  POST /visitas/atividade/:id
- */
 export interface ToggleVisitaResponse {
   status: "adicionado" | "removido";
+}
+
+// ─── Casa de Câmbio ──────────────────────────────────────────────────────────
+export interface CasaDeCambio {
+  id: string;
+  nome: string;
+  telefone: string;
+  instagram?: string | null;
+  site?: string | null;
+  endereco: string;
+  descricao?: string | null;
+  cnpj?: string | null;
+  /** Moedas aceitas, ex: "USD, EUR, GBP" */
+  moedas?: string | null;
+  logoUrl?: string | null;
+  fotoUrl?: string | null;
+  status: StatusEstabelecimento;
+  usuarioId: string;
+  usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCasaDeCambioDto {
+  nome: string;
+  telefone: string;
+  instagram?: string;
+  site?: string;
+  endereco: string;
+  descricao?: string;
+  cnpj?: string;
+  moedas?: string;
+  logoUrl?: string;
+  fotoUrl?: string;
+  usuarioId: string;
+}
+
+export interface UpdateCasaDeCambioDto extends Partial<CreateCasaDeCambioDto> {
+  status?: StatusEstabelecimento;
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Map, Compass, Info, ArrowRight, Bike, Car } from "lucide-react";
+import { Map, Compass, Info, ArrowRight, Bike, Car, Banknote } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 
@@ -59,6 +59,14 @@ export default function ServicosPage() {
       label: "Ver locadoras",
       href: "/servicos/locadoras",
     },
+    {
+      icon: <Banknote size={32} />,
+      title: "Casa de Câmbio",
+      description:
+        "Troque sua moeda com segurança em casas de câmbio credenciadas em Saquarema.",
+      label: "Ver casas de câmbio",
+      href: "/servicos/casa-de-cambio",
+    },
   ];
 
   return (
@@ -74,7 +82,7 @@ export default function ServicosPage() {
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
-        {/* Grid dos 4 serviços */}
+        {/* Grid dos serviços */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           {cards.map((card) => (
             <div
