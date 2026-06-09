@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gastronomiaApi, usersApi } from "@/lib/api";
 import type { Gastronomia, CreateGastronomiaDto, User } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -9,10 +9,82 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Pencil,
+  ExternalLink,
+  FileText,
+  AlertTriangle,
+  CalendarClock,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
-const empty: CreateGastronomiaDto = {
+// ─── helpers de validade ───────────────────────────────────────────────────
+type ValidadeStatus = "ok" | "alerta" | "vencido" | "sem-data";
+
+function validadeStatus(dateStr?: string | null): ValidadeStatus {
+  if (!dateStr) return "sem-data";
+  const expiry = new Date(dateStr);
+  if (isNaN(expiry.getTime())) return "sem-data";
+  const diffDays = (expiry.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  if (diffDays < 0) return "vencido";
+  if (diffDays <= 30) return "alerta";
+  return "ok";
+}
+
+function formatDate(dateStr?: string | null): string {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("pt-BR");
+}
+
+function ValidityBadge({ validade }: { validade?: string | null }) {
+  const status = validadeStatus(validade);
+  if (status === "sem-data")
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+        <Clock size={11} /> Sem validade
+      </span>
+    );
+  if (status === "ok")
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-950/40 dark:text-green-400">
+        <CheckCircle2 size={11} /> Válido até {formatDate(validade)}
+      </span>
+    );
+  if (status === "alerta")
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-400">
+        <AlertTriangle size={11} /> Vence em {formatDate(validade)}
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-400">
+      <AlertTriangle size={11} /> Vencido em {formatDate(validade)}
+    </span>
+  );
+}
+
+function ComprovanteBotao({ url }: { url?: string | null }) {
+  const src = safeMediaUrl(url);
+  if (!src) return <span className="text-xs text-muted-foreground">—</span>;
+  return (
+    <a
+      href={src}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-muted hover:text-primary"
+    >
+      <FileText size={12} /> Ver Comprovante <ExternalLink size={11} className="text-muted-foreground" />
+    </a>
+  );
+}
+
+// ─── estado inicial do form ────────────────────────────────────────────────
+const empty: CreateGastronomiaDto & { validade?: string } = {
   nome: "",
   telefone: "",
   endereco: "",
@@ -24,29 +96,36 @@ const empty: CreateGastronomiaDto = {
   logoUrl: "",
   usuarioId: "",
   instagram: "",
+  validade: "",
 };
 
+const statusClass = (s: string) =>
+  s === "APROVADO"
+    ? "bg-green-100 text-green-700"
+    : s === "REJEITADO"
+      ? "bg-red-100 text-red-700"
+      : "bg-yellow-100 text-yellow-700";
+
+// ─── Página ────────────────────────────────────────────────────────────────
 export default function AdminGastronomiaPage() {
   const [items, setItems] = useState<Gastronomia[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{
-    open: boolean;
-    editing: Gastronomia | null;
-  }>({ open: false, editing: null });
+  const [modal, setModal] = useState<{ open: boolean; editing: Gastronomia | null }>(
+    { open: false, editing: null }
+  );
   const [viewing, setViewing] = useState<Gastronomia | null>(null);
-  const [form, setForm] = useState<CreateGastronomiaDto>(empty);
+  const [form, setForm] = useState<typeof empty>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [files, setFiles] = useState<{ logo?: File; documentoPdf?: File }>({});
+  const [files, setFiles] = useState<{ logo?: File; comprovante?: File }>({});
+
+  const comprovanteRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
     setLoading(true);
     Promise.all([gastronomiaApi.getAll(), usersApi.getAll()])
-      .then(([g, u]) => {
-        setItems(g);
-        setUsers(u);
-      })
+      .then(([g, u]) => { setItems(g); setUsers(u); })
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
@@ -57,6 +136,7 @@ export default function AdminGastronomiaPage() {
     setError("");
     setModal({ open: true, editing: null });
   };
+
   const openEdit = (item: Gastronomia) => {
     setForm({
       nome: item.nome,
@@ -70,11 +150,15 @@ export default function AdminGastronomiaPage() {
       logoUrl: item.logoUrl,
       usuarioId: item.usuarioId,
       instagram: item.instagram ?? "",
+      validade: (item as Gastronomia & { validade?: string }).validade
+        ? (item as Gastronomia & { validade?: string }).validade!.slice(0, 10)
+        : "",
     });
     setFiles({});
     setError("");
     setModal({ open: true, editing: item });
   };
+
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -82,38 +166,30 @@ export default function AdminGastronomiaPage() {
     setError("");
     setSaving(true);
     try {
-      const formData = new FormData();
-
-      formData.append("nome", form.nome);
-      formData.append("telefone", form.telefone);
-      formData.append("endereco", form.endereco);
-      if (form.especialidade)
-        formData.append("especialidade", form.especialidade);
-      formData.append("cnpj", form.cnpj);
-      formData.append("responsavelNome", form.responsavelNome);
-      formData.append("responsavelCpf", form.responsavelCpf);
-
-      if (form.instagram) formData.append("instagram", form.instagram);
-
-      if (files.logo) formData.append("logo", files.logo);
-      if (files.documentoPdf)
-        formData.append("documentoPdf", files.documentoPdf);
+      const fd = new FormData();
+      fd.append("nome", form.nome);
+      fd.append("telefone", form.telefone);
+      fd.append("endereco", form.endereco);
+      if (form.especialidade) fd.append("especialidade", form.especialidade);
+      fd.append("cnpj", form.cnpj);
+      fd.append("responsavelNome", form.responsavelNome);
+      fd.append("responsavelCpf", form.responsavelCpf);
+      if (form.instagram) fd.append("instagram", form.instagram);
+      if (form.validade) fd.append("validade", form.validade);
+      if (files.logo) fd.append("logo", files.logo);
+      if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
       modal.editing
-        ? await gastronomiaApi.update(modal.editing.id, formData)
-        : await gastronomiaApi.create(formData);
+        ? await gastronomiaApi.update(modal.editing.id, fd)
+        : await gastronomiaApi.create(fd);
       closeModal();
       load();
     } catch (err: unknown) {
       try {
         const p = JSON.parse((err as Error).message);
         setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
-      } catch {
-        setError("Erro ao salvar.");
-      }
-    } finally {
-      setSaving(false);
-    }
+      } catch { setError("Erro ao salvar."); }
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (item: Gastronomia) => {
@@ -123,19 +199,13 @@ export default function AdminGastronomiaPage() {
   };
 
   const set =
-    (k: keyof CreateGastronomiaDto) =>
-    (
-      e:
-        | React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-          >
-        | string,
-    ) => {
+    (k: keyof typeof empty) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | string) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
-  const setField = (k: keyof CreateGastronomiaDto, value: string) =>
+  const setField = (k: keyof typeof empty, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
   const ownerName = (id: string) => {
@@ -143,23 +213,18 @@ export default function AdminGastronomiaPage() {
     return u ? `${u.nome} (@${u.usuario})` : id;
   };
 
-  const statusClass = (s: string) =>
-    s === "APROVADO"
-      ? "bg-green-100 text-green-700"
-      : s === "REJEITADO"
-        ? "bg-red-100 text-red-700"
-        : "bg-yellow-100 text-yellow-700";
+  const comprovanteExistente =
+    (modal.editing as (Gastronomia & { documentoPdfUrl?: string }) | null)?.documentoPdfUrl ?? null;
+  const comprovantePreviewUrl = files.comprovante
+    ? URL.createObjectURL(files.comprovante)
+    : safeMediaUrl(comprovanteExistente);
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            Gastronomia
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {items.length} registros
-          </p>
+          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">Gastronomia</h1>
+          <p className="text-sm text-muted-foreground">{items.length} registros</p>
         </div>
         <button
           onClick={openCreate}
@@ -178,49 +243,35 @@ export default function AdminGastronomiaPage() {
             {
               key: "logoUrl",
               label: "Logo",
-              render: (_val, row) => (
-                <MediaPreview url={row.logoUrl} label="Logo" />
-              ),
+              render: (_val, row) => <MediaPreview url={row.logoUrl} label="Logo" />,
             },
             { key: "nome", label: "Nome" },
             { key: "endereco", label: "Endereço" },
             {
-              key: "documentoPdfUrl",
-              label: "PDF",
-              render: (_val, row) => (
-                <MediaPreview
-                  url={row.documentoPdfUrl}
-                  label="Documento"
-                  isPdf
-                />
-              ),
-            },
-            {
               key: "status",
               label: "Status",
               render: (_val, row) => (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
-                >
+                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}>
                   {row.status}
                 </span>
+              ),
+            },
+            {
+              key: "validade",
+              label: "Validade Comprovante",
+              render: (_val, row) => (
+                <ValidityBadge validade={(row as Gastronomia & { validade?: string }).validade} />
               ),
             },
           ]}
           extraActions={(row) => (
             <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
+              <button onClick={() => setViewing(row)} title="Ver detalhes"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
                 <Eye size={16} />
               </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
+              <button onClick={() => openEdit(row)} title="Editar"
+                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
                 <Pencil size={16} />
               </button>
             </>
@@ -229,29 +280,18 @@ export default function AdminGastronomiaPage() {
         />
       )}
 
-      {/* Modal Visualização */}
-      <AdminModal
-        title="Detalhes da Gastronomia"
-        open={!!viewing}
-        onClose={() => setViewing(null)}
-      >
+      {/* ── Modal Visualização ── */}
+      <AdminModal title="Detalhes da Gastronomia" open={!!viewing} onClose={() => setViewing(null)}>
         {viewing && (
           <div className="space-y-4">
             {viewing.logoUrl && (
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={safeMediaUrl(viewing.logoUrl)}
-                  alt={viewing.nome}
-                  className="h-16 w-16 rounded-lg object-cover border border-border"
-                />
+                <img src={safeMediaUrl(viewing.logoUrl)} alt={viewing.nome}
+                  className="h-16 w-16 rounded-lg object-cover border border-border" />
                 <div>
-                  <p className="font-display font-bold text-lg uppercase tracking-wide">
-                    {viewing.nome}
-                  </p>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}
-                  >
+                  <p className="font-display font-bold text-lg uppercase tracking-wide">{viewing.nome}</p>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>
                     {viewing.status}
                   </span>
                 </div>
@@ -266,27 +306,23 @@ export default function AdminGastronomiaPage() {
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Especialidade" value={viewing.especialidade} />
-            <ViewRow
-              label="Usuário Dono"
-              value={ownerName(viewing.usuarioId)}
-            />
-            {viewing.documentoPdfUrl && (
-              <div className="flex flex-col gap-0.5">
-                <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Documento
-                </dt>
-                <MediaPreview
-                  url={safeMediaUrl(viewing.documentoPdfUrl)}
-                  label="Documento"
-                  isPdf
-                />
+            <ViewRow label="Usuário Dono" value={ownerName(viewing.usuarioId)} />
+
+            {/* Bloco Comprovante + Validade */}
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <FileText size={13} /> Comprovante
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <ComprovanteBotao url={viewing.documentoPdfUrl} />
+                <ValidityBadge validade={(viewing as Gastronomia & { validade?: string }).validade} />
               </div>
-            )}
+            </div>
           </div>
         )}
       </AdminModal>
 
-      {/* Modal Criar/Editar */}
+      {/* ── Modal Criar/Editar ── */}
       <AdminModal
         title={modal.editing ? "Editar Gastronomia" : "Nova Gastronomia"}
         open={modal.open}
@@ -294,129 +330,94 @@ export default function AdminGastronomiaPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Nome"
-              value={form.nome}
-              onChange={set("nome")}
-              required
-            />
-            <AdminFormField
-              label="Telefone"
-              value={form.telefone}
-              onChange={set("telefone")}
-              required
-            />
+            <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
+            <AdminFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
           </div>
-          <AdminFormField
-            label="Endereço"
-            value={form.endereco}
-            onChange={set("endereco")}
-            required
-          />
-
+          <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Especialidade"
-              value={form.especialidade ?? ""}
-              onChange={set("especialidade")}
-            />
-            <AdminFormField
-              label="CNPJ"
-              value={form.cnpj}
-              onChange={set("cnpj")}
-              required
-            />
+            <AdminFormField label="Especialidade" value={form.especialidade ?? ""} onChange={set("especialidade")} />
+            <AdminFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} required />
           </div>
-
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Responsável (Nome)"
-              value={form.responsavelNome}
-              onChange={set("responsavelNome")}
-              required
-            />
-            <AdminFormField
-              label="Responsável (CPF)"
-              value={form.responsavelCpf}
-              onChange={set("responsavelCpf")}
-              required
-            />
+            <AdminFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} required />
+            <AdminFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} required />
           </div>
-          <AdminFormField
-            label="Instagram"
-            value={form.instagram ?? ""}
-            onChange={set("instagram")}
-          />
+          <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
 
           <FileUploadField
             label="Logo do Estabelecimento"
             accept="image"
             currentUrl={form.logoUrl}
-            required={!modal.editing} // Mantido dinâmico para não obrigar re-upload na edição
+            required={!modal.editing}
             hint="PNG, JPG ou WEBP"
-            onFileChange={(url, file) => {
-              setField("logoUrl", url);
-              setFiles((prev) => ({ ...prev, logo: file }));
-            }}
-            onClear={() => {
-              setField("logoUrl", "");
-              setFiles((prev) => ({ ...prev, logo: undefined }));
-            }}
+            onFileChange={(url, file) => { setField("logoUrl", url); setFiles((p) => ({ ...p, logo: file })); }}
+            onClear={() => { setField("logoUrl", ""); setFiles((p) => ({ ...p, logo: undefined })); }}
           />
 
-          <FileUploadField
-            label="Documento (PDF)"
-            accept="pdf"
-            currentUrl={form.documentoPdfUrl}
-            required={!modal.editing} // Mantido dinâmico para não obrigar re-upload na edição
-            hint="Apenas arquivos .pdf"
-            onFileChange={(url, file) => {
-              setField("documentoPdfUrl", url);
-              setFiles((prev) => ({ ...prev, documentoPdf: file }));
-            }}
-            onClear={() => {
-              setField("documentoPdfUrl", "");
-              setFiles((prev) => ({ ...prev, documentoPdf: undefined }));
-            }}
-          />
+          {/* Bloco Comprovante */}
+          <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <FileText size={13} /> Comprovante
+            </p>
 
+            {/* Upload */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                Arquivo{!modal.editing && <span className="text-red-500"> *</span>} — PDF ou imagem
+              </label>
+              {comprovantePreviewUrl && (
+                <div className="flex items-center gap-2">
+                  <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:text-primary">
+                    <FileText size={12} />
+                    {files.comprovante ? files.comprovante.name : "Comprovante atual"}
+                    <ExternalLink size={11} className="text-muted-foreground" />
+                  </a>
+                  {comprovanteExistente && !files.comprovante && (
+                    <span className="text-xs text-muted-foreground">(existente)</span>
+                  )}
+                </div>
+              )}
+              <button type="button" onClick={() => comprovanteRef.current?.click()}
+                className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-primary">
+                <FileText size={14} />
+                {files.comprovante ? "Trocar arquivo" : comprovanteExistente ? "Substituir comprovante" : "Selecionar comprovante (PDF ou imagem)"}
+              </button>
+              <input ref={comprovanteRef} type="file" accept="application/pdf,image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) setFiles((p) => ({ ...p, comprovante: f })); }} />
+            </div>
+
+            {/* Data de validade */}
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <CalendarClock size={13} /> Data de validade do comprovante
+              </label>
+              <input type="date" value={form.validade ?? ""} onChange={set("validade")}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary" />
+              {form.validade && (
+                <div className="pt-1"><ValidityBadge validade={form.validade} /></div>
+              )}
+            </div>
+          </div>
+
+          {/* Usuário Dono */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Usuário Dono *
-            </label>
-            <select
-              value={form.usuarioId}
-              onChange={set("usuarioId")}
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Usuário Dono *</label>
+            <select value={form.usuarioId} onChange={set("usuarioId")} required
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
               <option value="">Selecione um usuário</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nome} (@{u.usuario})
-                </option>
-              ))}
+              {users.map((u) => <option key={u.id} value={u.id}>{u.nome} (@{u.usuario})</option>)}
             </select>
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
-              {error}
-            </p>
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">{error}</p>
           )}
           <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={closeModal}
-              className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+            <button type="button" onClick={closeModal}
+              className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>
+            <button type="submit" disabled={saving}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
               {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
@@ -430,9 +431,7 @@ function ViewRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
       <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
