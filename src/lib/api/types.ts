@@ -150,6 +150,7 @@ export interface Hospedagem {
   nome: string;
   telefone: string;
   instagram?: string | null;
+  site?: string | null;
   endereco: string;
   textoDiferencial: string;
   cnpj: string;
@@ -171,6 +172,7 @@ export interface CreateHospedagemDto {
   nome: string;
   telefone: string;
   instagram?: string;
+  site?: string;
   endereco: string;
   textoDiferencial: string;
   cnpj: string;
@@ -194,6 +196,7 @@ export interface ServicoTurista {
   nome: string;
   telefone: string;
   instagram?: string | null;
+  site?: string | null;
   descricao?: string | null;
   endereco?: string | null;
   cnpj?: string | null;
@@ -225,6 +228,7 @@ export interface CreateServicoTuristaDto {
   nome: string;
   telefone: string;
   instagram?: string;
+  site?: string;
   descricao?: string;
   endereco?: string;
   cnpj?: string;
@@ -244,7 +248,7 @@ export interface UpdateServicoTuristaDto
   status?: StatusEstabelecimento;
 }
 
-// ─── Plano de Viagem ───────────────────────────────────────────────────────────────
+// ─── Plano de Viagem ────────────────────────────────────────────��──────────────────
 export interface PlanoViagem {
   id: string;
   titulo: string;
@@ -346,3 +350,20 @@ export interface CreateEventoPrincipalDto {
 }
 
 export type UpdateEventoPrincipalDto = Partial<CreateEventoPrincipalDto>;
+
+// ─── Visitas ──────────────────────────────────────────────────────────────────
+/**
+ * Resposta de GET /visitas/minhas
+ * Contém apenas os IDs dos itens que o usuário logado já visitou.
+ */
+export interface MinhasVisitas {
+  gastronomias: string[];
+  atividades: string[];
+}
+
+/**
+ * Resposta de POST /visitas/gastronomia/:id  ou  POST /visitas/atividade/:id
+ */
+export interface ToggleVisitaResponse {
+  status: "adicionado" | "removido";
+}
