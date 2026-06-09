@@ -216,7 +216,7 @@ export default function PerfilPage() {
                         onClick={() =>
                           confirm(`Excluir "${h.nome}"?`) &&
                           hospedagemApi
-                            .remove(h.id)
+                            .delete(h.id)
                             .then(() =>
                               setHospedagens((prev) =>
                                 prev.filter((x) => x.id !== h.id),

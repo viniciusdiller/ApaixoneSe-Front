@@ -56,7 +56,7 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
         >
           <Link
             href="/eventos"
-            className="mb-8 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+            className="mb-4 inline-flex items-center gap-1 text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para Eventos
