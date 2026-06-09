@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { casaDeCambioApi } from "@/lib/api";
 import type { CasaDeCambio } from "@/lib/api";
-import { Banknote, ArrowLeft, Phone, MapPin, Instagram, Globe } from "lucide-react";
+import { Banknote, ArrowLeft, Phone, MapPin } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 export default function CasaDeCambioPage() {
@@ -16,7 +16,7 @@ export default function CasaDeCambioPage() {
   useEffect(() => {
     casaDeCambioApi
       .getAll()
-      .then((data) => setItems(data.filter((i) => i.status === "APROVADO")))
+      .then((data) => setItems(data))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
@@ -105,18 +105,6 @@ export default function CasaDeCambioPage() {
                       <h2 className="font-bold text-foreground text-lg leading-tight">{item.nome}</h2>
                     </div>
 
-                    {/* Moedas */}
-                    {item.moedas && (
-                      <p className="text-xs text-muted-foreground bg-muted/50 rounded-full px-3 py-1 self-start">
-                        💱 {item.moedas}
-                      </p>
-                    )}
-
-                    {/* Descrição */}
-                    {item.descricao && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">{item.descricao}</p>
-                    )}
-
                     {/* Contatos */}
                     <div className="mt-auto flex flex-col gap-1.5 pt-2 border-t border-border">
                       {item.endereco && (
@@ -130,26 +118,6 @@ export default function CasaDeCambioPage() {
                           className="flex items-center gap-2 text-xs text-primary hover:underline"
                         >
                           <Phone size={13} /> {item.telefone}
-                        </a>
-                      )}
-                      {item.instagram && (
-                        <a
-                          href={`https://instagram.com/${item.instagram.replace("@", "")}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          <Instagram size={13} /> {item.instagram}
-                        </a>
-                      )}
-                      {item.site && (
-                        <a
-                          href={item.site.startsWith("http") ? item.site : `https://${item.site}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          <Globe size={13} /> {item.site}
                         </a>
                       )}
                     </div>
