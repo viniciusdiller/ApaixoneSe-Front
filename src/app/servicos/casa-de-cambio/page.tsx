@@ -16,14 +16,14 @@ export default function CasaDeCambioPage() {
   useEffect(() => {
     casaDeCambioApi
       .getAll()
-      .then((data) => setItems(data.filter((i) => i.status === "APROVADO")))
+      .then((data) => setItems(data))
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero — igual ao ServicoTuristaListPage */}
+      {/* Hero */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
         <span
           aria-hidden
@@ -91,15 +91,9 @@ export default function CasaDeCambioPage() {
                   key={item.id}
                   className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
                 >
-                  {/* Imagem de capa */}
                   {foto ? (
                     <div className="relative h-52 shrink-0 overflow-hidden bg-muted">
-                      <Image
-                        src={foto}
-                        alt={item.nome}
-                        fill
-                        className="object-cover"
-                      />
+                      <Image src={foto} alt={item.nome} fill className="object-cover" />
                     </div>
                   ) : (
                     <div className="h-52 shrink-0 flex items-center justify-center bg-primary/5">
@@ -112,7 +106,6 @@ export default function CasaDeCambioPage() {
                   )}
 
                   <div className="flex grow flex-col p-5">
-                    {/* Logo + Nome */}
                     <div className="flex items-center gap-3 mb-1">
                       {logo && (
                         <Image
@@ -129,16 +122,13 @@ export default function CasaDeCambioPage() {
                     </div>
 
                     {item.moedas && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        💱 {item.moedas}
-                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">💱 {item.moedas}</p>
                     )}
 
                     <p className="mt-2 grow text-sm text-muted-foreground line-clamp-2">
                       {item.descricao || item.endereco || `Telefone: ${item.telefone}`}
                     </p>
 
-                    {/* Contatos */}
                     <div className="mt-3 flex flex-col gap-1.5 pt-3 border-t border-border">
                       {item.endereco && (
                         <span className="flex items-center gap-2 text-xs text-muted-foreground">
