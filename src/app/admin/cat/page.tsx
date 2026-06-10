@@ -109,19 +109,29 @@ function ImageManager({
   const remove = (visibleIdx: number) => {
     // Mapeia índice visível para índice real no array
     let count = 0;
-    const next = images.map((img) => {
-      if (img.mode === "deleted") return img;
+    const next: ManagedImage[] = [];
+
+    images.forEach((img) => {
+      if (img.mode === "deleted") {
+        next.push(img);
+        return;
+      }
+
       if (count === visibleIdx) {
         count++;
         if (img.mode === "new") {
           URL.revokeObjectURL(img.preview);
-          return { ...img, mode: "deleted" as const };
+          return; // Remove completamente imagens "new"
         }
-        return { ...img, mode: "deleted" as const };
+        // img é "existing" aqui, tem url
+        next.push({ mode: "deleted" as const, url: img.url });
+        return;
       }
+
       count++;
-      return img;
+      next.push(img);
     });
+
     onChange(next);
   };
 
@@ -158,8 +168,8 @@ function ImageManager({
               img.mode === "existing"
                 ? safeMediaUrl(img.url)
                 : img.mode === "new"
-                ? img.preview
-                : null;
+                  ? img.preview
+                  : null;
             return src ? (
               <div
                 key={visIdx}
@@ -307,7 +317,8 @@ function CatThumb({ cat }: { cat: Cat }) {
           <Image src={src} alt="thumb" fill className="object-cover" />
         </div>
         <span className="text-xs text-muted-foreground">
-          {cat.imagensUrl.length} imagem{cat.imagensUrl.length !== 1 ? "ns" : ""}
+          {cat.imagensUrl.length} imagem
+          {cat.imagensUrl.length !== 1 ? "ns" : ""}
           {cat.videoUrl && " + vídeo"}
         </span>
       </div>
@@ -372,7 +383,10 @@ export default function AdminCategoriasPage() {
     resetForm();
     setTexto(item.texto);
     setImages(
-      (item.imagensUrl ?? []).map((url) => ({ mode: "existing" as const, url }))
+      (item.imagensUrl ?? []).map((url) => ({
+        mode: "existing" as const,
+        url,
+      })),
     );
     setModal({ open: true, editing: item });
   };
@@ -423,7 +437,9 @@ export default function AdminCategoriasPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">CAT</h1>
+          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
+            CAT
+          </h1>
           <p className="text-sm text-muted-foreground">
             Central de Atendimento ao Turista — {items.length} registros
           </p>
@@ -446,7 +462,9 @@ export default function AdminCategoriasPage() {
               key: "texto",
               label: "Texto",
               render: (_val, row) => (
-                <span className="line-clamp-2 max-w-sm text-sm">{row.texto}</span>
+                <span className="line-clamp-2 max-w-sm text-sm">
+                  {row.texto}
+                </span>
               ),
             },
             {
@@ -486,8 +504,12 @@ export default function AdminCategoriasPage() {
         {viewing && (
           <div className="space-y-6 text-sm">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Texto</span>
-              <p className="whitespace-pre-wrap text-foreground">{viewing.texto}</p>
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Texto
+              </span>
+              <p className="whitespace-pre-wrap text-foreground">
+                {viewing.texto}
+              </p>
             </div>
 
             {viewing.imagensUrl?.length > 0 && (
@@ -503,7 +525,12 @@ export default function AdminCategoriasPage() {
                         key={i}
                         className="relative aspect-square overflow-hidden rounded-lg border border-border"
                       >
-                        <Image src={src} alt={`Imagem ${i + 1}`} fill className="object-cover" />
+                        <Image
+                          src={src}
+                          alt={`Imagem ${i + 1}`}
+                          fill
+                          className="object-cover"
+                        />
                       </div>
                     ) : null;
                   })}
@@ -516,8 +543,14 @@ export default function AdminCategoriasPage() {
                 const src = safeMediaUrl(viewing.videoUrl);
                 return src ? (
                   <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vídeo</span>
-                    <video src={src} controls className="w-full rounded-xl border border-border bg-black" />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Vídeo
+                    </span>
+                    <video
+                      src={src}
+                      controls
+                      className="w-full rounded-xl border border-border bg-black"
+                    />
                   </div>
                 ) : null;
               })()}
@@ -535,7 +568,7 @@ export default function AdminCategoriasPage() {
           <AdminFormField
             label="Texto descritivo"
             value={texto}
-            onChange={(e) => setTexto(typeof e === "string" ? e : e.target.value)}
+            onChange={setTexto}
             multiline
             required
           />
@@ -558,8 +591,9 @@ export default function AdminCategoriasPage() {
           {/* Aviso quando o admin limpou o vídeo sem enviar um novo */}
           {videoCleared && !newVideo && (
             <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-400">
-              ⚠️ O vídeo será mantido no servidor até você enviar um novo arquivo no lugar.
-              O backend atual não suporta remoção de vídeo sem substituição.
+              ⚠️ O vídeo será mantido no servidor até você enviar um novo
+              arquivo no lugar. O backend atual não suporta remoção de vídeo sem
+              substituição.
             </p>
           )}
 

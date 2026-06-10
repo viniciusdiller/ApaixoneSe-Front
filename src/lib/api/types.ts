@@ -122,6 +122,11 @@ export interface Gastronomia {
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  /**
+   * Data de validade do documento de habilitação/alvará.
+   * Apenas ADMIN pode alterar via update.
+   */
+  validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -142,6 +147,8 @@ export interface CreateGastronomiaDto {
 
 export interface UpdateGastronomiaDto extends Partial<CreateGastronomiaDto> {
   status?: StatusEstabelecimento;
+  /** Data de validade do documento de habilitação/alvará */
+  validade?: string | null;
 }
 
 // ─── Hospedagem ───────────────────────────────────────────────────────────────
@@ -164,6 +171,11 @@ export interface Hospedagem {
    *  O Prisma salva como Json — o backend pode retornar string[] ou JSON string. */
   tags?: string[] | null;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  /**
+   * Data de validade do documento de habilitação/alvará.
+   * Apenas ADMIN pode alterar via update.
+   */
+  validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -187,6 +199,8 @@ export interface CreateHospedagemDto {
 
 export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
   status?: StatusEstabelecimento;
+  /** Data de validade do documento de habilitação/alvará */
+  validade?: string | null;
 }
 
 // ─── Serviço Turista ──────────────────────────────────────────────────────────────
@@ -239,8 +253,7 @@ export interface CreateServicoTuristaDto {
   validade?: string;
 }
 
-export interface UpdateServicoTuristaDto
-  extends Partial<CreateServicoTuristaDto> {
+export interface UpdateServicoTuristaDto extends Partial<CreateServicoTuristaDto> {
   status?: StatusEstabelecimento;
 }
 
@@ -275,7 +288,10 @@ export interface ItemPlanoViagem {
   planoViagem?: Pick<PlanoViagem, "id" | "titulo">;
 
   gastronomiaId?: string | null;
-  gastronomia?: Pick<Gastronomia, "id" | "nome" | "endereco" | "logoUrl"> | null;
+  gastronomia?: Pick<
+    Gastronomia,
+    "id" | "nome" | "endereco" | "logoUrl"
+  > | null;
 
   hospedagemId?: string | null;
   hospedagem?: Pick<Hospedagem, "id" | "nome" | "endereco" | "logoUrl"> | null;
@@ -287,7 +303,10 @@ export interface ItemPlanoViagem {
   atividade?: Pick<Atividade, "id" | "titulo" | "local" | "roteiro"> | null;
 
   servicoTuristaId?: string | null;
-  servicoTurista?: Pick<ServicoTurista, "id" | "nome" | "tipo" | "logoUrl"> | null;
+  servicoTurista?: Pick<
+    ServicoTurista,
+    "id" | "nome" | "tipo" | "logoUrl"
+  > | null;
 
   createdAt?: string;
   updatedAt?: string;
