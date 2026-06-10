@@ -212,15 +212,15 @@ export default function AdminHospedagemPage() {
       if (form.instagram) fd.append("instagram", form.instagram);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
-      // Nota: validade é enviado separadamente via updateStatus()
+      // validade NÃO vai no FormData — DTO multipart não aceita esse campo
+      // e retornaria "property validade should not exist"
       if (form.site) fd.append("site", form.site);
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
       if (modal.editing) {
-        // Atualizar dados principais via FormData
         await hospedagemApi.update(modal.editing.id, fd);
-        // Atualizar validade separadamente via JSON (se preenchida)
+        // validade enviada separadamente via JSON para não quebrar o DTO multipart
         if (form.validade) {
           await hospedagemApi.updateStatus(modal.editing.id, {
             validade: form.validade,
@@ -229,6 +229,7 @@ export default function AdminHospedagemPage() {
       } else {
         await hospedagemApi.create(fd);
       }
+
       closeModal();
       load();
     } catch (err: unknown) {
@@ -559,8 +560,8 @@ export default function AdminHospedagemPage() {
           <AdminFormField
             label="Site"
             value={form.site ?? ""}
-            onChange={set("site")}
-          />
+            onChange={set("site")
+          } />
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField
               label="Responsável (Nome)"
