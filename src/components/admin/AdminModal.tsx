@@ -9,10 +9,19 @@ interface AdminModalProps {
   onClose: () => void;
   onSubmit?: () => void;
   saving?: boolean;
+  submitLabel?: string;
   children: React.ReactNode;
 }
 
-export function AdminModal({ title, open, onClose, onSubmit, saving, children }: AdminModalProps) {
+export function AdminModal({
+  title,
+  open,
+  onClose,
+  onSubmit,
+  saving,
+  submitLabel,
+  children,
+}: AdminModalProps) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -64,7 +73,7 @@ export function AdminModal({ title, open, onClose, onSubmit, saving, children }:
               disabled={saving}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
             >
-              {saving ? "Salvando..." : "Salvar"}
+              {submitLabel || (saving ? "Salvando..." : "Salvar")}
             </button>
           </div>
         )}

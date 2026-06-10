@@ -15,6 +15,7 @@ import {
   Waves,
   ChevronRight,
   LogOut,
+  Banknote,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
@@ -31,6 +32,7 @@ const links = [
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
   { label: "Hospedagem", href: "/admin/hospedagem", icon: BedDouble },
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },
+  { label: "Casa de Câmbio", href: "/admin/casa-de-cambio", icon: Banknote },
   {
     label: "Planos de Viagem",
     href: "/admin/planos-de-viagem",

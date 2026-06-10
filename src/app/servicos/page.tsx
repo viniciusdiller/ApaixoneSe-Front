@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Map, Compass, Info, ArrowRight, Bike, Car } from "lucide-react";
+import Link from "next/link";
+import { Map, Compass, Info, ArrowRight, ArrowLeft, Bike, Car, Banknote, FileText } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 
-/** Trunca o texto mantendo palavras inteiras, cerca de `max` palavras. */
 function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
   if (words.length <= max) return text;
@@ -59,22 +59,56 @@ export default function ServicosPage() {
       label: "Ver locadoras",
       href: "/servicos/locadoras",
     },
+    {
+      icon: <Banknote size={32} />,
+      title: "Casa de Câmbio",
+      description:
+        "Troque sua moeda com segurança em casas de câmbio credenciadas em Saquarema.",
+      label: "Ver casas de câmbio",
+      href: "/servicos/casa-de-cambio",
+    },
+    {
+      icon: <FileText size={32} />,
+      title: "Taxa de Turismo",
+      description:
+        "Autorização de acesso de ônibus, micro-ônibus e vans ao município. Saiba as taxas e como emitir.",
+      label: "Ver informações",
+      href: "/servicos/taxa-de-turismo",
+    },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative flex flex-col items-center justify-center py-24 px-4 text-center bg-primary/5">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-4">
-          Serviços Turísticos
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl">
-          Explore nossa cidade com os melhores profissionais. Encontre guias
-          apaixonados, agências de confiança ou tire suas dúvidas no CAT.
-        </p>
+      {/* Hero — padrão do site */}
+      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+        <span
+          aria-hidden
+          className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
+        >
+          🗺️
+        </span>
+        <div className="container relative z-10 mx-auto">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
+            Saquarema
+          </p>
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
+            Serviços Turísticos
+          </h1>
+          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+            Explore nossa cidade com os melhores profissionais. Encontre guias
+            apaixonados, agências de confiança ou tire suas dúvidas no CAT.
+          </p>
+        </div>
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
-        {/* Grid dos 4 serviços */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           {cards.map((card) => (
             <div
@@ -102,7 +136,7 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* CAT — caixa clicável separada, largura total */}
+        {/* CAT */}
         <div
           onClick={() => router.push("/servicos/cat")}
           className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"

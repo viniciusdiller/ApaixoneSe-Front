@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, MapPin, Phone, Instagram, X, UtensilsCrossed, CheckCircle2 } from "lucide-react";
+import { AlertCircle, MapPin, Phone, Instagram, X, UtensilsCrossed, CheckCircle2, ArrowLeft } from "lucide-react";
 import { gastronomiaApi } from "@/lib/api/gastronomia";
 import type { Gastronomia } from "@/lib/api/types";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { pratosTipicos } from "@/lib/data";
 import { GastronomiaCard } from "./GastronomiaCard";
 import { useVisitas } from "@/hooks/useVisitas";
+import Link from "next/link";
 
 export function GastronomiaListPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
@@ -51,6 +52,13 @@ export function GastronomiaListPage() {
           🍽️
         </span>
         <div className="container relative z-10 mx-auto">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
             Sabores de Saquarema
           </p>
@@ -154,7 +162,6 @@ export function GastronomiaListPage() {
                 <X className="h-5 w-5" />
               </button>
 
-              {/* Imagem modal */}
               <div
                 className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
                 style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
@@ -166,7 +173,6 @@ export function GastronomiaListPage() {
                     {selecionado.nome}
                   </h3>
 
-                  {/* Botão de check-in no modal */}
                   {isLogado && (
                     <button
                       onClick={() => toggleGastronomia(selecionado.id)}

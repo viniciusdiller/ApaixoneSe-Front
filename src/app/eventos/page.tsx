@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function EventosPage() {
   const router = useRouter();
@@ -61,7 +63,7 @@ export default function EventosPage() {
     ],
     [
       "Novembro",
-      "Cultura e esportes em alta com a Feira Literária (FLIS) e a Abertura do Natal Luz.",
+      "Cultura e esporte em alta com a Feira Literária (FLIS) e a Abertura do Natal Luz.",
       "novembro",
     ],
     [
@@ -86,7 +88,6 @@ export default function EventosPage() {
 
   const handleCardClick = (slug: string) => {
     setClickedCard(slug);
-
     setTimeout(() => {
       router.push(`/eventos/${slug}`);
     }, 400);
@@ -101,6 +102,13 @@ export default function EventosPage() {
           transition={{ duration: 0.4 }}
           className="container mx-auto text-center"
         >
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Eventos
           </h1>

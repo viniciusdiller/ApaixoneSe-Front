@@ -7,5 +7,6 @@ export { eventosApi } from "./eventos";
 export { gastronomiaApi } from "./gastronomia";
 export { hospedagemApi } from "./hospedagem";
 export { servicoTuristaApi } from "./servico-turista";
+export { casaDeCambioApi } from "./casa-de-cambio";
 export { planoViagemApi, itemPlanoViagemApi } from "./plano-viagem";
 export { catApi } from "./cat";
