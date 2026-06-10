@@ -79,21 +79,33 @@ export default function ServicosPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative flex flex-col items-center justify-center py-24 px-4 text-center bg-primary/5">
-        <Link
-          href="/"
-          className="absolute left-4 top-6 flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+      {/* Hero — padrão do site */}
+      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+        <span
+          aria-hidden
+          className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para página inicial
-        </Link>
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-4">
-          Serviços Turísticos
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl">
-          Explore nossa cidade com os melhores profissionais. Encontre guias
-          apaixonados, agências de confiança ou tire suas dúvidas no CAT.
-        </p>
+          🗺️
+        </span>
+        <div className="container relative z-10 mx-auto">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
+          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
+            Saquarema
+          </p>
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
+            Serviços Turísticos
+          </h1>
+          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+            Explore nossa cidade com os melhores profissionais. Encontre guias
+            apaixonados, agências de confiança ou tire suas dúvidas no CAT.
+          </p>
+        </div>
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
