@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { locaisCulturais } from "@/lib/data";
-import { X } from "lucide-react";
+import { X, ArrowLeft } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function CulturaPage() {
-  // Estado para armazenar qual local foi clicado. Se for null, o pop-up fica fechado.
   const [localSelecionado, setLocalSelecionado] = useState<typeof locaisCulturais[0] | null>(null);
 
   return (
@@ -19,6 +19,13 @@ export default function CulturaPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/30 to-black/30" />
         <div className="relative z-10 px-4 text-center text-primary-foreground">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
           <p className="mb-3 text-sm uppercase tracking-[0.3em]">
             Tradição e Identidade
           </p>

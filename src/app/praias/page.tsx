@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, Filter, MapPin, Waves } from "lucide-react";
+import { ArrowRight, ArrowLeft, Filter, MapPin, Waves } from "lucide-react";
 import { useMemo, useState } from "react";
 import { praias } from "@/lib/Dados-Praia";
 import { lagoas } from "@/lib/Dados-Lagoa";
@@ -19,9 +19,7 @@ const FILTER_OPTIONS = [
 ];
 function WaveBadge({ lat, lng }: { lat: number; lng: number }) {
   const { data } = useWaveData({ lat, lng });
-
   if (!data) return null;
-
   return (
     <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-medium text-primary-foreground shadow-sm">
       <Waves className="h-3 w-3" />
@@ -47,6 +45,13 @@ export default function PraiasPage() {
     <div className="min-h-screen bg-background">
       <section className="bg-primary px-4 pb-12 pt-32">
         <div className="container mx-auto text-center">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Praias & Lagoas
           </h1>
@@ -130,7 +135,7 @@ export default function PraiasPage() {
           ))}
         </div>
       </section>
-      {/* SESSÃO DAS LAGOAS */}
+
       <section className="px-4 pb-16 pt-8 bg-muted/20">
         <div className="container mx-auto max-w-6xl mb-10 text-center">
           <h2 className="font-display text-4xl font-bold uppercase text-foreground">

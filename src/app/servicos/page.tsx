@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Map, Compass, Info, ArrowRight, Bike, Car, Banknote, FileText } from "lucide-react";
+import Link from "next/link";
+import { Map, Compass, Info, ArrowRight, ArrowLeft, Bike, Car, Banknote, FileText } from "lucide-react";
 import { catApi } from "@/lib/api";
 import type { Cat } from "@/lib/api";
 
-/** Trunca o texto mantendo palavras inteiras, cerca de `max` palavras. */
 function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
   if (words.length <= max) return text;
@@ -80,6 +80,13 @@ export default function ServicosPage() {
   return (
     <div className="min-h-screen bg-background">
       <section className="relative flex flex-col items-center justify-center py-24 px-4 text-center bg-primary/5">
+        <Link
+          href="/"
+          className="absolute left-4 top-6 flex items-center gap-1.5 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para página inicial
+        </Link>
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-4">
           Serviços Turísticos
         </h1>
@@ -90,7 +97,6 @@ export default function ServicosPage() {
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
-        {/* Grid dos serviços */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           {cards.map((card) => (
             <div
@@ -118,7 +124,7 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* CAT — caixa clicável separada, largura total */}
+        {/* CAT */}
         <div
           onClick={() => router.push("/servicos/cat")}
           className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"

@@ -11,12 +11,13 @@ import {
   Star,
   Tag,
   Globe,
+  ArrowLeft,
 } from "lucide-react";
 import { hospedagemApi } from "@/lib/api";
 import type { Hospedagem } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import Link from "next/link";
 
-/** Parseia tags independente de vir como string[] ou JSON string */
 function parseTags(raw: string[] | null | undefined): string[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw as string[];
@@ -72,6 +73,13 @@ export function HospedagemListPage() {
           🏨
         </span>
         <div className="container relative z-10 mx-auto">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para página inicial
+          </Link>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
             Onde ficar
           </p>
@@ -129,7 +137,6 @@ export function HospedagemListPage() {
                   transition={{ delay: i * 0.1 }}
                   className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
                 >
-                  {/* Imagem */}
                   <div
                     className="relative h-52 shrink-0 bg-contain bg-center bg-no-repeat bg-muted"
                     style={{ backgroundImage: `url(${imgUrl(h)})` }}
@@ -148,7 +155,6 @@ export function HospedagemListPage() {
                       {h.textoDiferencial}
                     </p>
 
-                    {/* Site no card */}
                     {siteHref && (
                       <div className="mt-3 flex items-center gap-2">
                         <Globe className="h-4 w-4 shrink-0 text-primary" />
@@ -164,7 +170,6 @@ export function HospedagemListPage() {
                       </div>
                     )}
 
-                    {/* Tags no card */}
                     {tags.length > 0 && (
                       <div className="mt-3 flex flex-wrap items-center gap-1.5">
                         <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
@@ -235,7 +240,6 @@ export function HospedagemListPage() {
                     </p>
                   )}
 
-                  {/* Tags no modal */}
                   {tags.length > 0 && (
                     <div className="mb-5 flex flex-wrap items-center gap-1.5">
                       <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
