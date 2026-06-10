@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ArrowLeft,
   FileText,
@@ -90,18 +90,19 @@ const tabela = [
 ];
 
 export default function TaxaDeTurismoPage() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center py-20 px-4 text-center bg-primary/5">
-        <button
-          onClick={() => router.push("/servicos")}
-          className="absolute left-4 top-6 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft size={16} /> Serviços
-        </button>
+        <div className="absolute left-4 top-6">
+          <Link
+            href="/servicos"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para Serviços
+          </Link>
+        </div>
         <div className="p-4 rounded-full bg-primary/10 text-primary mb-4">
           <FileText size={36} />
         </div>

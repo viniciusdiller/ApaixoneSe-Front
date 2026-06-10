@@ -1,22 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { casaDeCambioApi } from "@/lib/api";
 import type { CasaDeCambio } from "@/lib/api";
-import { Banknote, ArrowLeft, Phone, MapPin } from "lucide-react";
+import { Banknote, ArrowLeft, Phone, MapPin, Instagram, Globe } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 export default function CasaDeCambioPage() {
-  const router = useRouter();
   const [items, setItems] = useState<CasaDeCambio[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     casaDeCambioApi
       .getAll()
-      .then((data) => setItems(data))
+      .then((data) => setItems(data.filter((i) => i.status === "APROVADO")))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
@@ -25,12 +24,15 @@ export default function CasaDeCambioPage() {
     <div className="min-h-screen bg-background">
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center py-20 px-4 text-center bg-primary/5">
-        <button
-          onClick={() => router.push("/servicos")}
-          className="absolute left-4 top-6 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft size={16} /> Serviços
-        </button>
+        <div className="absolute left-4 top-6">
+          <Link
+            href="/servicos"
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para Serviços
+          </Link>
+        </div>
         <div className="p-4 rounded-full bg-primary/10 text-primary mb-4">
           <Banknote size={36} />
         </div>
@@ -74,7 +76,6 @@ export default function CasaDeCambioPage() {
                   key={item.id}
                   className="group flex flex-col rounded-2xl border bg-card shadow-sm hover:shadow-md hover:border-primary/50 transition-all overflow-hidden"
                 >
-                  {/* Imagem de capa */}
                   {foto && (
                     <div className="relative h-36 w-full overflow-hidden bg-muted">
                       <Image
@@ -87,7 +88,6 @@ export default function CasaDeCambioPage() {
                   )}
 
                   <div className="p-6 flex flex-col gap-3 flex-1">
-                    {/* Logo + Nome */}
                     <div className="flex items-center gap-3">
                       {logo ? (
                         <Image
@@ -105,7 +105,16 @@ export default function CasaDeCambioPage() {
                       <h2 className="font-bold text-foreground text-lg leading-tight">{item.nome}</h2>
                     </div>
 
-                    {/* Contatos */}
+                    {item.moedas && (
+                      <p className="text-xs text-muted-foreground bg-muted/50 rounded-full px-3 py-1 self-start">
+                        💱 {item.moedas}
+                      </p>
+                    )}
+
+                    {item.descricao && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">{item.descricao}</p>
+                    )}
+
                     <div className="mt-auto flex flex-col gap-1.5 pt-2 border-t border-border">
                       {item.endereco && (
                         <span className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -118,6 +127,26 @@ export default function CasaDeCambioPage() {
                           className="flex items-center gap-2 text-xs text-primary hover:underline"
                         >
                           <Phone size={13} /> {item.telefone}
+                        </a>
+                      )}
+                      {item.instagram && (
+                        <a
+                          href={`https://instagram.com/${item.instagram.replace("@", "")}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Instagram size={13} /> {item.instagram}
+                        </a>
+                      )}
+                      {item.site && (
+                        <a
+                          href={item.site.startsWith("http") ? item.site : `https://${item.site}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          <Globe size={13} /> {item.site}
                         </a>
                       )}
                     </div>
