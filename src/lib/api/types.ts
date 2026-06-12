@@ -122,6 +122,10 @@ export interface Gastronomia {
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  /**
+   * Data de validade do documento de habilitação/alvará.
+   * Apenas ADMIN pode alterar via update.
+   */
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -143,6 +147,7 @@ export interface CreateGastronomiaDto {
 
 export interface UpdateGastronomiaDto extends Partial<CreateGastronomiaDto> {
   status?: StatusEstabelecimento;
+  /** Data de validade do documento de habilitação/alvará */
   validade?: string | null;
 }
 
@@ -162,8 +167,14 @@ export interface Hospedagem {
   logoUrl: string;
   status: StatusEstabelecimento;
   usuarioId: string;
+  /** Campo adicionado no backend (commit feat: add Tags Hospedagem).
+   *  O Prisma salva como Json — o backend pode retornar string[] ou JSON string. */
   tags?: string[] | null;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  /**
+   * Data de validade do documento de habilitação/alvará.
+   * Apenas ADMIN pode alterar via update.
+   */
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -182,11 +193,13 @@ export interface CreateHospedagemDto {
   documentoPdfUrl: string;
   logoUrl: string;
   usuarioId: string;
+  /** Tags de comodidades — serializado como JSON.stringify(string[]) no FormData */
   tags?: string[];
 }
 
 export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
   status?: StatusEstabelecimento;
+  /** Data de validade do documento de habilitação/alvará */
   validade?: string | null;
 }
 
@@ -208,7 +221,15 @@ export interface ServicoTurista {
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
+  /**
+   * URL do comprovante Cadastur (PDF ou imagem .webp).
+   * Obrigatório para todos os tipos exceto ESPORTE_LAZER.
+   */
   comprovanteUrl?: string | null;
+  /**
+   * Data de validade do Cadastur.
+   * Apenas ADMIN pode alterar via update.
+   */
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -303,6 +324,12 @@ export interface CreateItemPlanoViagemDto {
 }
 
 // ─── Cat ────────────────────────────────────────────────────────────────────
+/**
+ * Modelo CAT atualizado (commit: add vídeo no CAT — 08/06/2026)
+ * - arquivoUrl removido
+ * - imagensUrl: array de URLs de imagens (.webp convertidas pelo backend)
+ * - videoUrl: URL do vídeo original (.mp4, .mov etc.) — opcional
+ */
 export interface Cat {
   id: string;
   texto: string;
@@ -358,6 +385,7 @@ export interface CasaDeCambio {
   endereco: string;
   descricao?: string | null;
   cnpj?: string | null;
+  /** Moedas aceitas, ex: "USD, EUR, GBP" */
   moedas?: string | null;
   logoUrl?: string | null;
   fotoUrl?: string | null;
@@ -387,19 +415,58 @@ export interface UpdateCasaDeCambioDto extends Partial<CreateCasaDeCambioDto> {
 }
 
 // ─── Secretaria de Turismo ────────────────────────────────────────────────────
+/** Entidade principal: texto institucional + vídeo opcional */
 export interface SecretariaTurismo {
   id: string;
   texto: string;
-  imagensUrl: string[];
   videoUrl?: string | null;
+  turistando?: Turistando[];
+  projetos?: Projeto[];
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface CreateSecretariaTurismoDto {
   texto: string;
-  imagensUrl?: string[];
   videoUrl?: string | null;
 }
 
 export type UpdateSecretariaTurismoDto = Partial<CreateSecretariaTurismoDto>;
+
+// ─── Turistando (sub-recurso de SecretariaTurismo) ────────────────────────────
+export interface Turistando {
+  id: string;
+  titulo: string;
+  texto: string;
+  /** Array de URLs .webp (processadas pelo backend via sharp) */
+  imagensUrl: string[];
+  secretariaId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateTuristandoDto {
+  titulo: string;
+  texto: string;
+}
+
+export type UpdateTuristandoDto = Partial<CreateTuristandoDto>;
+
+// ─── Projeto (sub-recurso de SecretariaTurismo) ───────────────────────────────
+export interface Projeto {
+  id: string;
+  titulo: string;
+  descricao: string;
+  /** Imagem de capa .webp (processada pelo backend via sharp) */
+  imagemUrl?: string | null;
+  secretariaId: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateProjetoDto {
+  titulo: string;
+  descricao: string;
+}
+
+export type UpdateProjetoDto = Partial<CreateProjetoDto>;
