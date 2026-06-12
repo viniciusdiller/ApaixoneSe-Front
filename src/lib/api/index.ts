@@ -10,3 +10,4 @@ export { servicoTuristaApi } from "./servico-turista";
 export { casaDeCambioApi } from "./casa-de-cambio";
 export { planoViagemApi, itemPlanoViagemApi } from "./plano-viagem";
 export { catApi } from "./cat";
+export { secretariaTurismoApi } from "./secretaria-turismo";

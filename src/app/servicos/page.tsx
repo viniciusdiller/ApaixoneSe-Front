@@ -3,9 +3,20 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Map, Compass, Info, ArrowRight, ArrowLeft, Bike, Car, Banknote, FileText } from "lucide-react";
-import { catApi } from "@/lib/api";
-import type { Cat } from "@/lib/api";
+import {
+  Map,
+  Compass,
+  Info,
+  ArrowRight,
+  ArrowLeft,
+  Bike,
+  Car,
+  Banknote,
+  FileText,
+  Building2,
+} from "lucide-react";
+import { catApi, secretariaTurismoApi } from "@/lib/api";
+import type { Cat, SecretariaTurismo } from "@/lib/api";
 
 function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
@@ -17,6 +28,8 @@ export default function ServicosPage() {
   const router = useRouter();
   const [cat, setCat] = useState<Cat | null>(null);
   const [catLoading, setCatLoading] = useState(true);
+  const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
+  const [secretariaLoading, setSecretariaLoading] = useState(true);
 
   useEffect(() => {
     catApi
@@ -24,6 +37,12 @@ export default function ServicosPage() {
       .then((data) => setCat(data[0] ?? null))
       .catch(() => setCat(null))
       .finally(() => setCatLoading(false));
+
+    secretariaTurismoApi
+      .getAll()
+      .then((data) => setSecretaria(data[0] ?? null))
+      .catch(() => setSecretaria(null))
+      .finally(() => setSecretariaLoading(false));
   }, []);
 
   const cards = [
@@ -79,7 +98,7 @@ export default function ServicosPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero — padrão do site */}
+      {/* Hero */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
         <span
           aria-hidden
@@ -136,45 +155,128 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* CAT */}
-        <div
-          onClick={() => router.push("/servicos/cat")}
-          className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
-        >
-          <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
-            <Info size={32} />
-          </div>
-          <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
-          <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
-            Ponto de Informação
-          </span>
+        {/* ── CAT + Secretaria de Turismo — destaque lado a lado ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-          {catLoading && (
-            <div className="w-full max-w-md space-y-2 animate-pulse">
-              <div className="h-3 w-full rounded bg-muted" />
-              <div className="h-3 w-5/6 rounded bg-muted" />
+          {/* CAT */}
+          <div
+            onClick={() => router.push("/servicos/cat")}
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+          >
+            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
+              <Info size={32} />
             </div>
-          )}
+            <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
+            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
+              Ponto de Informação
+            </span>
 
-          {!catLoading && cat && (
-            <p className="text-muted-foreground text-sm max-w-xl">
-              {truncateWords(cat.texto, 10)}
-            </p>
-          )}
+            {catLoading && (
+              <div className="w-full max-w-md space-y-2 animate-pulse">
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-5/6 rounded bg-muted" />
+              </div>
+            )}
 
-          {!catLoading && !cat && (
-            <p className="text-muted-foreground text-sm">
-              Centro de Atendimento ao Turista. Venha nos visitar
-              presencialmente para mapas, dicas e suporte local gratuito.
-            </p>
-          )}
+            {!catLoading && cat && (
+              <p className="text-muted-foreground text-sm max-w-xl">
+                {truncateWords(cat.texto, 10)}
+              </p>
+            )}
 
-          <div className="mt-4 flex items-center text-primary font-medium text-sm">
-            Saiba mais
-            <ArrowRight
-              size={16}
-              className="ml-2 group-hover:translate-x-1 transition-transform"
+            {!catLoading && !cat && (
+              <p className="text-muted-foreground text-sm">
+                Centro de Atendimento ao Turista. Venha nos visitar
+                presencialmente para mapas, dicas e suporte local gratuito.
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center text-primary font-medium text-sm">
+              Saiba mais
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
+            </div>
+          </div>
+
+          {/* Secretaria de Turismo */}
+          <div
+            onClick={() => router.push("/servicos/secretaria-de-turismo")}
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed text-center cursor-pointer hover:shadow-md transition-all"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(0,100,148,0.08) 0%, rgba(218,113,1,0.08) 50%, rgba(209,153,0,0.08) 100%)",
+              borderColor: "rgba(0,100,148,0.35)",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.borderColor =
+                "rgba(0,100,148,0.65)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.borderColor =
+                "rgba(0,100,148,0.35)";
+            }}
+          >
+            {/* Barra de cores da Secretaria no topo */}
+            <div
+              className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
+              style={{
+                background:
+                  "linear-gradient(90deg, #006494 0%, #da7101 40%, #d19900 70%, #6daa45 100%)",
+              }}
             />
+
+            <div
+              className="p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"
+              style={{ background: "rgba(0,100,148,0.12)", color: "#006494" }}
+            >
+              <Building2 size={32} />
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2 text-foreground">
+              Secretaria de Turismo
+            </h2>
+            <span
+              className="inline-block px-3 py-1 text-xs font-semibold rounded-full mb-4"
+              style={{
+                background: "rgba(0,100,148,0.12)",
+                color: "#006494",
+              }}
+            >
+              Saquarema · RJ
+            </span>
+
+            {secretariaLoading && (
+              <div className="w-full max-w-md space-y-2 animate-pulse">
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-5/6 rounded bg-muted" />
+              </div>
+            )}
+
+            {!secretariaLoading && secretaria && (
+              <p className="text-muted-foreground text-sm max-w-xl">
+                {truncateWords(secretaria.texto, 10)}
+              </p>
+            )}
+
+            {!secretariaLoading && !secretaria && (
+              <p className="text-muted-foreground text-sm">
+                Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
+                iniciativas da Secretaria Municipal.
+              </p>
+            )}
+
+            <div
+              className="mt-4 flex items-center font-medium text-sm"
+              style={{ color: "#006494" }}
+            >
+              Saiba mais
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
+            </div>
           </div>
         </div>
       </section>
