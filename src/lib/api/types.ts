@@ -1,4 +1,4 @@
-// ─── Enums ─────────────────────────────────────────────────────────────────────────────────
+// ─── Enums ────────────────────────────────────────────────────────────────────
 export type Perfil = "USUARIO" | "PARCEIRO" | "ADMIN";
 
 export type TipoRoteiro =
@@ -32,7 +32,7 @@ export type Mes =
   | "NOVEMBRO"
   | "DEZEMBRO";
 
-// ─── Users ─────────────────────────────────────────────────────────────────────────────────
+// ─── Users ────────────────────────────────────────────────────────────────────
 export interface User {
   id: string;
   nome: string;
@@ -56,13 +56,12 @@ export interface LoginUserDto {
   senha: string;
 }
 
-/** Backend retorna { token, user } */
 export interface LoginResponse {
   token: string;
   user: User;
 }
 
-// ─── Atividades ─────────────────────────────────────────────────────────────────────────────────
+// ─── Atividades ───────────────────────────────────────────────────────────────
 export interface Atividade {
   id: string;
   titulo: string;
@@ -86,7 +85,7 @@ export interface CreateAtividadeDto {
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
 
-// ─── Eventos ─────────────────────────────────────────────────────────────────────────────────
+// ─── Eventos ──────────────────────────────────────────────────────────────────
 export interface Evento {
   id: string;
   titulo: string;
@@ -106,7 +105,7 @@ export interface CreateEventoDto {
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;
 
-// ─── Gastronomia ─────────────────────────────────────────────────────────────────────────────────
+// ─── Gastronomia ──────────────────────────────────────────────────────────────
 export interface Gastronomia {
   id: string;
   nome: string;
@@ -146,7 +145,7 @@ export interface UpdateGastronomiaDto extends Partial<CreateGastronomiaDto> {
   validade?: string | null;
 }
 
-// ─── Hospedagem ─────────────────────────────────────────────────────────────────────────────────
+// ─── Hospedagem ───────────────────────────────────────────────────────────────
 export interface Hospedagem {
   id: string;
   nome: string;
@@ -190,7 +189,7 @@ export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
   validade?: string | null;
 }
 
-// ─── Serviço Turista ─────────────────────────────────────────────────────────────────────────────────
+// ─── Serviço Turista ──────────────────────────────────────────────────────────
 export interface ServicoTurista {
   id: string;
   tipo: TipoServicoTurista;
@@ -236,7 +235,7 @@ export interface UpdateServicoTuristaDto extends Partial<CreateServicoTuristaDto
   status?: StatusEstabelecimento;
 }
 
-// ─── Plano de Viagem ─────────────────────────────────────────────────────────────────────────────────
+// ─── Plano de Viagem ──────────────────────────────────────────────────────────
 export interface PlanoViagem {
   id: string;
   titulo: string;
@@ -258,35 +257,23 @@ export interface CreatePlanoViagemDto {
 
 export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
 
-// ─── Item Plano Viagem ─────────────────────────────────────────────────────────────────────────────────
+// ─── Item Plano Viagem ────────────────────────────────────────────────────────
 export interface ItemPlanoViagem {
   id: string;
   dataHoraAgendada: string;
   anotacao?: string | null;
   planoViagemId: string;
   planoViagem?: Pick<PlanoViagem, "id" | "titulo">;
-
   gastronomiaId?: string | null;
-  gastronomia?: Pick<
-    Gastronomia,
-    "id" | "nome" | "endereco" | "logoUrl"
-  > | null;
-
+  gastronomia?: Pick<Gastronomia, "id" | "nome" | "endereco" | "logoUrl"> | null;
   hospedagemId?: string | null;
   hospedagem?: Pick<Hospedagem, "id" | "nome" | "endereco" | "logoUrl"> | null;
-
   eventoId?: string | null;
   evento?: Pick<Evento, "id" | "titulo" | "data" | "local"> | null;
-
   atividadeId?: string | null;
   atividade?: Pick<Atividade, "id" | "titulo" | "local" | "roteiro"> | null;
-
   servicoTuristaId?: string | null;
-  servicoTurista?: Pick<
-    ServicoTurista,
-    "id" | "nome" | "tipo" | "logoUrl"
-  > | null;
-
+  servicoTurista?: Pick<ServicoTurista, "id" | "nome" | "tipo" | "logoUrl"> | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -302,7 +289,7 @@ export interface CreateItemPlanoViagemDto {
   servicoTuristaId?: string;
 }
 
-// ─── Cat ─────────────────────────────────────────────────────────────────────────────────
+// ─── Cat ──────────────────────────────────────────────────────────────────────
 export interface Cat {
   id: string;
   texto: string;
@@ -320,7 +307,7 @@ export interface CreateCatDto {
 
 export type UpdateCatDto = Partial<CreateCatDto>;
 
-// ─── Evento Principal ─────────────────────────────────────────────────────────────────────────────────
+// ─── Evento Principal ─────────────────────────────────────────────────────────
 export interface EventoPrincipal {
   id: string;
   titulo: string;
@@ -338,7 +325,7 @@ export interface CreateEventoPrincipalDto {
 
 export type UpdateEventoPrincipalDto = Partial<CreateEventoPrincipalDto>;
 
-// ─── Visitas ─────────────────────────────────────────────────────────────────────────────────
+// ─── Visitas ──────────────────────────────────────────────────────────────────
 export interface MinhasVisitas {
   gastronomias: string[];
   atividades: string[];
@@ -348,7 +335,7 @@ export interface ToggleVisitaResponse {
   status: "adicionado" | "removido";
 }
 
-// ─── Casa de Câmbio ─────────────────────────────────────────────────────────────────────────────────
+// ─── Casa de Câmbio ───────────────────────────────────────────────────────────
 export interface CasaDeCambio {
   id: string;
   nome: string;
@@ -386,14 +373,13 @@ export interface UpdateCasaDeCambioDto extends Partial<CreateCasaDeCambioDto> {
   status?: StatusEstabelecimento;
 }
 
-// ─── Secretaria de Turismo ─────────────────────────────────────────────────────────────────────────────────
-/** Entidade principal: texto institucional + vídeo opcional */
+// ─── Secretaria de Turismo ────────────────────────────────────────────────────
 export interface SecretariaTurismo {
   id: string;
-  /** Campo retornado pelo backend como `textoExplicativo` */
   textoExplicativo: string;
   videoUrl?: string | null;
-  turistando?: Turistando[];
+  /** Prisma retorna `turistandos` (plural) — use sempre este nome */
+  turistandos?: Turistando[];
   projetos?: Projeto[];
   createdAt?: string;
   updatedAt?: string;
@@ -406,12 +392,11 @@ export interface CreateSecretariaTurismoDto {
 
 export type UpdateSecretariaTurismoDto = Partial<CreateSecretariaTurismoDto>;
 
-// ─── Turistando (sub-recurso de SecretariaTurismo) ─────────────────────────────────────────────────────
+// ─── Turistando ───────────────────────────────────────────────────────────────
 export interface Turistando {
   id: string;
   titulo: string;
   texto: string;
-  /** Array de URLs .webp (processadas pelo backend via sharp) */
   imagensUrl: string[];
   secretariaId: string;
   createdAt?: string;
@@ -425,12 +410,11 @@ export interface CreateTuristandoDto {
 
 export type UpdateTuristandoDto = Partial<CreateTuristandoDto>;
 
-// ─── Projeto (sub-recurso de SecretariaTurismo) ─────────────────────────────────────────────────────────────────────────────────
+// ─── Projeto ──────────────────────────────────────────────────────────────────
 export interface Projeto {
   id: string;
   titulo: string;
   descricao: string;
-  /** Imagem de capa .webp (processada pelo backend via sharp) */
   imagemUrl?: string | null;
   secretariaId: string;
   createdAt?: string;
