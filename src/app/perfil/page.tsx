@@ -139,10 +139,19 @@ export default function PerfilPage() {
               <h2 className="font-display text-lg font-bold uppercase tracking-wide text-foreground">
                 Meus Estabelecimentos
               </h2>
-              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                {hospedagens.length} cadastrado
-                {hospedagens.length !== 1 ? "s" : ""}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  {hospedagens.length} cadastrado
+                  {hospedagens.length !== 1 ? "s" : ""}
+                </span>
+                {/* Botão de adicionar novo estabelecimento para quem já é parceiro */}
+                <Link
+                  href="/perfil/novo-estabelecimento"
+                  className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
+                >
+                  + Novo
+                </Link>
+              </div>
             </div>
 
             {loadingEstabs ? (
@@ -237,21 +246,38 @@ export default function PerfilPage() {
 
         {/* USUARIO: mensagem simples */}
         {user.perfil === "USUARIO" && (
-          <div className="rounded-2xl border border-border bg-card p-8 text-center">
-            <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-            <p className="font-medium text-foreground">
-              Bem-vindo, {user.nome.split(" ")[0]}!
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Explore Saquarema e aproveite tudo que a cidade tem a oferecer.
-            </p>
-            <Link
-              href="/"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-            >
-              Explorar o site
-            </Link>
-          </div>
+          <div className="flex flex-col gap-6">
+            <div className="rounded-2xl border border-border bg-card p-8 text-center">
+              <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+              <p className="font-medium text-foreground">
+                Bem-vindo, {user.nome.split(" ")[0]}!
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Explore Saquarema e aproveite tudo que a cidade tem a oferecer.
+              </p>
+              <Link
+                href="/"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
+                Explorar o site
+              </Link>
+            </div>
+            <div>
+              <Store className="mb-3 h-10 w-10 text-muted-foreground/40" />
+                <p className="font-medium text-foreground">
+                  Você é dono de um negócio?
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Cadastre sua hospedagem ou restaurante e torne-se um Parceiro!
+                </p>
+                <Link
+                  href="/perfil/novo-estabelecimento"
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+                >
+                  Cadastrar Negócio
+                </Link>
+            </div>
+          </div> 
         )}
       </div>
     </div>
