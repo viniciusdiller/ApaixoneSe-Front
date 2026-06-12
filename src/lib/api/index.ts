@@ -1,7 +1,7 @@
 export * from "./types";
 export * from "./config";
-export { atividadeApi } from "./atividades";
-export { eventoApi } from "./eventos";
+export { atividadesApi } from "./atividades";
+export { eventosApi } from "./eventos";
 export { gastronomiaApi } from "./gastronomia";
 export { hospedagemApi } from "./hospedagem";
 export { servicoTuristaApi } from "./servico-turista";
@@ -10,7 +10,7 @@ export { catApi } from "./cat";
 export { eventoPrincipalApi } from "./eventoPrincipal";
 export { visitasApi } from "./visitas";
 export { casaDeCambioApi } from "./casa-de-cambio";
-export { authApi } from "./auth";
+export { clearToken, getToken, getUserData, isAuthenticated, setToken, setUserData } from "./auth";
 export { usersApi } from "./users";
 export {
   secretariaTurismoApi,
