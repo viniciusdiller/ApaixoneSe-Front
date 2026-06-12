@@ -1,17 +1,22 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { Landmark, ImagePlus, Video, Plus, Pencil, Trash2, X, Save, ChevronRight } from "lucide-react";
 import { secretariaTurismoApi, turistandoApi, projetoApi } from "@/lib/api/secretaria-turismo";
 import type { SecretariaTurismo, Turistando, Projeto } from "@/lib/api/types";
 
-// ─── helpers ────────────────────────────────────────────────────────────
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const img = (url?: string | null) =>
   url ? (url.startsWith("http") ? url : `${API_URL}${url}`) : null;
 
 type Tab = "institucional" | "turistando" | "projetos";
 
-// ─── componente principal ────────────────────────────────────────────────
+const TABS: { key: Tab; label: string; emoji: string }[] = [
+  { key: "institucional", label: "Institucional", emoji: "🏛️" },
+  { key: "turistando",    label: "Turistando",    emoji: "🌄" },
+  { key: "projetos",      label: "Projetos",       emoji: "📌" },
+];
+
 export default function SecretariaTurismoAdminPage() {
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("institucional");
@@ -31,14 +36,14 @@ export default function SecretariaTurismoAdminPage() {
   const [projetoForm, setProjetoForm] = useState({ titulo: "", descricao: "" });
   const [projetoImagem, setProjetoImagem] = useState<File | null>(null);
 
-  // — institucional form
+  // — institucional
   const [instTexto, setInstTexto] = useState("");
   const [instVideo, setInstVideo] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
-  // refs
-  const videoInputRef = useRef<HTMLInputElement>(null);
-  const imagensInputRef = useRef<HTMLInputElement>(null);
-  const imagemProjetoRef = useRef<HTMLInputElement>(null);
+  const videoInputRef      = useRef<HTMLInputElement>(null);
+  const imagensInputRef    = useRef<HTMLInputElement>(null);
+  const imagemProjetoRef   = useRef<HTMLInputElement>(null);
 
   useEffect(() => { load(); }, []);
 
@@ -48,7 +53,7 @@ export default function SecretariaTurismoAdminPage() {
       const data = await secretariaTurismoApi.getAll();
       const first = data[0] ?? null;
       setSecretaria(first);
-      if (first) setInstTexto(first.texto ?? "");
+      if (first) setInstTexto(first.textoExplicativo ?? "");
     } catch {
       toast("error", "Erro ao carregar dados da Secretaria.");
     } finally {
@@ -61,13 +66,13 @@ export default function SecretariaTurismoAdminPage() {
     setTimeout(() => setFeedback(null), 4000);
   }
 
-  // ====== INSTITUCIONAL ======
+  // ── INSTITUCIONAL ──────────────────────────────────────────────────────────
   async function handleSaveInstitucional(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     try {
       const fd = new FormData();
-      fd.append("texto", instTexto);
+      fd.append("textoExplicativo", instTexto);   // ← campo correto do backend
       if (instVideo) fd.append("video", instVideo);
 
       let updated: SecretariaTurismo;
@@ -78,6 +83,7 @@ export default function SecretariaTurismoAdminPage() {
       }
       setSecretaria(updated);
       setInstVideo(null);
+      setVideoPreview(null);
       if (videoInputRef.current) videoInputRef.current.value = "";
       toast("success", "Dados institucionais salvos com sucesso!");
     } catch {
@@ -87,7 +93,18 @@ export default function SecretariaTurismoAdminPage() {
     }
   }
 
-  // ====== TURISTANDO ======
+  function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setInstVideo(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setVideoPreview(url);
+    } else {
+      setVideoPreview(null);
+    }
+  }
+
+  // ── TURISTANDO ─────────────────────────────────────────────────────────────
   function openAddTuristando() {
     setEditingTuristandoId(null);
     setTuristandoForm({ titulo: "", texto: "" });
@@ -139,7 +156,7 @@ export default function SecretariaTurismoAdminPage() {
     }
   }
 
-  // ====== PROJETOS ======
+  // ── PROJETOS ───────────────────────────────────────────────────────────────
   function openAddProjeto() {
     setEditingProjetoId(null);
     setProjetoForm({ titulo: "", descricao: "" });
@@ -191,151 +208,187 @@ export default function SecretariaTurismoAdminPage() {
     }
   }
 
+  // ── LOADING ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-gray-500 animate-pulse">Carregando...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Carregando...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      {/* header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Secretaria de Turismo</h1>
-        <p className="text-sm text-gray-500 mt-1">Gerencie o conteúdo institucional, blocos Turistando e Projetos.</p>
+    <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+
+      {/* ── Page header ── */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-primary/10 rounded-xl">
+          <Landmark className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Secretaria de Turismo</h1>
+          <p className="text-sm text-muted-foreground">Gerencie o conteúdo institucional, Turistando e Projetos.</p>
+        </div>
       </div>
 
-      {/* feedback toast */}
+      {/* ── Feedback toast ── */}
       {feedback && (
         <div
-          className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${
             feedback.type === "success"
-              ? "bg-green-100 text-green-800 border border-green-200"
-              : "bg-red-100 text-red-800 border border-red-200"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+              : "bg-red-50 text-red-800 border-red-200"
           }`}
         >
+          <span>{feedback.type === "success" ? "✓" : "✕"}</span>
           {feedback.msg}
         </div>
       )}
 
-      {/* tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {(["institucional", "turistando", "projetos"] as Tab[]).map((tab) => (
+      {/* ── Tabs ── */}
+      <div className="flex gap-1 p-1 bg-muted rounded-xl w-fit">
+        {TABS.map(({ key, label, emoji }) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${
-              activeTab === tab
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-500 hover:text-gray-800"
+            key={key}
+            onClick={() => setActiveTab(key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === key
+                ? "bg-white shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {tab === "institucional" ? "Institucional" : tab === "turistando" ? "Turistando" : "Projetos"}
+            <span>{emoji}</span>
+            {label}
           </button>
         ))}
       </div>
 
-      {/* ─── TAB: INSTITUCIONAL ─── */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          TAB: INSTITUCIONAL
+      ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "institucional" && (
-        <form onSubmit={handleSaveInstitucional} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Texto institucional</label>
+        <form onSubmit={handleSaveInstitucional} className="space-y-6">
+          {/* Texto */}
+          <div className="bg-white border border-border rounded-2xl p-6 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-base">📝</span>
+              <h2 className="text-sm font-semibold">Texto institucional</h2>
+            </div>
             <textarea
               value={instTexto}
               onChange={(e) => setInstTexto(e.target.value)}
-              rows={6}
+              rows={7}
               required
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full border border-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
               placeholder="Descreva a Secretaria de Turismo..."
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Vídeo institucional (MP4, MOV)</label>
-            {secretaria?.videoUrl && (
+          {/* Vídeo */}
+          <div className="bg-white border border-border rounded-2xl p-6 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <Video className="w-4 h-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold">Vídeo institucional</h2>
+              <span className="ml-auto text-xs text-muted-foreground">MP4, MOV</span>
+            </div>
+
+            {/* preview: novo arquivo tem prioridade, senão mostra o salvo */}
+            {(videoPreview ?? img(secretaria?.videoUrl)) && (
               <video
-                src={img(secretaria.videoUrl) ?? ""}
-                className="mb-2 rounded-lg max-h-48 w-full object-cover"
+                src={videoPreview ?? img(secretaria?.videoUrl) ?? ""}
+                className="w-full max-h-52 rounded-xl object-cover border border-border"
                 controls
               />
             )}
-            <input
-              ref={videoInputRef}
-              type="file"
-              accept="video/*"
-              onChange={(e) => setInstVideo(e.target.files?.[0] ?? null)}
-              className="text-sm text-gray-600"
-            />
+
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
+                <ImagePlus className="w-4 h-4" />
+                {instVideo ? instVideo.name : "Selecionar vídeo"}
+              </div>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                onChange={handleVideoChange}
+                className="hidden"
+              />
+            </label>
           </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium px-6 py-2 rounded-lg transition-colors"
-          >
-            {saving ? "Salvando..." : secretaria ? "Atualizar" : "Criar"}
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors shadow-sm"
+            >
+              <Save className="w-4 h-4" />
+              {saving ? "Salvando..." : secretaria ? "Salvar alterações" : "Criar"}
+            </button>
+          </div>
         </form>
       )}
 
-      {/* ─── TAB: TURISTANDO ─── */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          TAB: TURISTANDO
+      ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "turistando" && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-gray-500">{secretaria?.turistando?.length ?? 0} bloco(s) cadastrado(s)</p>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {secretaria?.turistando?.length ?? 0} bloco(s) cadastrado(s)
+            </p>
             <button
               onClick={openAddTuristando}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
             >
-              + Adicionar Turistando
+              <Plus className="w-4 h-4" />
+              Adicionar Turistando
             </button>
           </div>
 
           {!secretaria?.turistando?.length ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl text-muted-foreground">
               <p className="text-4xl mb-3">🌄</p>
-              <p className="text-sm">Nenhum bloco Turistando ainda.</p>
+              <p className="text-sm font-medium">Nenhum bloco Turistando ainda.</p>
+              <p className="text-xs mt-1">Clique em "Adicionar" para começar.</p>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {secretaria.turistando.map((t) => (
-                <div key={t.id} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-800 text-sm mb-1">{t.titulo}</h3>
-                      <p className="text-xs text-gray-500 line-clamp-2">{t.texto}</p>
-                      {t.imagensUrl?.length > 0 && (
-                        <div className="flex gap-2 mt-2 flex-wrap">
-                          {t.imagensUrl.slice(0, 4).map((u, i) => (
-                            <img
-                              key={i}
-                              src={img(u) ?? ""}
-                              alt=""
-                              className="w-12 h-12 object-cover rounded-md border border-gray-100"
-                            />
-                          ))}
-                          {t.imagensUrl.length > 4 && (
-                            <span className="text-xs text-gray-400 self-center">+{t.imagensUrl.length - 4}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() => openEditTuristando(t)}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTuristando(t.id)}
-                        className="text-xs text-red-500 hover:underline"
-                      >
-                        Remover
-                      </button>
-                    </div>
+                <div key={t.id} className="bg-white border border-border rounded-2xl p-4 shadow-sm flex gap-4 items-start">
+                  {t.imagensUrl?.[0] && (
+                    <img
+                      src={img(t.imagensUrl[0]) ?? ""}
+                      alt=""
+                      className="w-16 h-16 object-cover rounded-xl border border-border shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm mb-0.5">{t.titulo}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{t.texto}</p>
+                    {t.imagensUrl?.length > 1 && (
+                      <p className="text-xs text-muted-foreground mt-1">{t.imagensUrl.length} imagens</p>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <button
+                      onClick={() => openEditTuristando(t)}
+                      className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteTuristando(t.id)}
+                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-muted-foreground hover:text-red-500"
+                      title="Remover"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -344,50 +397,60 @@ export default function SecretariaTurismoAdminPage() {
         </div>
       )}
 
-      {/* ─── TAB: PROJETOS ─── */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          TAB: PROJETOS
+      ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "projetos" && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-gray-500">{secretaria?.projetos?.length ?? 0} projeto(s) cadastrado(s)</p>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-muted-foreground">
+              {secretaria?.projetos?.length ?? 0} projeto(s) cadastrado(s)
+            </p>
             <button
               onClick={openAddProjeto}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
             >
-              + Adicionar Projeto
+              <Plus className="w-4 h-4" />
+              Adicionar Projeto
             </button>
           </div>
 
           {!secretaria?.projetos?.length ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl text-muted-foreground">
               <p className="text-4xl mb-3">📌</p>
-              <p className="text-sm">Nenhum projeto cadastrado ainda.</p>
+              <p className="text-sm font-medium">Nenhum projeto cadastrado ainda.</p>
+              <p className="text-xs mt-1">Clique em "Adicionar" para começar.</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4">
               {secretaria.projetos.map((p) => (
-                <div key={p.id} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                  {p.imagemUrl && (
+                <div key={p.id} className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm group">
+                  {p.imagemUrl ? (
                     <img
                       src={img(p.imagemUrl) ?? ""}
                       alt={p.titulo}
-                      className="w-full h-32 object-cover"
+                      className="w-full h-36 object-cover"
                     />
+                  ) : (
+                    <div className="w-full h-36 bg-muted flex items-center justify-center text-muted-foreground">
+                      <ImagePlus className="w-6 h-6" />
+                    </div>
                   )}
-                  <div className="p-3">
-                    <h3 className="font-semibold text-gray-800 text-sm mb-1">{p.titulo}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-2">{p.descricao}</p>
-                    <div className="flex gap-3 mt-3">
+                  <div className="p-4">
+                    <h3 className="font-semibold text-sm mb-1">{p.titulo}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{p.descricao}</p>
+                    <div className="flex gap-2 mt-3">
                       <button
                         onClick={() => openEditProjeto(p)}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                       >
-                        Editar
+                        <Pencil className="w-3 h-3" /> Editar
                       </button>
                       <button
                         onClick={() => handleDeleteProjeto(p.id)}
-                        className="text-xs text-red-500 hover:underline"
+                        className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:underline"
                       >
-                        Remover
+                        <Trash2 className="w-3 h-3" /> Remover
                       </button>
                     </div>
                   </div>
@@ -398,66 +461,80 @@ export default function SecretariaTurismoAdminPage() {
         </div>
       )}
 
-      {/* ─── MODAL: TURISTANDO ─── */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODAL: TURISTANDO
+      ══════════════════════════════════════════════════════════════════════ */}
       {modalTuristandoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-base font-semibold text-gray-800">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-border">
+              <h2 className="text-base font-semibold">
                 {editingTuristandoId ? "Editar Turistando" : "Novo Turistando"}
               </h2>
-              <button onClick={() => setModalTuristandoOpen(false)} className="text-gray-400 hover:text-gray-600">
-                ✕
+              <button
+                onClick={() => setModalTuristandoOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleSaveTuristando} className="space-y-4">
+            <form onSubmit={handleSaveTuristando} className="px-6 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Título</label>
                 <input
                   value={turistandoForm.titulo}
                   onChange={(e) => setTuristandoForm((f) => ({ ...f, titulo: e.target.value }))}
                   required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   placeholder="Título do bloco"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Texto</label>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Texto</label>
                 <textarea
                   value={turistandoForm.texto}
                   onChange={(e) => setTuristandoForm((f) => ({ ...f, texto: e.target.value }))}
                   required
                   rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  placeholder="Descrição do bloco Turistando"
+                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
+                  placeholder="Descrição do bloco"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Imagens (até 10)
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                  Imagens <span className="normal-case font-normal">(até 10)</span>
                 </label>
-                <input
-                  ref={imagensInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => setTuristandoImagens(Array.from(e.target.files ?? []))}
-                  className="text-sm text-gray-600"
-                />
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <ImagePlus className="w-4 h-4" />
+                    {turistandoImagens.length > 0
+                      ? `${turistandoImagens.length} arquivo(s) selecionado(s)`
+                      : "Selecionar imagens"}
+                  </div>
+                  <input
+                    ref={imagensInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => setTuristandoImagens(Array.from(e.target.files ?? []))}
+                    className="hidden"
+                  />
+                </label>
               </div>
-              <div className="flex gap-3 justify-end pt-2">
+              <div className="flex gap-3 justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => setModalTuristandoOpen(false)}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-muted-foreground hover:text-foreground px-4 py-2 rounded-xl hover:bg-muted transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
                 >
+                  <Save className="w-4 h-4" />
                   {saving ? "Salvando..." : "Salvar"}
                 </button>
               </div>
@@ -466,63 +543,75 @@ export default function SecretariaTurismoAdminPage() {
         </div>
       )}
 
-      {/* ─── MODAL: PROJETO ─── */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          MODAL: PROJETO
+      ══════════════════════════════════════════════════════════════════════ */}
       {modalProjetoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-base font-semibold text-gray-800">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-border">
+              <h2 className="text-base font-semibold">
                 {editingProjetoId ? "Editar Projeto" : "Novo Projeto"}
               </h2>
-              <button onClick={() => setModalProjetoOpen(false)} className="text-gray-400 hover:text-gray-600">
-                ✕
+              <button
+                onClick={() => setModalProjetoOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleSaveProjeto} className="space-y-4">
+            <form onSubmit={handleSaveProjeto} className="px-6 py-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Título</label>
                 <input
                   value={projetoForm.titulo}
                   onChange={(e) => setProjetoForm((f) => ({ ...f, titulo: e.target.value }))}
                   required
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
                   placeholder="Nome do projeto"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Descrição</label>
                 <textarea
                   value={projetoForm.descricao}
                   onChange={(e) => setProjetoForm((f) => ({ ...f, descricao: e.target.value }))}
                   required
                   rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                  placeholder="Descrição do projeto ou curso"
+                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
+                  placeholder="Descrição do projeto"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Imagem de capa</label>
-                <input
-                  ref={imagemProjetoRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setProjetoImagem(e.target.files?.[0] ?? null)}
-                  className="text-sm text-gray-600"
-                />
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Imagem de capa</label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <ImagePlus className="w-4 h-4" />
+                    {projetoImagem ? projetoImagem.name : "Selecionar imagem"}
+                  </div>
+                  <input
+                    ref={imagemProjetoRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setProjetoImagem(e.target.files?.[0] ?? null)}
+                    className="hidden"
+                  />
+                </label>
               </div>
-              <div className="flex gap-3 justify-end pt-2">
+              <div className="flex gap-3 justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => setModalProjetoOpen(false)}
-                  className="text-sm text-gray-500 hover:text-gray-700"
+                  className="text-sm text-muted-foreground hover:text-foreground px-4 py-2 rounded-xl hover:bg-muted transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
                 >
+                  <Save className="w-4 h-4" />
                   {saving ? "Salvando..." : "Salvar"}
                 </button>
               </div>
