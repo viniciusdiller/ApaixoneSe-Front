@@ -1,238 +1,298 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Play, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Info, Video, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
 import { secretariaTurismoApi } from "@/lib/api/secretaria-turismo";
 import type { SecretariaTurismo } from "@/lib/api";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-const mediaUrl = (url?: string | null) =>
-  url ? (url.startsWith("http") ? url : `${API_URL}${url}`) : null;
+// ─── Carrossel (mesmo padrão do CAT) ─────────────────────────────────────────
+function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
+  const [idx, setIdx] = useState(0);
+  const total = urls.length;
+  const prev = () => setIdx((i) => (i - 1 + total) % total);
+  const next = () => setIdx((i) => (i + 1) % total);
 
-export default function SecretariaTurismoPublicPage() {
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  });
+
+  if (total === 0) return null;
+
+  if (total === 1) {
+    const src = safeMediaUrl(urls[0]);
+    return src ? (
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
+        <Image src={src} alt={alt} fill className="object-cover" />
+      </div>
+    ) : null;
+  }
+
+  const src = safeMediaUrl(urls[idx]);
+
+  return (
+    <div className="select-none space-y-3">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
+        {src && <Image src={src} alt={`${alt} ${idx + 1}`} fill className="object-cover transition-opacity duration-300" />}
+        <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70" aria-label="Anterior">
+          <ChevronLeft size={20} />
+        </button>
+        <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70" aria-label="Próxima">
+          <ChevronRight size={20} />
+        </button>
+        <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white backdrop-blur-sm">
+          {idx + 1} / {total}
+        </span>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {urls.map((url, i) => {
+          const s = safeMediaUrl(url);
+          return s ? (
+            <button key={i} onClick={() => setIdx(i)}
+              className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                i === idx ? "border-primary opacity-100" : "border-transparent opacity-60 hover:opacity-100"
+              }`}
+            >
+              <Image src={s} alt={`Thumb ${i + 1}`} fill className="object-cover" />
+            </button>
+          ) : null;
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Vídeo sticky (mesmo padrão do CAT) ──────────────────────────────────────
+function StickyVideo({ url }: { url: string }) {
+  const src = safeMediaUrl(url);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const videoBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const box = videoBoxRef.current;
+    if (!wrap || !box) return;
+    const onScroll = () => {
+      const wrapRect = wrap.getBoundingClientRect();
+      const boxH = box.offsetHeight;
+      const top = 96;
+      if (wrapRect.top > top) {
+        box.style.position = "relative";
+        box.style.top = "0";
+      } else if (wrapRect.bottom - boxH < top) {
+        box.style.position = "absolute";
+        box.style.top = `${wrap.offsetHeight - boxH}px`;
+      } else {
+        box.style.position = "fixed";
+        box.style.top = `${top}px`;
+        box.style.width = `${wrap.offsetWidth}px`;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!src) return null;
+
+  return (
+    <div ref={wrapRef} className="relative hidden lg:block">
+      <div ref={videoBoxRef} className="w-full">
+        <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-lg">
+          <div className="flex items-center gap-2 border-b border-border/40 bg-black/60 px-4 py-2">
+            <Video size={14} className="text-white/60" />
+            <span className="text-xs text-white/60">Vídeo</span>
+          </div>
+          <video src={src} controls className="w-full" style={{ maxHeight: "360px" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Página pública Secretaria de Turismo ────────────────────────────────────
+export default function SecretariaTurismoPage() {
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     secretariaTurismoApi
       .getAll()
       .then((data) => setSecretaria(data[0] ?? null))
-      .catch(() => setSecretaria(null))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground animate-pulse">Carregando…</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section
-        className="relative overflow-hidden px-4 pb-16 pt-32"
-        style={{
-          background:
-            "linear-gradient(135deg, #7DC242 0%, #F5C900 30%, #F47920 60%, #E91E8C 80%, #009FE3 100%)",
-        }}
-      >
+    <main className="min-h-screen bg-background">
+      {/* Hero — mesmo padrão do CAT e demais páginas */}
+      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+        <span aria-hidden className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10">
+          🏖️
+        </span>
         <div className="container relative z-10 mx-auto">
           <Link
             href="/servicos"
-            className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 text-sm text-white/90 transition-colors hover:bg-white/30"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para Serviços
           </Link>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-white/70">
-            Saquarema
-          </p>
-          <h1 className="font-display text-5xl font-bold uppercase text-white drop-shadow-lg md:text-6xl">
+          <div className="mb-3 inline-flex items-center gap-2">
+            <span className="inline-block rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold text-primary-foreground">
+              Prefeitura de Saquarema
+            </span>
+          </div>
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
             Secretaria de Turismo
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-white/90">
-            Esporte, Lazer e Turismo — Prefeitura de Saquarema
+          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+            Esporte, Lazer e Turismo — Prefeitura de Saquarema.
           </p>
         </div>
       </section>
 
-      <div className="container mx-auto max-w-5xl px-4 py-16 space-y-20">
-        {/* Sem conteúdo ainda */}
-        {!secretaria && (
-          <div className="text-center py-24">
-            <p className="text-6xl mb-4">🏖️</p>
-            <h2 className="text-xl font-semibold text-foreground mb-2">Em breve</h2>
-            <p className="text-muted-foreground text-sm">
-              As informações da Secretaria de Turismo serão disponibilizadas em breve.
-            </p>
-          </div>
-        )}
+      {/* Conteúdo */}
+      <section className="px-4 py-16">
+        <div className="container mx-auto max-w-6xl">
 
-        {secretaria && (
-          <>
-            {/* —— Institucional —— */}
-            <section>
-              <div className="grid md:grid-cols-2 gap-10 items-center">
-                <div>
-                  <span
-                    className="inline-block px-3 py-1 text-xs font-semibold rounded-full text-white mb-4"
-                    style={{ background: "linear-gradient(90deg,#F47920,#E91E8C)" }}
-                  >
-                    Institucional
-                  </span>
-                  <p className="text-foreground text-base leading-relaxed whitespace-pre-line">
-                    {secretaria.texto}
-                  </p>
+          {/* Skeleton */}
+          {loading && (
+            <div className="animate-pulse space-y-6">
+              <div className="h-6 w-40 rounded bg-muted" />
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
+                <div className="space-y-4">
+                  <div className="h-4 w-full rounded bg-muted" />
+                  <div className="h-4 w-5/6 rounded bg-muted" />
+                  <div className="h-4 w-4/6 rounded bg-muted" />
+                </div>
+                <div className="hidden aspect-video rounded-2xl bg-muted lg:block" />
+              </div>
+            </div>
+          )}
+
+          {/* Erro */}
+          {!loading && error && (
+            <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
+              <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
+              <p className="text-base font-medium">Não foi possível carregar as informações da Secretaria.</p>
+              <p className="mt-1 text-sm">Verifique sua conexão e tente novamente.</p>
+            </div>
+          )}
+
+          {/* Sem dados */}
+          {!loading && !error && !secretaria && (
+            <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
+              <Info className="mb-4 h-10 w-10 text-muted-foreground/50" />
+              <p className="text-base font-medium">Informações da Secretaria de Turismo não disponíveis no momento.</p>
+            </div>
+          )}
+
+          {/* Layout principal */}
+          {!loading && !error && secretaria && (
+            <div className="space-y-16">
+
+              {/* — Institucional — */}
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
+                <div className="space-y-8">
+                  <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+                    <div className="mb-5 flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <Info size={20} />
+                      </div>
+                      <h2 className="text-xl font-bold text-foreground">Sobre a Secretaria</h2>
+                    </div>
+                    <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
+                      {secretaria.texto}
+                    </p>
+                  </div>
                 </div>
 
                 {secretaria.videoUrl && (
-                  <div className="relative rounded-2xl overflow-hidden shadow-lg aspect-video bg-black">
-                    <video
-                      src={mediaUrl(secretaria.videoUrl) ?? ""}
-                      controls
-                      className="w-full h-full object-cover"
-                      poster=""
-                    />
-                  </div>
+                  <StickyVideo url={secretaria.videoUrl} />
                 )}
               </div>
-            </section>
 
-            {/* —— Turistando —— */}
-            {secretaria.turistando && secretaria.turistando.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-8">
-                  <div
-                    className="h-1 w-8 rounded-full"
-                    style={{
-                      background: "linear-gradient(90deg,#7DC242,#F5C900)",
-                    }}
-                  />
-                  <h2 className="text-2xl font-bold text-foreground">Turistando</h2>
+              {/* Vídeo mobile */}
+              {secretaria.videoUrl && (
+                <div className="block lg:hidden">
+                  {(() => {
+                    const src = safeMediaUrl(secretaria.videoUrl!);
+                    return src ? (
+                      <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-sm">
+                        <div className="flex items-center gap-2 border-b border-border/40 bg-black/60 px-4 py-2">
+                          <Video size={14} className="text-white/60" />
+                          <span className="text-xs text-white/60">Vídeo</span>
+                        </div>
+                        <video src={src} controls className="w-full" />
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
+              )}
 
-                <div className="space-y-12">
+              {/* — Turistando — */}
+              {secretaria.turistando && secretaria.turistando.length > 0 && (
+                <div className="space-y-10">
+                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Turistando</h2>
                   {secretaria.turistando.map((t, i) => (
-                    <div
-                      key={t.id}
-                      className={`grid md:grid-cols-2 gap-8 items-start ${
-                        i % 2 === 1 ? "md:flex-row-reverse" : ""
-                      }`}
-                    >
-                      {/* texto */}
-                      <div className={i % 2 === 1 ? "md:order-2" : ""}>
-                        <h3 className="text-xl font-semibold text-foreground mb-3">
-                          {t.titulo}
-                        </h3>
-                        <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
-                          {t.texto}
-                        </p>
+                    <div key={t.id} className={`grid grid-cols-1 gap-8 lg:grid-cols-2 items-start`}>
+                      <div className={i % 2 === 1 ? "lg:order-2" : ""}>
+                        <h3 className="text-lg font-semibold text-foreground mb-3">{t.titulo}</h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{t.texto}</p>
                       </div>
-
-                      {/* imagens */}
                       {t.imagensUrl?.length > 0 && (
-                        <div
-                          className={`grid grid-cols-2 gap-2 ${
-                            i % 2 === 1 ? "md:order-1" : ""
-                          }`}
-                        >
-                          {t.imagensUrl.slice(0, 4).map((u, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => setLightbox(mediaUrl(u))}
-                              className="relative overflow-hidden rounded-xl aspect-square group"
-                            >
-                              <img
-                                src={mediaUrl(u) ?? ""}
-                                alt={t.titulo}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                <ImageIcon className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={24} />
-                              </div>
-                            </button>
-                          ))}
+                        <div className={i % 2 === 1 ? "lg:order-1" : ""}>
+                          <Carousel urls={t.imagensUrl} alt={t.titulo} />
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-              </section>
-            )}
+              )}
 
-            {/* —— Projetos —— */}
-            {secretaria.projetos && secretaria.projetos.length > 0 && (
-              <section>
-                <div className="flex items-center gap-3 mb-8">
-                  <div
-                    className="h-1 w-8 rounded-full"
-                    style={{
-                      background: "linear-gradient(90deg,#F47920,#E91E8C)",
-                    }}
-                  />
-                  <h2 className="text-2xl font-bold text-foreground">Projetos & Cursos</h2>
-                </div>
-
-                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {secretaria.projetos.map((p) => (
-                    <div
-                      key={p.id}
-                      className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-shadow"
-                    >
-                      {p.imagemUrl ? (
-                        <img
-                          src={mediaUrl(p.imagemUrl) ?? ""}
-                          alt={p.titulo}
-                          className="w-full h-40 object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="w-full h-40 flex items-center justify-center"
-                          style={{ background: "linear-gradient(135deg,#7DC242,#009FE3)" }}
-                        >
-                          <span className="text-white text-4xl">📌</span>
+              {/* — Projetos — */}
+              {secretaria.projetos && secretaria.projetos.length > 0 && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Projetos & Cursos</h2>
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {secretaria.projetos.map((p) => (
+                      <div key={p.id} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
+                        {p.imagemUrl ? (
+                          <div className="relative w-full h-40">
+                            <Image
+                              src={safeMediaUrl(p.imagemUrl) ?? ""}
+                              alt={p.titulo}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-full h-40 flex items-center justify-center bg-muted">
+                            <span className="text-4xl">📌</span>
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold text-foreground text-sm mb-1">{p.titulo}</h3>
+                          <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">{p.descricao}</p>
                         </div>
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-semibold text-foreground text-sm mb-1">{p.titulo}</h3>
-                        <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">
-                          {p.descricao}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </section>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Lightbox */}
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() => setLightbox(null)}
-        >
-          <img
-            src={lightbox}
-            alt=""
-            className="max-w-full max-h-full rounded-xl object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button
-            onClick={() => setLightbox(null)}
-            className="absolute top-4 right-4 text-white text-2xl hover:text-gray-300"
-          >
-            ✕
-          </button>
+              )}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </section>
+    </main>
   );
 }

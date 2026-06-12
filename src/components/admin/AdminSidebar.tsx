@@ -16,28 +16,23 @@ import {
   ChevronRight,
   LogOut,
   Banknote,
+  Landmark,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
+
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
-  {
-    label: "Evento Principal",
-    href: "/admin/evento-principal",
-    icon: Calendar,
-  },
+  { label: "Evento Principal", href: "/admin/evento-principal", icon: Calendar },
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
   { label: "Hospedagem", href: "/admin/hospedagem", icon: BedDouble },
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },
   { label: "Casa de Câmbio", href: "/admin/casa-de-cambio", icon: Banknote },
-  {
-    label: "Planos de Viagem",
-    href: "/admin/planos-de-viagem",
-    icon: BookOpen,
-  },
+  { label: "Secretaria de Turismo", href: "/admin/secretaria-de-turismo", icon: Landmark },
+  { label: "Planos de Viagem", href: "/admin/planos-de-viagem", icon: BookOpen },
   { label: "CAT", href: "/admin/cat", icon: Tag },
 ];
 
