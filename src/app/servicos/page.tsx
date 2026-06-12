@@ -3,18 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  Map,
-  Compass,
-  Info,
-  ArrowRight,
-  ArrowLeft,
-  Bike,
-  Car,
-  Banknote,
-  FileText,
-} from "lucide-react";
-import { catApi, secretariaTurismoApi } from "@/lib/api";
+import { Map, Compass, Info, ArrowRight, ArrowLeft, Bike, Car, Banknote, FileText, Landmark } from "lucide-react";
+import { catApi } from "@/lib/api";
+import { secretariaTurismoApi } from "@/lib/api/secretaria-turismo";
 import type { Cat, SecretariaTurismo } from "@/lib/api";
 
 function truncateWords(text: string, max = 10): string {
@@ -23,31 +14,12 @@ function truncateWords(text: string, max = 10): string {
   return words.slice(0, max).join(" ") + "…";
 }
 
-// Cores extraídas da logo Esporte Lazer e Turismo Saquarema-RJ
-// Verde (Esporte) · Laranja (Lazer) · Azul (Turismo) · Magenta (arco)
-const LOGO_COLORS = ["#6ab04c", "#da7101", "#006494", "#d63384"];
-
-// Título com cada palavra colorida alternando as cores da logo
-function ColoredTitle() {
-  const words = ["Secretaria", "de", "Turismo"];
-  return (
-    <h2 className="text-2xl font-bold mb-2 leading-snug">
-      {words.map((word, i) => (
-        <span key={word} style={{ color: LOGO_COLORS[i % LOGO_COLORS.length] }}>
-          {word}
-          {i < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </h2>
-  );
-}
-
 export default function ServicosPage() {
   const router = useRouter();
   const [cat, setCat] = useState<Cat | null>(null);
   const [catLoading, setCatLoading] = useState(true);
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
-  const [secretariaLoading, setSecretariaLoading] = useState(true);
+  const [secLoading, setSecLoading] = useState(true);
 
   useEffect(() => {
     catApi
@@ -60,7 +32,7 @@ export default function ServicosPage() {
       .getAll()
       .then((data) => setSecretaria(data[0] ?? null))
       .catch(() => setSecretaria(null))
-      .finally(() => setSecretariaLoading(false));
+      .finally(() => setSecLoading(false));
   }, []);
 
   const cards = [
@@ -146,6 +118,7 @@ export default function ServicosPage() {
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
+        {/* Cards grade */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           {cards.map((card) => (
             <div
@@ -173,50 +146,9 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* ── Secretaria de Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
-          {/* Secretaria de Turismo — esquerda, sem ícone */}
-          <div
-            onClick={() => router.push("/servicos/secretaria-de-turismo")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
-          >
-            <ColoredTitle />
-
-            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
-              Saquarema · RJ
-            </span>
-
-            {secretariaLoading && (
-              <div className="w-full max-w-md space-y-2 animate-pulse">
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
-              </div>
-            )}
-
-            {!secretariaLoading && secretaria && (
-              <p className="text-muted-foreground text-sm max-w-xl">
-                {truncateWords(secretaria.texto, 10)}
-              </p>
-            )}
-
-            {!secretariaLoading && !secretaria && (
-              <p className="text-muted-foreground text-sm">
-                Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
-                iniciativas da Secretaria Municipal.
-              </p>
-            )}
-
-            <div className="mt-4 flex items-center text-primary font-medium text-sm">
-              Saiba mais
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-
-          {/* CAT — direita */}
+        {/* Destaque: CAT + Secretaria de Turismo lado a lado */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          {/* CAT */}
           <div
             onClick={() => router.push("/servicos/cat")}
             className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
@@ -250,6 +182,87 @@ export default function ServicosPage() {
             )}
 
             <div className="mt-4 flex items-center text-primary font-medium text-sm">
+              Saiba mais
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
+            </div>
+          </div>
+
+          {/* Secretaria de Turismo */}
+          <div
+            onClick={() => router.push("/servicos/secretaria-de-turismo")}
+            className="group relative flex flex-col items-center p-8 rounded-2xl border-2 text-center cursor-pointer hover:shadow-lg transition-all overflow-hidden"
+            style={{
+              borderColor: "transparent",
+              background:
+                "linear-gradient(135deg, #ffffff 0%, #f0fdf8 100%)",
+              boxShadow: "0 0 0 2px transparent",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.boxShadow =
+                "0 8px 30px rgba(0,0,0,0.12)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.boxShadow =
+                "0 0 0 2px transparent";
+            }}
+          >
+            {/* barra de cor no topo inspirada na logo */}
+            <div
+              className="absolute top-0 left-0 right-0 h-1.5 rounded-t-2xl"
+              style={{
+                background:
+                  "linear-gradient(90deg, #7DC242 0%, #F5C900 25%, #F47920 50%, #E91E8C 75%, #009FE3 100%)",
+              }}
+            />
+
+            <div
+              className="p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"
+              style={{ background: "rgba(125,194,66,0.12)", color: "#7DC242" }}
+            >
+              <Landmark size={32} />
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2 text-foreground">
+              Secretaria de Turismo
+            </h2>
+
+            <span
+              className="inline-block px-3 py-1 text-xs font-semibold rounded-full mb-4 text-white"
+              style={{
+                background:
+                  "linear-gradient(90deg, #F47920, #E91E8C)",
+              }}
+            >
+              Prefeitura de Saquarema
+            </span>
+
+            {secLoading && (
+              <div className="w-full max-w-md space-y-2 animate-pulse">
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-5/6 rounded bg-muted" />
+              </div>
+            )}
+
+            {!secLoading && secretaria && (
+              <p className="text-muted-foreground text-sm max-w-xl">
+                {truncateWords(secretaria.texto, 10)}
+              </p>
+            )}
+
+            {!secLoading && !secretaria && (
+              <p className="text-muted-foreground text-sm">
+                Conheça os projetos, ações e iniciativas da Secretaria Municipal
+                de Esporte, Lazer e Turismo de Saquarema.
+              </p>
+            )}
+
+            <div
+              className="mt-4 flex items-center font-medium text-sm"
+              style={{ color: "#F47920" }}
+            >
               Saiba mais
               <ArrowRight
                 size={16}
