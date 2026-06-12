@@ -1,4 +1,4 @@
-// ─── Enums ────────────────────────────────────────────────────────────────
+// ─── Enums ─────────────────────────────────────────────────────────────────────────────────
 export type Perfil = "USUARIO" | "PARCEIRO" | "ADMIN";
 
 export type TipoRoteiro =
@@ -32,7 +32,7 @@ export type Mes =
   | "NOVEMBRO"
   | "DEZEMBRO";
 
-// ─── Users ────────────────────────────────────────────────────────────────
+// ─── Users ─────────────────────────────────────────────────────────────────────────────────
 export interface User {
   id: string;
   nome: string;
@@ -62,7 +62,7 @@ export interface LoginResponse {
   user: User;
 }
 
-// ─── Atividades ───────────────────────────────────────────────────────────────
+// ─── Atividades ─────────────────────────────────────────────────────────────────────────────────
 export interface Atividade {
   id: string;
   titulo: string;
@@ -86,7 +86,7 @@ export interface CreateAtividadeDto {
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
 
-// ─── Eventos ───────────────────────────────────────────────────────────────
+// ─── Eventos ─────────────────────────────────────────────────────────────────────────────────
 export interface Evento {
   id: string;
   titulo: string;
@@ -106,7 +106,7 @@ export interface CreateEventoDto {
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;
 
-// ─── Gastronomia ──────────────────────────────────────────────────────────────
+// ─── Gastronomia ─────────────────────────────────────────────────────────────────────────────────
 export interface Gastronomia {
   id: string;
   nome: string;
@@ -122,10 +122,6 @@ export interface Gastronomia {
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
-  /**
-   * Data de validade do documento de habilitação/alvará.
-   * Apenas ADMIN pode alterar via update.
-   */
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -147,11 +143,10 @@ export interface CreateGastronomiaDto {
 
 export interface UpdateGastronomiaDto extends Partial<CreateGastronomiaDto> {
   status?: StatusEstabelecimento;
-  /** Data de validade do documento de habilitação/alvará */
   validade?: string | null;
 }
 
-// ─── Hospedagem ───────────────────────────────────────────────────────────────
+// ─── Hospedagem ─────────────────────────────────────────────────────────────────────────────────
 export interface Hospedagem {
   id: string;
   nome: string;
@@ -167,14 +162,8 @@ export interface Hospedagem {
   logoUrl: string;
   status: StatusEstabelecimento;
   usuarioId: string;
-  /** Campo adicionado no backend (commit feat: add Tags Hospedagem).
-   *  O Prisma salva como Json — o backend pode retornar string[] ou JSON string. */
   tags?: string[] | null;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
-  /**
-   * Data de validade do documento de habilitação/alvará.
-   * Apenas ADMIN pode alterar via update.
-   */
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -193,17 +182,15 @@ export interface CreateHospedagemDto {
   documentoPdfUrl: string;
   logoUrl: string;
   usuarioId: string;
-  /** Tags de comodidades — serializado como JSON.stringify(string[]) no FormData */
   tags?: string[];
 }
 
 export interface UpdateHospedagemDto extends Partial<CreateHospedagemDto> {
   status?: StatusEstabelecimento;
-  /** Data de validade do documento de habilitação/alvará */
   validade?: string | null;
 }
 
-// ─── Serviço Turista ──────────────────────────────────────────────────────────────
+// ─── Serviço Turista ─────────────────────────────────────────────────────────────────────────────────
 export interface ServicoTurista {
   id: string;
   tipo: TipoServicoTurista;
@@ -221,15 +208,7 @@ export interface ServicoTurista {
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
-  /**
-   * URL do comprovante Cadastur (PDF ou imagem .webp).
-   * Obrigatório para todos os tipos exceto ESPORTE_LAZER.
-   */
   comprovanteUrl?: string | null;
-  /**
-   * Data de validade do Cadastur.
-   * Apenas ADMIN pode alterar via update.
-   */
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -257,7 +236,7 @@ export interface UpdateServicoTuristaDto extends Partial<CreateServicoTuristaDto
   status?: StatusEstabelecimento;
 }
 
-// ─── Plano de Viagem ──────────────────────────────────────────────────────────────
+// ─── Plano de Viagem ─────────────────────────────────────────────────────────────────────────────────
 export interface PlanoViagem {
   id: string;
   titulo: string;
@@ -279,7 +258,7 @@ export interface CreatePlanoViagemDto {
 
 export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
 
-// ─── Item Plano Viagem ──────────────────────────────────────────────────────────────
+// ─── Item Plano Viagem ─────────────────────────────────────────────────────────────────────────────────
 export interface ItemPlanoViagem {
   id: string;
   dataHoraAgendada: string;
@@ -323,13 +302,7 @@ export interface CreateItemPlanoViagemDto {
   servicoTuristaId?: string;
 }
 
-// ─── Cat ────────────────────────────────────────────────────────────────────
-/**
- * Modelo CAT atualizado (commit: add vídeo no CAT — 08/06/2026)
- * - arquivoUrl removido
- * - imagensUrl: array de URLs de imagens (.webp convertidas pelo backend)
- * - videoUrl: URL do vídeo original (.mp4, .mov etc.) — opcional
- */
+// ─── Cat ─────────────────────────────────────────────────────────────────────────────────
 export interface Cat {
   id: string;
   texto: string;
@@ -347,7 +320,7 @@ export interface CreateCatDto {
 
 export type UpdateCatDto = Partial<CreateCatDto>;
 
-// ─── Evento Principal ──────────────────────────────────────────────────────────────
+// ─── Evento Principal ─────────────────────────────────────────────────────────────────────────────────
 export interface EventoPrincipal {
   id: string;
   titulo: string;
@@ -365,7 +338,7 @@ export interface CreateEventoPrincipalDto {
 
 export type UpdateEventoPrincipalDto = Partial<CreateEventoPrincipalDto>;
 
-// ─── Visitas ──────────────────────────────────────────────────────────────────
+// ─── Visitas ─────────────────────────────────────────────────────────────────────────────────
 export interface MinhasVisitas {
   gastronomias: string[];
   atividades: string[];
@@ -375,7 +348,7 @@ export interface ToggleVisitaResponse {
   status: "adicionado" | "removido";
 }
 
-// ─── Casa de Câmbio ──────────────────────────────────────────────────────────
+// ─── Casa de Câmbio ─────────────────────────────────────────────────────────────────────────────────
 export interface CasaDeCambio {
   id: string;
   nome: string;
@@ -385,7 +358,6 @@ export interface CasaDeCambio {
   endereco: string;
   descricao?: string | null;
   cnpj?: string | null;
-  /** Moedas aceitas, ex: "USD, EUR, GBP" */
   moedas?: string | null;
   logoUrl?: string | null;
   fotoUrl?: string | null;
@@ -414,11 +386,12 @@ export interface UpdateCasaDeCambioDto extends Partial<CreateCasaDeCambioDto> {
   status?: StatusEstabelecimento;
 }
 
-// ─── Secretaria de Turismo ────────────────────────────────────────────────────
+// ─── Secretaria de Turismo ─────────────────────────────────────────────────────────────────────────────────
 /** Entidade principal: texto institucional + vídeo opcional */
 export interface SecretariaTurismo {
   id: string;
-  texto: string;
+  /** Campo retornado pelo backend como `textoExplicativo` */
+  textoExplicativo: string;
   videoUrl?: string | null;
   turistando?: Turistando[];
   projetos?: Projeto[];
@@ -427,13 +400,13 @@ export interface SecretariaTurismo {
 }
 
 export interface CreateSecretariaTurismoDto {
-  texto: string;
+  textoExplicativo: string;
   videoUrl?: string | null;
 }
 
 export type UpdateSecretariaTurismoDto = Partial<CreateSecretariaTurismoDto>;
 
-// ─── Turistando (sub-recurso de SecretariaTurismo) ────────────────────────────
+// ─── Turistando (sub-recurso de SecretariaTurismo) ─────────────────────────────────────────────────────
 export interface Turistando {
   id: string;
   titulo: string;
@@ -452,7 +425,7 @@ export interface CreateTuristandoDto {
 
 export type UpdateTuristandoDto = Partial<CreateTuristandoDto>;
 
-// ─── Projeto (sub-recurso de SecretariaTurismo) ───────────────────────────────
+// ─── Projeto (sub-recurso de SecretariaTurismo) ─────────────────────────────────────────────────────────────────────────────────
 export interface Projeto {
   id: string;
   titulo: string;

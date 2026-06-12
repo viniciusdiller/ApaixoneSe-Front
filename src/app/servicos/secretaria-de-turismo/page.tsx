@@ -8,7 +8,7 @@ import { secretariaTurismoApi } from "@/lib/api/secretaria-turismo";
 import type { SecretariaTurismo } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
-// ─── Carrossel (mesmo padrão do CAT) ─────────────────────────────────────────
+// ─── Carrossel ─────────────────────────────────────────────────────────────────────────────────
 function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
   const [idx, setIdx] = useState(0);
   const total = urls.length;
@@ -69,7 +69,7 @@ function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
   );
 }
 
-// ─── Vídeo sticky (mesmo padrão do CAT) ──────────────────────────────────────
+// ─── Vídeo sticky ─────────────────────────────────────────────────────────────────────────────────
 function StickyVideo({ url }: { url: string }) {
   const src = safeMediaUrl(url);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -117,7 +117,7 @@ function StickyVideo({ url }: { url: string }) {
   );
 }
 
-// ─── Página pública Secretaria de Turismo ────────────────────────────────────
+// ─── Página pública Secretaria de Turismo ────────────────────────────────────────────────────────────────────────
 export default function SecretariaTurismoPage() {
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ export default function SecretariaTurismoPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero — mesmo padrão do CAT e demais páginas */}
+      {/* Hero */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
         <span aria-hidden className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10">
           🏖️
@@ -211,7 +211,7 @@ export default function SecretariaTurismoPage() {
                       <h2 className="text-xl font-bold text-foreground">Sobre a Secretaria</h2>
                     </div>
                     <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-                      {secretaria.texto}
+                      {secretaria.textoExplicativo}
                     </p>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export default function SecretariaTurismoPage() {
                 <div className="space-y-10">
                   <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Turistando</h2>
                   {secretaria.turistando.map((t, i) => (
-                    <div key={t.id} className={`grid grid-cols-1 gap-8 lg:grid-cols-2 items-start`}>
+                    <div key={t.id} className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start">
                       <div className={i % 2 === 1 ? "lg:order-2" : ""}>
                         <h3 className="text-lg font-semibold text-foreground mb-3">{t.titulo}</h3>
                         <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{t.texto}</p>
@@ -262,7 +262,7 @@ export default function SecretariaTurismoPage() {
               {/* — Projetos — */}
               {secretaria.projetos && secretaria.projetos.length > 0 && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Projetos & Cursos</h2>
+                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Projetos &amp; Cursos</h2>
                   <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {secretaria.projetos.map((p) => (
                       <div key={p.id} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
