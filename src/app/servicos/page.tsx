@@ -8,7 +8,8 @@ import { catApi } from "@/lib/api";
 import { secretariaTurismoApi } from "@/lib/api/secretaria-turismo";
 import type { Cat, SecretariaTurismo } from "@/lib/api";
 
-function truncateWords(text: string, max = 10): string {
+function truncateWords(text: string | null | undefined, max = 10): string {
+  if (!text) return "";
   const words = text.trim().split(/\s+/);
   if (words.length <= max) return text;
   return words.slice(0, max).join(" ") + "…";
@@ -130,7 +131,7 @@ export default function ServicosPage() {
         {/* Destaque: Secretaria de Turismo + CAT lado a lado */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
 
-          {/* Secretaria de Turismo — à esquerda, mesmo estilo do CAT */}
+          {/* Secretaria de Turismo */}
           <div
             onClick={() => router.push("/servicos/secretaria-de-turismo")}
             className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
@@ -162,7 +163,7 @@ export default function ServicosPage() {
 
             {!secLoading && secretaria && (
               <p className="text-muted-foreground text-sm max-w-xl">
-                {truncateWords(secretaria.texto, 10)}
+                {truncateWords(secretaria.textoExplicativo, 10)}
               </p>
             )}
 
