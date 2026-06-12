@@ -13,7 +13,6 @@ import {
   Car,
   Banknote,
   FileText,
-  Building2,
 } from "lucide-react";
 import { catApi, secretariaTurismoApi } from "@/lib/api";
 import type { Cat, SecretariaTurismo } from "@/lib/api";
@@ -22,6 +21,25 @@ function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
   if (words.length <= max) return text;
   return words.slice(0, max).join(" ") + "…";
+}
+
+// Cores extraídas da logo Esporte Lazer e Turismo Saquarema-RJ
+// Verde (Esporte) · Laranja (Lazer) · Azul (Turismo) · Magenta (arco)
+const LOGO_COLORS = ["#6ab04c", "#da7101", "#006494", "#d63384"];
+
+// Título com cada palavra colorida alternando as cores da logo
+function ColoredTitle() {
+  const words = ["Secretaria", "de", "Turismo"];
+  return (
+    <h2 className="text-2xl font-bold mb-2 leading-snug">
+      {words.map((word, i) => (
+        <span key={word} style={{ color: LOGO_COLORS[i % LOGO_COLORS.length] }}>
+          {word}
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </h2>
+  );
 }
 
 export default function ServicosPage() {
@@ -155,10 +173,50 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* ── CAT + Secretaria de Turismo — destaque lado a lado ── */}
+        {/* ── Secretaria de Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-          {/* CAT */}
+          {/* Secretaria de Turismo — esquerda, sem ícone */}
+          <div
+            onClick={() => router.push("/servicos/secretaria-de-turismo")}
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+          >
+            <ColoredTitle />
+
+            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
+              Saquarema · RJ
+            </span>
+
+            {secretariaLoading && (
+              <div className="w-full max-w-md space-y-2 animate-pulse">
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-5/6 rounded bg-muted" />
+              </div>
+            )}
+
+            {!secretariaLoading && secretaria && (
+              <p className="text-muted-foreground text-sm max-w-xl">
+                {truncateWords(secretaria.texto, 10)}
+              </p>
+            )}
+
+            {!secretariaLoading && !secretaria && (
+              <p className="text-muted-foreground text-sm">
+                Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
+                iniciativas da Secretaria Municipal.
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center text-primary font-medium text-sm">
+              Saiba mais
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
+            </div>
+          </div>
+
+          {/* CAT — direita */}
           <div
             onClick={() => router.push("/servicos/cat")}
             className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
@@ -192,85 +250,6 @@ export default function ServicosPage() {
             )}
 
             <div className="mt-4 flex items-center text-primary font-medium text-sm">
-              Saiba mais
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
-            </div>
-          </div>
-
-          {/* Secretaria de Turismo */}
-          <div
-            onClick={() => router.push("/servicos/secretaria-de-turismo")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed text-center cursor-pointer hover:shadow-md transition-all"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(0,100,148,0.08) 0%, rgba(218,113,1,0.08) 50%, rgba(209,153,0,0.08) 100%)",
-              borderColor: "rgba(0,100,148,0.35)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLDivElement).style.borderColor =
-                "rgba(0,100,148,0.65)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLDivElement).style.borderColor =
-                "rgba(0,100,148,0.35)";
-            }}
-          >
-            {/* Barra de cores da Secretaria no topo */}
-            <div
-              className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-              style={{
-                background:
-                  "linear-gradient(90deg, #006494 0%, #da7101 40%, #d19900 70%, #6daa45 100%)",
-              }}
-            />
-
-            <div
-              className="p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"
-              style={{ background: "rgba(0,100,148,0.12)", color: "#006494" }}
-            >
-              <Building2 size={32} />
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2 text-foreground">
-              Secretaria de Turismo
-            </h2>
-            <span
-              className="inline-block px-3 py-1 text-xs font-semibold rounded-full mb-4"
-              style={{
-                background: "rgba(0,100,148,0.12)",
-                color: "#006494",
-              }}
-            >
-              Saquarema · RJ
-            </span>
-
-            {secretariaLoading && (
-              <div className="w-full max-w-md space-y-2 animate-pulse">
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
-              </div>
-            )}
-
-            {!secretariaLoading && secretaria && (
-              <p className="text-muted-foreground text-sm max-w-xl">
-                {truncateWords(secretaria.texto, 10)}
-              </p>
-            )}
-
-            {!secretariaLoading && !secretaria && (
-              <p className="text-muted-foreground text-sm">
-                Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
-                iniciativas da Secretaria Municipal.
-              </p>
-            )}
-
-            <div
-              className="mt-4 flex items-center font-medium text-sm"
-              style={{ color: "#006494" }}
-            >
               Saiba mais
               <ArrowRight
                 size={16}
