@@ -117,6 +117,31 @@ export default function AdminAtividadesPage() {
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
+  const handlePasteLatitude = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedData = e.clipboardData.getData("text");
+
+    if (pastedData.includes(",")) {
+      e.preventDefault(); // Impede o comportamento padrão
+
+      const [latStr, lngStr] = pastedData
+        .split(",")
+        .map((coord) => coord.trim());
+
+      const parsedLat = latStr
+        ? parseFloat(latStr.replace(",", "."))
+        : undefined;
+      const parsedLng = lngStr
+        ? parseFloat(lngStr.replace(",", "."))
+        : undefined;
+
+      setForm((prev) => ({
+        ...prev,
+        latitude: parsedLat && !isNaN(parsedLat) ? parsedLat : undefined,
+        longitude: parsedLng && !isNaN(parsedLng) ? parsedLng : undefined,
+      }));
+    }
+  };
+
   const roteiroLabel = (v: TipoRoteiro) =>
     ROTEIROS.find((r) => r.value === v)?.label ?? v;
 
@@ -243,14 +268,14 @@ export default function AdminAtividadesPage() {
               label="Latitude (opcional)"
               value={String(form.latitude ?? "")}
               onChange={set("latitude")}
-              type="number"
-              step="any"
+              onPaste={handlePasteLatitude}
+              type="text"
             />
             <AdminFormField
               label="Longitude (opcional)"
               value={String(form.longitude ?? "")}
               onChange={set("longitude")}
-              type="number"
+              type="text"
               step="any"
             />
           </div>

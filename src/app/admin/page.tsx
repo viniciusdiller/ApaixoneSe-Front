@@ -10,6 +10,7 @@ import {
   servicoTuristaApi,
   planoViagemApi,
   catApi,
+  secretariaTurismoApi,
 } from "@/lib/api";
 import { API_BASE_URL } from "@/lib/api/config";
 import type { Gastronomia, Hospedagem, ServicoTurista } from "@/lib/api";
@@ -19,7 +20,7 @@ import {
   Wrench, MapPin, BookOpen, Tag, Clock,
   CheckCircle2, XCircle, ConciergeBell, Eye, X,
   Phone, Instagram, MapPinned, FileText, Building,
-  ImageOff, ExternalLink,
+  ImageOff, ExternalLink, Building2,
 } from "lucide-react";
 
 function resolveUrl(url?: string | null): string | undefined {
@@ -28,7 +29,6 @@ function resolveUrl(url?: string | null): string | undefined {
   return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
-/** Parseia tags independente de vir como string[] ou JSON string */
 function parseTags(raw: string[] | null | undefined): string[] {
   if (!raw) return [];
   if (Array.isArray(raw)) return raw as string[];
@@ -139,8 +139,6 @@ function PendingDetailModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl"
         style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-
-        {/* header */}
         <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
           <div className="relative h-10 w-10 flex-shrink-0">
             {logoResolved ? (
@@ -158,12 +156,9 @@ function PendingDetailModal({
           </div>
           <button onClick={onClose} className="ml-2 rounded p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
         </div>
-
-        {/* body */}
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
           <OwnerCard usuarioId={data.usuarioId} embedded={data.usuario} />
           <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
-
           {images.length > 0 ? <ImagePreview urls={images} label="Imagens" /> : (
             <div className="flex items-center gap-2 rounded-lg p-3 text-sm text-muted-foreground"
               style={{ backgroundColor: "hsl(var(--muted))", border: "1px dashed hsl(var(--border))" }}>
@@ -171,7 +166,6 @@ function PendingDetailModal({
             </div>
           )}
           <div style={{ height: "1px", backgroundColor: "hsl(var(--border))" }} />
-
           <div className="space-y-2">
             <DetailRow icon={<Phone size={14} />} label="Telefone" value={telefone} />
             <DetailRow icon={<Instagram size={14} />} label="Instagram" value={instagram} />
@@ -185,8 +179,6 @@ function PendingDetailModal({
             {descricao && <DetailRow icon={<FileText size={14} />} label="Descrição" value={descricao} />}
             {idiomas && <DetailRow icon={<FileText size={14} />} label="Idiomas" value={idiomas} />}
           </div>
-
-          {/* Tags de comodidades (apenas Hospedagem) */}
           {hospTags.length > 0 && (
             <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
               <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -194,19 +186,13 @@ function PendingDetailModal({
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {hospTags.map((tag, idx) => (
-                  <span
-                    key={tag}
-                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                      TAG_COLORS[idx % TAG_COLORS.length]
-                    }`}
-                  >
+                  <span key={tag} className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${TAG_COLORS[idx % TAG_COLORS.length]}`}>
                     {tag}
                   </span>
                 ))}
               </div>
             </div>
           )}
-
           {docUrl && (
             <div className="rounded-lg p-3" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comprovante / Documento</p>
@@ -217,8 +203,6 @@ function PendingDetailModal({
             </div>
           )}
         </div>
-
-        {/* footer */}
         <div className="flex items-center justify-end gap-2 px-6 py-4" style={{ borderTop: "1px solid hsl(var(--border))" }}>
           <button onClick={onClose} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">Cancelar</button>
           <button onClick={onReject} disabled={actionLoading}
@@ -285,6 +269,7 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Record<string, number | string>>({
     users: "...", atividades: "...", eventos: "...", gastronomia: "...",
     hospedagem: "...", servicos: "...", planos: "...", cats: "...",
+    secretaria: "...",
   });
   const [pendGast, setPendGast] = useState<Gastronomia[]>([]);
   const [pendHosp, setPendHosp] = useState<Hospedagem[]>([]);
@@ -298,8 +283,8 @@ export default function AdminDashboardPage() {
     Promise.allSettled([
       usersApi.getAll(), atividadesApi.getAll(), eventosApi.getAll(),
       gastronomiaApi.getAll(), hospedagemApi.getAll(), servicoTuristaApi.getAll(),
-      planoViagemApi.getAll(), catApi.getAll(),
-    ]).then(([u, a, e, g, h, s, p, c]) => {
+      planoViagemApi.getAll(), catApi.getAll(), secretariaTurismoApi.getAll(),
+    ]).then(([u, a, e, g, h, s, p, c, sec]) => {
       setStats({
         users: u.status === "fulfilled" ? u.value.length : "—",
         atividades: a.status === "fulfilled" ? a.value.length : "—",
@@ -309,6 +294,7 @@ export default function AdminDashboardPage() {
         servicos: s.status === "fulfilled" ? s.value.length : "—",
         planos: p.status === "fulfilled" ? p.value.length : "—",
         cats: c.status === "fulfilled" ? c.value.length : "—",
+        secretaria: sec.status === "fulfilled" ? sec.value.length : "—",
       });
     });
     setPendLoading(true);
@@ -356,7 +342,8 @@ export default function AdminDashboardPage() {
         <StatCard label="Hospedagem" count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" />
         <StatCard label="Serviços" count={stats.servicos} icon={<Wrench className="h-5 w-5 text-white" />} color="bg-restinga" />
         <StatCard label="Planos de Viagem" count={stats.planos} icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="Categorias" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" />
+        <StatCard label="CAT" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" />
+        <StatCard label="Sec. de Turismo" count={stats.secretaria} icon={<Building2 className="h-5 w-5 text-white" />} color="bg-primary" />
       </div>
 
       <div>

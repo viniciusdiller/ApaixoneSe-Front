@@ -21,6 +21,13 @@ import {
   Clock,
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import {
+  maskCnpj,
+  maskCpf,
+  maskPersonName,
+  maskPhone,
+  numericInputProps,
+} from "@/lib/masks";
 
 // ─── helpers de validade ───────────────────────────────────────────────────
 type ValidadeStatus = "ok" | "alerta" | "vencido" | "sem-data";
@@ -401,6 +408,9 @@ export default function AdminGastronomiaPage() {
               label="Telefone"
               value={form.telefone}
               onChange={set("telefone")}
+              mask={maskPhone}
+              maxLength={15}
+              {...numericInputProps}
               required
             />
           </div>
@@ -420,6 +430,9 @@ export default function AdminGastronomiaPage() {
               label="CNPJ"
               value={form.cnpj}
               onChange={set("cnpj")}
+              mask={maskCnpj}
+              maxLength={18}
+              {...numericInputProps}
               required
             />
           </div>
@@ -428,12 +441,16 @@ export default function AdminGastronomiaPage() {
               label="Responsável (Nome)"
               value={form.responsavelNome}
               onChange={set("responsavelNome")}
+              mask={maskPersonName}
               required
             />
             <AdminFormField
               label="Responsável (CPF)"
               value={form.responsavelCpf}
               onChange={set("responsavelCpf")}
+              mask={maskCpf}
+              maxLength={14}
+              {...numericInputProps}
               required
             />
           </div>

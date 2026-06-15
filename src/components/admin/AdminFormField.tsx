@@ -9,6 +9,7 @@ interface AdminFormFieldProps extends Omit<
   error?: string;
   multiline?: boolean;
   rows?: number;
+  mask?: (value: string) => string;
   onChange?: (value: string) => void;
 }
 
@@ -16,7 +17,7 @@ export const AdminFormField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   AdminFormFieldProps
 >(function AdminFormField(
-  { label, error, multiline, rows = 3, onChange, type, ...props },
+  { label, error, multiline, rows = 3, mask, onChange, type, ...props },
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,7 +29,7 @@ export const AdminFormField = forwardRef<
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     if (onChange) {
-      onChange(e.target.value);
+      onChange(mask ? mask(e.target.value) : e.target.value);
     }
   };
 
