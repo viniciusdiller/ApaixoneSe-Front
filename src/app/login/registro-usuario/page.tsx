@@ -7,6 +7,7 @@ import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { usersApi } from "@/lib/api/users";
 import type { RegisterUserDto } from "@/lib/api/types";
+import { maskPersonName } from "@/lib/masks";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +27,10 @@ export default function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "nome" ? maskPersonName(value) : value,
+    }));
   };
 
   async function handleSubmit(e: React.FormEvent) {

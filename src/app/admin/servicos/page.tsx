@@ -28,6 +28,7 @@ import {
   Globe,
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { maskCnpj, maskPhone, numericInputProps } from "@/lib/masks";
 
 // ─── constantes ───────────────────────────────────────────────────────────────
 const TIPOS_SERVICO: { value: TipoServicoTurista; label: string }[] = [
@@ -472,14 +473,29 @@ export default function AdminServicosPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
-            <AdminFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
+            <AdminFormField
+              label="Telefone"
+              value={form.telefone}
+              onChange={set("telefone")}
+              mask={maskPhone}
+              maxLength={15}
+              {...numericInputProps}
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
             <AdminFormField label="Idiomas" value={form.idiomas ?? ""} onChange={set("idiomas")} />
           </div>
           <AdminFormField label="Endereço" value={form.endereco ?? ""} onChange={set("endereco")} />
-          <AdminFormField label="CNPJ" value={form.cnpj ?? ""} onChange={set("cnpj")} />
+          <AdminFormField
+            label="CNPJ"
+            value={form.cnpj ?? ""}
+            onChange={set("cnpj")}
+            mask={maskCnpj}
+            maxLength={18}
+            {...numericInputProps}
+          />
           <AdminFormField label="Site" value={form.site ?? ""} onChange={set("site")} />
           <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
 
