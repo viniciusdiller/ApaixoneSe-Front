@@ -31,6 +31,7 @@ import {
   X,
   UserPlus,
 } from "lucide-react";
+import { maskPersonName } from "@/lib/masks";
 
 // ── tipos ──────────────────────────────────────────────────────────────────
 interface EditForm {
@@ -331,6 +332,7 @@ export default function AdminUsuariosPage() {
             label="Nome completo"
             value={createForm.nome}
             onChange={(v) => setCreateForm((f) => ({ ...f, nome: v }))}
+            mask={maskPersonName}
             required
           />
           <AdminFormField
@@ -395,6 +397,7 @@ export default function AdminUsuariosPage() {
             label="Nome completo"
             value={editForm.nome}
             onChange={(v) => setEditForm((f) => ({ ...f, nome: v }))}
+            mask={maskPersonName}
             required
           />
           <AdminFormField

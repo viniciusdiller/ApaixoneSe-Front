@@ -3,9 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Map, Compass, Info, ArrowRight, ArrowLeft, Bike, Car, Banknote, FileText } from "lucide-react";
-import { catApi } from "@/lib/api";
-import type { Cat } from "@/lib/api";
+import {
+  Map,
+  Compass,
+  Info,
+  ArrowRight,
+  ArrowLeft,
+  Bike,
+  Car,
+  Banknote,
+  FileText,
+} from "lucide-react";
+import { catApi, secretariaTurismoApi } from "@/lib/api";
+import type { Cat, SecretariaTurismo } from "@/lib/api";
 
 function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
@@ -13,10 +23,28 @@ function truncateWords(text: string, max = 10): string {
   return words.slice(0, max).join(" ") + "…";
 }
 
+const LOGO_COLORS = ["#6ab04c", "#da7101", "#006494", "#d63384"];
+
+function ColoredTitle() {
+  const words = ["Secretaria", "de", "Turismo"];
+  return (
+    <h2 className="text-2xl font-bold mb-2 leading-snug">
+      {words.map((word, i) => (
+        <span key={word} style={{ color: LOGO_COLORS[i % LOGO_COLORS.length] }}>
+          {word}
+          {i < words.length - 1 ? " " : ""}
+        </span>
+      ))}
+    </h2>
+  );
+}
+
 export default function ServicosPage() {
   const router = useRouter();
   const [cat, setCat] = useState<Cat | null>(null);
   const [catLoading, setCatLoading] = useState(true);
+  const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
+  const [secretariaLoading, setSecretariaLoading] = useState(true);
 
   useEffect(() => {
     catApi
@@ -24,6 +52,12 @@ export default function ServicosPage() {
       .then((data) => setCat(data[0] ?? null))
       .catch(() => setCat(null))
       .finally(() => setCatLoading(false));
+
+    secretariaTurismoApi
+      .getAll()
+      .then((data) => setSecretaria(data[0] ?? null))
+      .catch(() => setSecretaria(null))
+      .finally(() => setSecretariaLoading(false));
   }, []);
 
   const cards = [
@@ -79,7 +113,7 @@ export default function ServicosPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero — padrão do site */}
+      {/* Hero */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
         <span
           aria-hidden
@@ -136,45 +170,89 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* CAT */}
-        <div
-          onClick={() => router.push("/servicos/cat")}
-          className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
-        >
-          <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
-            <Info size={32} />
-          </div>
-          <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
-          <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
-            Ponto de Informação
-          </span>
+        {/* ── Secretaria de Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Secretaria de Turismo — esquerda, sem ícone */}
+          <div
+            onClick={() => router.push("/servicos/secretaria-de-turismo")}
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-[#6ab04c]/30
+           text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+          >
+            <ColoredTitle />
 
-          {catLoading && (
-            <div className="w-full max-w-md space-y-2 animate-pulse">
-              <div className="h-3 w-full rounded bg-muted" />
-              <div className="h-3 w-5/6 rounded bg-muted" />
+            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
+              Saquarema · RJ
+            </span>
+
+            {secretariaLoading && (
+              <div className="w-full max-w-md space-y-2 animate-pulse">
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-5/6 rounded bg-muted" />
+              </div>
+            )}
+
+            {!secretariaLoading && secretaria && (
+              <p className="text-muted-foreground text-sm max-w-xl">
+                {truncateWords(secretaria.textoExplicativo, 10)}
+              </p>
+            )}
+
+            {!secretariaLoading && !secretaria && (
+              <p className="text-muted-foreground text-sm">
+                Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
+                iniciativas da Secretaria Municipal.
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center text-primary font-medium text-sm">
+              Saiba mais
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
             </div>
-          )}
+          </div>
 
-          {!catLoading && cat && (
-            <p className="text-muted-foreground text-sm max-w-xl">
-              {truncateWords(cat.texto, 10)}
-            </p>
-          )}
+          {/* CAT — direita */}
+          <div
+            onClick={() => router.push("/servicos/cat")}
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+          >
+            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
+              <Info size={32} />
+            </div>
+            <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
+            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
+              Ponto de Informação
+            </span>
 
-          {!catLoading && !cat && (
-            <p className="text-muted-foreground text-sm">
-              Centro de Atendimento ao Turista. Venha nos visitar
-              presencialmente para mapas, dicas e suporte local gratuito.
-            </p>
-          )}
+            {catLoading && (
+              <div className="w-full max-w-md space-y-2 animate-pulse">
+                <div className="h-3 w-full rounded bg-muted" />
+                <div className="h-3 w-5/6 rounded bg-muted" />
+              </div>
+            )}
 
-          <div className="mt-4 flex items-center text-primary font-medium text-sm">
-            Saiba mais
-            <ArrowRight
-              size={16}
-              className="ml-2 group-hover:translate-x-1 transition-transform"
-            />
+            {!catLoading && cat && (
+              <p className="text-muted-foreground text-sm max-w-xl">
+                {truncateWords(cat.texto, 10)}
+              </p>
+            )}
+
+            {!catLoading && !cat && (
+              <p className="text-muted-foreground text-sm">
+                Centro de Atendimento ao Turista. Venha nos visitar
+                presencialmente para mapas, dicas e suporte local gratuito.
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center text-primary font-medium text-sm">
+              Saiba mais
+              <ArrowRight
+                size={16}
+                className="ml-2 group-hover:translate-x-1 transition-transform"
+              />
+            </div>
           </div>
         </div>
       </section>

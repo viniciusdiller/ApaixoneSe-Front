@@ -8,6 +8,7 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
+import { maskPhone, numericInputProps } from "@/lib/masks";
 
 const empty = {
   nome: "",
@@ -194,7 +195,15 @@ export default function AdminCasaDeCambioPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
-          <AdminFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
+          <AdminFormField
+            label="Telefone"
+            value={form.telefone}
+            onChange={set("telefone")}
+            mask={maskPhone}
+            maxLength={15}
+            {...numericInputProps}
+            required
+          />
           <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
 
           {error && (
