@@ -307,6 +307,24 @@ export interface CreateCatDto {
 
 export type UpdateCatDto = Partial<CreateCatDto>;
 
+// ─── CatMovel ─────────────────────────────────────────────────────────────────
+export interface CatMovel {
+  id: string;
+  titulo: string;
+  descricao: string;
+  midiaUrl?: string | null;
+  midiaType?: "image" | "video" | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCatMovelDto {
+  titulo: string;
+  descricao: string;
+}
+
+export type UpdateCatMovelDto = Partial<CreateCatMovelDto>;
+
 // ─── Evento Principal ─────────────────────────────────────────────────────────
 export interface EventoPrincipal {
   id: string;
