@@ -152,14 +152,14 @@ function StickyVideo({ url }: { url: string }) {
   );
 }
 
-// ─── Card do CAT Móvel ────────────────────────────────────────────────────────────
+// ─── Card CAT Móvel ────────────────────────────────────────────────────────────────
 
 function CatMovelCard({ item }: { item: CatMovel }) {
   const mediaSrc = safeMediaUrl(item.midiaUrl);
   const isVideo = item.midiaType === "video";
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
       {/* Mídia */}
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
         {mediaSrc ? (
@@ -190,58 +190,30 @@ function CatMovelCard({ item }: { item: CatMovel }) {
             <ImageOff size={40} />
           </div>
         )}
-
-        {/* Badge tipo de mídia */}
         {isVideo && mediaSrc && (
           <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-            <Video size={12} />
-            Vídeo
+            <Video size={12} /> Vídeo
           </span>
         )}
       </div>
-
       {/* Texto */}
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        <h3 className="font-semibold text-base text-foreground leading-snug">
-          {item.titulo}
-        </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-          {item.descricao}
-        </p>
+      <div className="p-5 space-y-1.5">
+        <h3 className="font-semibold text-base text-foreground leading-snug">{item.titulo}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{item.descricao}</p>
       </div>
     </article>
   );
 }
 
-// ─── Skeleton loaders ────────────────────────────────────────────────────────
-
-function CatMovelSkeleton() {
-  return (
-    <div className="animate-pulse">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="aspect-[16/9] w-full bg-muted" />
-            <div className="p-5 space-y-3">
-              <div className="h-4 w-3/4 rounded bg-muted" />
-              <div className="h-3 w-full rounded bg-muted" />
-              <div className="h-3 w-5/6 rounded bg-muted" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Página pública do CAT ─────────────────────────────────────────────────────────
+// ─── Página pública ────────────────────────────────────────────────────────────────
 
 export default function CatPage() {
   const [cat, setCat] = useState<Cat | null>(null);
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState(false);
 
-  const [movelItems, setMovelItems] = useState<CatMovel[]>([]);
+  // CAT Móvel é singleton: null = ainda não configurado
+  const [movel, setMovel] = useState<CatMovel | null>(null);
   const [movelLoading, setMovelLoading] = useState(true);
 
   useEffect(() => {
@@ -252,9 +224,9 @@ export default function CatPage() {
       .finally(() => setCatLoading(false));
 
     catMovelApi
-      .getAll()
-      .then(setMovelItems)
-      .catch(() => {}) // falha silenciosa na section pública
+      .get()
+      .then(setMovel)               // null se 404
+      .catch(() => setMovel(null))  // qualquer outro erro: omite silenciosamente
       .finally(() => setMovelLoading(false));
   }, []);
 
@@ -266,10 +238,7 @@ export default function CatPage() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
-        <span
-          aria-hidden
-          className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
-        >
+        <span aria-hidden className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10">
           ℹ️
         </span>
         <div className="container relative z-10 mx-auto">
@@ -297,7 +266,6 @@ export default function CatPage() {
       {/* ── Seção: CAT Fixo ── */}
       <section className="px-4 py-16">
         <div className="container mx-auto max-w-6xl">
-
           {catLoading && (
             <div className="animate-pulse space-y-6">
               <div className="h-6 w-40 rounded bg-muted" />
@@ -305,7 +273,6 @@ export default function CatPage() {
                 <div className="space-y-4">
                   <div className="h-4 w-full rounded bg-muted" />
                   <div className="h-4 w-5/6 rounded bg-muted" />
-                  <div className="h-4 w-4/6 rounded bg-muted" />
                   <div className="aspect-[4/3] w-full rounded-2xl bg-muted" />
                 </div>
                 <div className="hidden aspect-video rounded-2xl bg-muted lg:block" />
@@ -342,9 +309,7 @@ export default function CatPage() {
                     {cat.texto}
                   </p>
                 </div>
-
                 {imagens.length > 0 && <Carousel urls={imagens} />}
-
                 {hasVideo && cat.videoUrl && (
                   <div className="block lg:hidden">
                     {(() => {
@@ -362,60 +327,53 @@ export default function CatPage() {
                   </div>
                 )}
               </div>
-
               {hasVideo && cat.videoUrl && <StickyVideo url={cat.videoUrl} />}
             </div>
           )}
         </div>
       </section>
 
-      {/* ── Seção: CAT Móvel ── */}
-      <section className="border-t border-border bg-muted/40 px-4 py-16">
-        <div className="container mx-auto max-w-6xl">
+      {/* ── Seção: CAT Móvel (oculta se não configurado) ── */}
+      {(movelLoading || movel) && (
+        <section className="border-t border-border bg-muted/40 px-4 py-16">
+          <div className="container mx-auto max-w-6xl">
 
-          {/* Cabeçalho da seção */}
-          <div className="mb-10 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div className="flex items-center gap-3">
+            {/* Cabeçalho */}
+            <div className="mb-10 flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <MapPin size={22} />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-foreground">CAT Móvel</h2>
                 <p className="text-sm text-muted-foreground">
-                  Pontos de atendimento itinerantes espalhados pela cidade.
+                  Ponto de atendimento itinerante.
                 </p>
               </div>
             </div>
 
-            {!movelLoading && movelItems.length > 0 && (
-              <span className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-                {movelItems.length} ponto{movelItems.length !== 1 ? "s" : ""} cadastrado{movelItems.length !== 1 ? "s" : ""}
-              </span>
+            {/* Skeleton */}
+            {movelLoading && (
+              <div className="animate-pulse">
+                <div className="max-w-2xl rounded-2xl border border-border bg-white overflow-hidden">
+                  <div className="aspect-[16/9] bg-muted w-full" />
+                  <div className="p-6 space-y-3">
+                    <div className="h-5 w-1/2 rounded bg-muted" />
+                    <div className="h-4 w-full rounded bg-muted" />
+                    <div className="h-4 w-4/5 rounded bg-muted" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Card do singleton */}
+            {!movelLoading && movel && (
+              <div className="max-w-2xl">
+                <CatMovelCard item={movel} />
+              </div>
             )}
           </div>
-
-          {/* Skeleton */}
-          {movelLoading && <CatMovelSkeleton />}
-
-          {/* Sem registros */}
-          {!movelLoading && movelItems.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-background py-20 text-center text-muted-foreground">
-              <MapPin className="mb-4 h-10 w-10 text-muted-foreground/30" />
-              <p className="text-base font-medium">Nenhum CAT Móvel disponível no momento.</p>
-              <p className="mt-1 text-sm">Volte em breve para conferir os pontos de atendimento itinerantes.</p>
-            </div>
-          )}
-
-          {/* Grid de cards */}
-          {!movelLoading && movelItems.length > 0 && (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {movelItems.map((item) => (
-                <CatMovelCard key={item.id} item={item} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
     </main>
   );

@@ -21,10 +21,11 @@ import {
   ImagePlus,
   Save,
   MapPin,
+  RefreshCw,
 } from "lucide-react";
 import Image from "next/image";
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
+// ─── Tabs ──────────────────────────────────────────────────────────────
 
 type Tab = "cat" | "cat-movel";
 
@@ -308,28 +309,6 @@ function CatThumb({ cat }: { cat: Cat }) {
   return <span className="text-xs text-muted-foreground">—</span>;
 }
 
-// ─── CatMovelThumb ────────────────────────────────────────────────────────────
-
-function CatMovelThumb({ item }: { item: CatMovel }) {
-  const src = safeMediaUrl(item.midiaUrl);
-
-  if (!src) return <span className="text-xs text-muted-foreground">—</span>;
-
-  if (item.midiaType === "video") {
-    return (
-      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Video size={14} /> Vídeo
-      </span>
-    );
-  }
-
-  return (
-    <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-border">
-      <Image src={src} alt="thumb" fill className="object-cover" />
-    </div>
-  );
-}
-
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function AdminCatPage() {
@@ -351,15 +330,18 @@ export default function AdminCatPage() {
   const [error, setError] = useState("");
 
   // ── CAT Móvel state ──
-  const [movelItems, setMovelItems] = useState<CatMovel[]>([]);
+  // O backend é singleton: existe 0 ou 1 registro.
+  const [movel, setMovel] = useState<CatMovel | null>(null);
   const [movelLoading, setMovelLoading] = useState(true);
   const [movelSaving, setMovelSaving] = useState(false);
   const [movelFeedback, setMovelFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [movelModal, setMovelModal] = useState(false);
-  const [movelEditingId, setMovelEditingId] = useState<string | null>(null);
   const [movelForm, setMovelForm] = useState({ titulo: "", descricao: "" });
-  const [movelMidia, setMovelMidia] = useState<File | null>(null);
-  const movelMidiaRef = useRef<HTMLInputElement>(null);
+  // Campos separados para imagem e vídeo (campo no backend: 'imagem' e 'video')
+  const [movelImagem, setMovelImagem] = useState<File | null>(null);
+  const [movelVideo, setMovelVideo] = useState<File | null>(null);
+  const movelImagemRef = useRef<HTMLInputElement>(null);
+  const movelVideoRef = useRef<HTMLInputElement>(null);
 
   // ── Loaders ──
   const loadCat = () => {
@@ -369,7 +351,11 @@ export default function AdminCatPage() {
 
   const loadMovel = () => {
     setMovelLoading(true);
-    catMovelApi.getAll().then(setMovelItems).finally(() => setMovelLoading(false));
+    catMovelApi
+      .get()
+      .then(setMovel)
+      .catch(() => setMovel(null))
+      .finally(() => setMovelLoading(false));
   };
 
   useEffect(() => {
@@ -439,17 +425,13 @@ export default function AdminCatPage() {
   const displayedVideoUrl = videoCleared || newVideo ? null : (modal.editing?.videoUrl ?? null);
 
   // ── CAT Móvel handlers ──
-  function openAddMovel() {
-    setMovelEditingId(null);
-    setMovelForm({ titulo: "", descricao: "" });
-    setMovelMidia(null);
-    setMovelModal(true);
-  }
-
-  function openEditMovel(item: CatMovel) {
-    setMovelEditingId(item.id);
-    setMovelForm({ titulo: item.titulo, descricao: item.descricao });
-    setMovelMidia(null);
+  function openMovelModal() {
+    setMovelForm({
+      titulo: movel?.titulo ?? "",
+      descricao: movel?.descricao ?? "",
+    });
+    setMovelImagem(null);
+    setMovelVideo(null);
     setMovelModal(true);
   }
 
@@ -460,31 +442,34 @@ export default function AdminCatPage() {
       const fd = new FormData();
       fd.append("titulo", movelForm.titulo);
       fd.append("descricao", movelForm.descricao);
-      if (movelMidia) fd.append("midia", movelMidia);
-      if (movelEditingId) {
-        await catMovelApi.update(movelEditingId, fd);
-        movelToast("success", "CAT Móvel atualizado!");
+      // Campos separados: 'imagem' e 'video' (contrato do backend)
+      if (movelImagem) fd.append("imagem", movelImagem);
+      if (movelVideo) fd.append("video", movelVideo);
+
+      if (movel) {
+        // Já existe → PUT /cat-movel (sem ID)
+        await catMovelApi.update(fd);
+        movelToast("success", "CAT Móvel atualizado com sucesso!");
       } else {
+        // Não existe ainda → POST /cat-movel
         await catMovelApi.create(fd);
-        movelToast("success", "CAT Móvel adicionado!");
+        movelToast("success", "CAT Móvel configurado com sucesso!");
       }
       setMovelModal(false);
       loadMovel();
-    } catch {
-      movelToast("error", "Erro ao salvar CAT Móvel.");
+    } catch (err: unknown) {
+      let msg = "Erro ao salvar CAT Móvel.";
+      if (err instanceof Error) {
+        try {
+          const p = JSON.parse(err.message);
+          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message ?? msg;
+        } catch {
+          msg = err.message;
+        }
+      }
+      movelToast("error", msg);
     } finally {
       setMovelSaving(false);
-    }
-  }
-
-  async function handleDeleteMovel(id: string) {
-    if (!confirm("Remover este CAT Móvel?")) return;
-    try {
-      await catMovelApi.remove(id);
-      movelToast("success", "CAT Móvel removido.");
-      loadMovel();
-    } catch {
-      movelToast("error", "Erro ao remover CAT Móvel.");
     }
   }
 
@@ -498,7 +483,7 @@ export default function AdminCatPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">CAT</h1>
           <p className="text-sm text-muted-foreground">
-            Gerencie o CAT Fixo e os registros de CAT Móvel.
+            Gerencie o CAT Fixo e o CAT Móvel.
           </p>
         </div>
       </div>
@@ -650,6 +635,8 @@ export default function AdminCatPage() {
       {/* ── ABA: CAT MÓVEL ── */}
       {activeTab === "cat-movel" && (
         <div className="space-y-4">
+
+          {/* Toast feedback */}
           {movelFeedback && (
             <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${
               movelFeedback.type === "success"
@@ -661,55 +648,81 @@ export default function AdminCatPage() {
             </div>
           )}
 
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              {movelItems.length} registro(s) cadastrado(s)
-            </p>
-            <button
-              onClick={openAddMovel}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Adicionar CAT Móvel
-            </button>
-          </div>
-
-          {movelLoading ? (
-            <LoadingGrid count={3} />
-          ) : !movelItems.length ? (
-            <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl text-muted-foreground">
-              <p className="text-4xl mb-3">📍</p>
-              <p className="text-sm font-medium">Nenhum CAT Móvel cadastrado ainda.</p>
-              <p className="text-xs mt-1">Clique em "Adicionar" para começar.</p>
+          {/* Loading */}
+          {movelLoading && (
+            <div className="animate-pulse space-y-4">
+              <div className="h-40 rounded-2xl bg-muted" />
             </div>
-          ) : (
-            <div className="grid gap-3">
-              {movelItems.map((item) => (
-                <div key={item.id} className="bg-white border border-border rounded-2xl p-4 shadow-sm flex gap-4 items-start">
-                  <CatMovelThumb item={item} />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm mb-0.5">{item.titulo}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{item.descricao}</p>
+          )}
+
+          {/* Singleton: não existe ainda */}
+          {!movelLoading && !movel && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 py-20 text-center">
+              <p className="text-4xl mb-4">📍</p>
+              <p className="text-base font-semibold text-foreground mb-1">CAT Móvel ainda não configurado</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Clique abaixo para configurar o CAT Móvel pela primeira vez.
+              </p>
+              <button
+                onClick={openMovelModal}
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Configurar CAT Móvel
+              </button>
+            </div>
+          )}
+
+          {/* Singleton: já existe */}
+          {!movelLoading && movel && (
+            <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden">
+              {/* Mídia */}
+              {movel.midiaUrl && (() => {
+                const src = safeMediaUrl(movel.midiaUrl);
+                return src ? (
+                  <div className="relative aspect-[16/9] w-full bg-muted">
+                    {movel.midiaType === "video" ? (
+                      <video src={src} controls className="w-full h-full object-cover" />
+                    ) : (
+                      <Image src={src} alt={movel.titulo} fill className="object-cover" />
+                    )}
                   </div>
-                  <div className="flex gap-1 shrink-0">
-                    <button
-                      onClick={() => openEditMovel(item)}
-                      className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                      title="Editar"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteMovel(item.id)}
-                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-muted-foreground hover:text-red-500"
-                      title="Remover"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                ) : null;
+              })()}
+
+              <div className="p-6 flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-foreground mb-1">{movel.titulo}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{movel.descricao}</p>
+                  <div className="mt-3 flex items-center gap-2">
+                    {movel.midiaType && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                        {movel.midiaType === "video" ? <Video size={11} /> : <ImagePlus size={11} />}
+                        {movel.midiaType === "video" ? "Vídeo" : "Imagem"}
+                      </span>
+                    )}
                   </div>
                 </div>
-              ))}
+                <button
+                  onClick={openMovelModal}
+                  className="shrink-0 flex items-center gap-2 border border-border hover:bg-muted px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  title="Editar CAT Móvel"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Editar
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Botão reload */}
+          {!movelLoading && (
+            <button
+              onClick={loadMovel}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" /> Recarregar
+            </button>
           )}
         </div>
       )}
@@ -717,10 +730,10 @@ export default function AdminCatPage() {
       {/* ── MODAL CAT MÓVEL ── */}
       {movelModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-border">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
               <h2 className="text-base font-semibold">
-                {movelEditingId ? "Editar CAT Móvel" : "Novo CAT Móvel"}
+                {movel ? "Editar CAT Móvel" : "Configurar CAT Móvel"}
               </h2>
               <button
                 onClick={() => setMovelModal(false)}
@@ -729,10 +742,12 @@ export default function AdminCatPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleSaveMovel} className="px-6 py-5 space-y-4">
+
+            <form onSubmit={handleSaveMovel} className="px-6 py-5 space-y-5">
+              {/* Título */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Título
+                  Título *
                 </label>
                 <input
                   value={movelForm.titulo}
@@ -742,9 +757,11 @@ export default function AdminCatPage() {
                   placeholder="Título do CAT Móvel"
                 />
               </div>
+
+              {/* Descrição */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Descrição
+                  Descrição *
                 </label>
                 <textarea
                   value={movelForm.descricao}
@@ -755,33 +772,84 @@ export default function AdminCatPage() {
                   placeholder="Descrição do CAT Móvel"
                 />
               </div>
+
+              {/* Imagem */}
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Mídia <span className="normal-case font-normal">(imagem ou vídeo)</span>
+                  Imagem <span className="normal-case font-normal text-muted-foreground/70">(substitui a atual)</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-                    <ImagePlus className="w-4 h-4" />
-                    {movelMidia ? movelMidia.name : "Selecionar imagem ou vídeo"}
+                {movelImagem ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5">
+                    <ImagePlus className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm text-primary truncate flex-1">{movelImagem.name}</span>
+                    <button type="button" onClick={() => setMovelImagem(null)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <input
-                    ref={movelMidiaRef}
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={(e) => setMovelMidia(e.target.files?.[0] ?? null)}
-                    className="hidden"
-                  />
-                </label>
-                {movelMidia && (
+                ) : (
                   <button
                     type="button"
-                    onClick={() => setMovelMidia(null)}
-                    className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-red-500 transition-colors"
+                    onClick={() => movelImagemRef.current?.click()}
+                    className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-border px-3 py-3 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
                   >
-                    <X className="w-3 h-3" /> Remover seleção
+                    <ImagePlus className="w-4 h-4" />
+                    {movel?.midiaType === "image" && movel.midiaUrl
+                      ? "Trocar imagem atual"
+                      : "Selecionar imagem"}
                   </button>
                 )}
+                <input
+                  ref={movelImagemRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) { setMovelImagem(f); setMovelVideo(null); }
+                  }}
+                />
               </div>
+
+              {/* Vídeo */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                  Vídeo <span className="normal-case font-normal text-muted-foreground/70">(substitui o atual)</span>
+                </label>
+                {movelVideo ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5">
+                    <Play className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm text-primary truncate flex-1">{movelVideo.name}</span>
+                    <button type="button" onClick={() => setMovelVideo(null)} className="text-muted-foreground hover:text-red-500 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => movelVideoRef.current?.click()}
+                    className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-border px-3 py-3 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                  >
+                    <Play className="w-4 h-4" />
+                    {movel?.midiaType === "video" && movel.midiaUrl
+                      ? "Trocar vídeo atual"
+                      : "Selecionar vídeo"}
+                  </button>
+                )}
+                <input
+                  ref={movelVideoRef}
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) { setMovelVideo(f); setMovelImagem(null); }
+                  }}
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  ℹ️ Selecione imagem <strong>ou</strong> vídeo. Enviar um substitui o outro.
+                </p>
+              </div>
+
               <div className="flex gap-3 justify-end pt-1">
                 <button
                   type="button"
@@ -796,7 +864,7 @@ export default function AdminCatPage() {
                   className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
                 >
                   <Save className="w-4 h-4" />
-                  {movelSaving ? "Salvando..." : "Salvar"}
+                  {movelSaving ? "Salvando..." : movel ? "Atualizar" : "Configurar"}
                 </button>
               </div>
             </form>
