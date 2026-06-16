@@ -17,3 +17,5 @@ export {
   turistandoApi,
   projetoApi,
 } from "./secretaria-turismo";
+export { fiquePorDentroApi } from "./fique-por-dentro";
+export type { FiquePorDentro } from "./fique-por-dentro";
