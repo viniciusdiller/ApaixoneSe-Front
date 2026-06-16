@@ -10,12 +10,16 @@ import {
   Video,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  ImageOff,
 } from "lucide-react";
 import { catApi } from "@/lib/api";
-import type { Cat } from "@/lib/api";
+import { catMovelApi } from "@/lib/api/cat-movel";
+import type { Cat, CatMovel } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
-// ─── Carrossel de imagens ────────────────────────────────────────────────────
+// ─── Carrossel de imagens ──────────────────────────────────────────────────────
+
 function Carousel({ urls }: { urls: string[] }) {
   const [idx, setIdx] = useState(0);
   const total = urls.length;
@@ -23,7 +27,6 @@ function Carousel({ urls }: { urls: string[] }) {
   const prev = () => setIdx((i) => (i - 1 + total) % total);
   const next = () => setIdx((i) => (i + 1) % total);
 
-  // keyboard
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") prev();
@@ -48,7 +51,6 @@ function Carousel({ urls }: { urls: string[] }) {
 
   return (
     <div className="select-none space-y-3">
-      {/* Slide principal */}
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
         {src && (
           <Image
@@ -58,8 +60,6 @@ function Carousel({ urls }: { urls: string[] }) {
             className="object-cover transition-opacity duration-300"
           />
         )}
-
-        {/* Setas */}
         <button
           onClick={prev}
           className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
@@ -74,14 +74,10 @@ function Carousel({ urls }: { urls: string[] }) {
         >
           <ChevronRight size={20} />
         </button>
-
-        {/* Contador */}
         <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white backdrop-blur-sm">
           {idx + 1} / {total}
         </span>
       </div>
-
-      {/* Thumbnails */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {urls.map((url, i) => {
           const s = safeMediaUrl(url);
@@ -104,14 +100,13 @@ function Carousel({ urls }: { urls: string[] }) {
   );
 }
 
-// ─── Vídeo sticky ────────────────────────────────────────────────────────────
+// ─── Vídeo sticky ───────────────────────────────────────────────────────────────
+
 function StickyVideo({ url }: { url: string }) {
   const src = safeMediaUrl(url);
   const wrapRef = useRef<HTMLDivElement>(null);
   const videoBoxRef = useRef<HTMLDivElement>(null);
 
-  // Lógica sticky manual: o vídeo gruda no topo e sobe assim que
-  // a coluna pai terminar (i.e., encontra o footer).
   useEffect(() => {
     const wrap = wrapRef.current;
     const box = videoBoxRef.current;
@@ -120,18 +115,15 @@ function StickyVideo({ url }: { url: string }) {
     const onScroll = () => {
       const wrapRect = wrap.getBoundingClientRect();
       const boxH = box.offsetHeight;
-      const top = 96; // offset do header (24px) + margem
+      const top = 96;
 
       if (wrapRect.top > top) {
-        // ainda acima do ponto de grudar
         box.style.position = "relative";
         box.style.top = "0";
       } else if (wrapRect.bottom - boxH < top) {
-        // coluna acabou: ancorar na base
         box.style.position = "absolute";
         box.style.top = `${wrap.offsetHeight - boxH}px`;
       } else {
-        // fixo na tela
         box.style.position = "fixed";
         box.style.top = `${top}px`;
         box.style.width = `${wrap.offsetWidth}px`;
@@ -153,30 +145,117 @@ function StickyVideo({ url }: { url: string }) {
             <Video size={14} className="text-white/60" />
             <span className="text-xs text-white/60">Vídeo</span>
           </div>
-          <video
-            src={src}
-            controls
-            className="w-full"
-            style={{ maxHeight: "360px" }}
-          />
+          <video src={src} controls className="w-full" style={{ maxHeight: "360px" }} />
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Página pública do CAT ────────────────────────────────────────────────────
+// ─── Card do CAT Móvel ────────────────────────────────────────────────────────────
+
+function CatMovelCard({ item }: { item: CatMovel }) {
+  const mediaSrc = safeMediaUrl(item.midiaUrl);
+  const isVideo = item.midiaType === "video";
+
+  return (
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
+      {/* Mídia */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+        {mediaSrc ? (
+          isVideo ? (
+            <video
+              src={mediaSrc}
+              muted
+              loop
+              playsInline
+              onMouseEnter={(e) => (e.currentTarget as HTMLVideoElement).play()}
+              onMouseLeave={(e) => {
+                const v = e.currentTarget as HTMLVideoElement;
+                v.pause();
+                v.currentTime = 0;
+              }}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <Image
+              src={mediaSrc}
+              alt={item.titulo}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground/30">
+            <ImageOff size={40} />
+          </div>
+        )}
+
+        {/* Badge tipo de mídia */}
+        {isVideo && mediaSrc && (
+          <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+            <Video size={12} />
+            Vídeo
+          </span>
+        )}
+      </div>
+
+      {/* Texto */}
+      <div className="flex flex-1 flex-col gap-2 p-5">
+        <h3 className="font-semibold text-base text-foreground leading-snug">
+          {item.titulo}
+        </h3>
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+          {item.descricao}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+// ─── Skeleton loaders ────────────────────────────────────────────────────────
+
+function CatMovelSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="overflow-hidden rounded-2xl border border-border bg-card">
+            <div className="aspect-[16/9] w-full bg-muted" />
+            <div className="p-5 space-y-3">
+              <div className="h-4 w-3/4 rounded bg-muted" />
+              <div className="h-3 w-full rounded bg-muted" />
+              <div className="h-3 w-5/6 rounded bg-muted" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Página pública do CAT ─────────────────────────────────────────────────────────
+
 export default function CatPage() {
   const [cat, setCat] = useState<Cat | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [catLoading, setCatLoading] = useState(true);
+  const [catError, setCatError] = useState(false);
+
+  const [movelItems, setMovelItems] = useState<CatMovel[]>([]);
+  const [movelLoading, setMovelLoading] = useState(true);
 
   useEffect(() => {
     catApi
       .getAll()
       .then((data) => setCat(data[0] ?? null))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => setCatError(true))
+      .finally(() => setCatLoading(false));
+
+    catMovelApi
+      .getAll()
+      .then(setMovelItems)
+      .catch(() => {}) // falha silenciosa na section pública
+      .finally(() => setMovelLoading(false));
   }, []);
 
   const imagens = cat?.imagensUrl ?? [];
@@ -184,7 +263,8 @@ export default function CatPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero */}
+
+      {/* ── Hero ── */}
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
         <span
           aria-hidden
@@ -214,12 +294,11 @@ export default function CatPage() {
         </div>
       </section>
 
-      {/* Conteúdo */}
+      {/* ── Seção: CAT Fixo ── */}
       <section className="px-4 py-16">
         <div className="container mx-auto max-w-6xl">
 
-          {/* Skeleton */}
-          {loading && (
+          {catLoading && (
             <div className="animate-pulse space-y-6">
               <div className="h-6 w-40 rounded bg-muted" />
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
@@ -234,8 +313,7 @@ export default function CatPage() {
             </div>
           )}
 
-          {/* Erro */}
-          {!loading && error && (
+          {!catLoading && catError && (
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
               <p className="text-base font-medium">Não foi possível carregar as informações do CAT.</p>
@@ -243,21 +321,16 @@ export default function CatPage() {
             </div>
           )}
 
-          {/* Sem dados */}
-          {!loading && !error && !cat && (
+          {!catLoading && !catError && !cat && (
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <Info className="mb-4 h-10 w-10 text-muted-foreground/50" />
               <p className="text-base font-medium">Informações do CAT não disponíveis no momento.</p>
             </div>
           )}
 
-          {/* ── Layout split ── */}
-          {!loading && !error && cat && (
+          {!catLoading && !catError && cat && (
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
-
-              {/* Coluna esquerda: texto + carrossel */}
               <div className="space-y-8">
-                {/* Texto */}
                 <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
                   <div className="mb-5 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -270,10 +343,8 @@ export default function CatPage() {
                   </p>
                 </div>
 
-                {/* Carrossel ou imagem única */}
                 {imagens.length > 0 && <Carousel urls={imagens} />}
 
-                {/* Vídeo mobile (abaixo das imagens em telas pequenas) */}
                 {hasVideo && cat.videoUrl && (
                   <div className="block lg:hidden">
                     {(() => {
@@ -292,14 +363,60 @@ export default function CatPage() {
                 )}
               </div>
 
-              {/* Coluna direita: vídeo sticky (desktop only) */}
-              {hasVideo && cat.videoUrl && (
-                <StickyVideo url={cat.videoUrl} />
-              )}
+              {hasVideo && cat.videoUrl && <StickyVideo url={cat.videoUrl} />}
             </div>
           )}
         </div>
       </section>
+
+      {/* ── Seção: CAT Móvel ── */}
+      <section className="border-t border-border bg-muted/40 px-4 py-16">
+        <div className="container mx-auto max-w-6xl">
+
+          {/* Cabeçalho da seção */}
+          <div className="mb-10 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <MapPin size={22} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">CAT Móvel</h2>
+                <p className="text-sm text-muted-foreground">
+                  Pontos de atendimento itinerantes espalhados pela cidade.
+                </p>
+              </div>
+            </div>
+
+            {!movelLoading && movelItems.length > 0 && (
+              <span className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
+                {movelItems.length} ponto{movelItems.length !== 1 ? "s" : ""} cadastrado{movelItems.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+
+          {/* Skeleton */}
+          {movelLoading && <CatMovelSkeleton />}
+
+          {/* Sem registros */}
+          {!movelLoading && movelItems.length === 0 && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-background py-20 text-center text-muted-foreground">
+              <MapPin className="mb-4 h-10 w-10 text-muted-foreground/30" />
+              <p className="text-base font-medium">Nenhum CAT Móvel disponível no momento.</p>
+              <p className="mt-1 text-sm">Volte em breve para conferir os pontos de atendimento itinerantes.</p>
+            </div>
+          )}
+
+          {/* Grid de cards */}
+          {!movelLoading && movelItems.length > 0 && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {movelItems.map((item) => (
+                <CatMovelCard key={item.id} item={item} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
     </main>
   );
 }
