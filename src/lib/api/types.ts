@@ -308,14 +308,34 @@ export interface CreateCatDto {
 export type UpdateCatDto = Partial<CreateCatDto>;
 
 // ─── CatMovel ─────────────────────────────────────────────────────────────────
+/**
+ * Shape real retornado pelo backend em GET /cat-movel.
+ * O backend armazena imagem e vídeo como campos separados.
+ * Para exibição, derive midiaUrl/midiaType usando catMovelMidia().
+ */
 export interface CatMovel {
   id: string;
   titulo: string;
   descricao: string;
-  midiaUrl?: string | null;
-  midiaType?: "image" | "video" | null;
+  /** URL da imagem (WebP) — exclusivo com videoUrl */
+  imagemUrl?: string | null;
+  /** URL do vídeo — exclusivo com imagemUrl */
+  videoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/**
+ * Helper: deriva a mídia ativa e seu tipo a partir dos campos do backend.
+ * Usa sempre imagemUrl com prioridade caso os dois estejam preenchidos (não deveria ocorrer).
+ */
+export function catMovelMidia(item: CatMovel): {
+  url: string | null;
+  type: "image" | "video" | null;
+} {
+  if (item.imagemUrl) return { url: item.imagemUrl, type: "image" };
+  if (item.videoUrl) return { url: item.videoUrl, type: "video" };
+  return { url: null, type: null };
 }
 
 export interface CreateCatMovelDto {
