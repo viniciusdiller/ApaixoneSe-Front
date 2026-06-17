@@ -1,5 +1,9 @@
 import { apiFetch } from "./config";
-import type { Hospedagem, CreateHospedagemDto, UpdateHospedagemDto } from "./types";
+import type {
+  Hospedagem,
+  CreateHospedagemDto,
+  UpdateHospedagemDto,
+} from "./types";
 
 export const HOSPEDAGEM_TAGS = [
   "Wi-Fi",
@@ -7,11 +11,11 @@ export const HOSPEDAGEM_TAGS = [
   "Ar-condicionado",
   "Estacionamento",
   "Pet Friendly",
-  "Caf\u00e9 da manh\u00e3",
+  "Café da manhã",
   "Academia",
   "Beira-mar",
-  "Chal\u00e9",
-  "Bangal\u00f4",
+  "Chalé",
+  "Bangalô",
 ] as const;
 
 export type HospedagemTag = (typeof HOSPEDAGEM_TAGS)[number];
