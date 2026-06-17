@@ -310,8 +310,7 @@ export type UpdateCatDto = Partial<CreateCatDto>;
 // ─── CatMovel ─────────────────────────────────────────────────────────────────
 /**
  * Shape real retornado pelo backend em GET /cat-movel.
- * O backend armazena imagem e vídeo como campos separados.
- * Para exibição, derive midiaUrl/midiaType usando catMovelMidia().
+ * Para derivar a mídia ativa, use catMovelMidia() de @/lib/catMovelMidia.
  */
 export interface CatMovel {
   id: string;
@@ -325,25 +324,21 @@ export interface CatMovel {
   updatedAt?: string;
 }
 
-/**
- * Helper: deriva a mídia ativa e seu tipo a partir dos campos do backend.
- * Usa sempre imagemUrl com prioridade caso os dois estejam preenchidos (não deveria ocorrer).
- */
-export function catMovelMidia(item: CatMovel): {
-  url: string | null;
-  type: "image" | "video" | null;
-} {
-  if (item.imagemUrl) return { url: item.imagemUrl, type: "image" };
-  if (item.videoUrl) return { url: item.videoUrl, type: "video" };
-  return { url: null, type: null };
-}
-
 export interface CreateCatMovelDto {
   titulo: string;
   descricao: string;
 }
 
 export type UpdateCatMovelDto = Partial<CreateCatMovelDto>;
+
+// ─── FiquePorDentro ───────────────────────────────────────────────────────────
+export interface FiquePorDentro {
+  id: string;
+  ordem: string;
+  imagemUrl: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 // ─── Evento Principal ─────────────────────────────────────────────────────────
 export interface EventoPrincipal {
