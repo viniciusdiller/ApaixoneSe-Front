@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { PlanejeSuaViagemTrigger } from "@/components/planeje-sua-viagem";
 
 export function HeroSection() {
   return (
@@ -52,12 +53,11 @@ export function HeroSection() {
           transition={{ delay: 0.8 }}
           className="mt-8 flex flex-col gap-4 sm:flex-row"
         >
-          <Link
-            href="/praias"
-            className="rounded-full bg-accent px-8 py-3 font-display text-lg font-semibold uppercase tracking-wide text-accent-foreground shadow-xl transition-transform hover:scale-105"
-          >
+          {/* Botão agora abre o modal em vez de navegar para /praias */}
+          <PlanejeSuaViagemTrigger className="rounded-full bg-accent px-8 py-3 font-display text-lg font-semibold uppercase tracking-wide text-accent-foreground shadow-xl transition-transform hover:scale-105">
             Planeje sua Viagem
-          </Link>
+          </PlanejeSuaViagemTrigger>
+
           <Link
             href="/praias"
             className="rounded-full border-2 border-primary-foreground/60 px-8 py-3 font-display text-lg uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary-foreground/10"
