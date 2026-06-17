@@ -85,7 +85,7 @@ export function ItemPlanoList({ planoId }: Props) {
               Adicionar item ao plano
             </p>
             <ItemPlanoForm
-              planoId={planoId}
+              planoViagemId={planoId}
               onSuccess={handleItemAdded}
               onCancel={() => setAdicionando(false)}
             />
