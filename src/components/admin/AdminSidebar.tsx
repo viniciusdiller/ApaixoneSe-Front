@@ -17,6 +17,7 @@ import {
   LogOut,
   Banknote,
   Landmark,
+  GalleryHorizontal,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
@@ -24,6 +25,7 @@ import { useAuth } from "@/context/AuthContext";
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
+  { label: "Fique Por Dentro", href: "/admin/fique-por-dentro", icon: GalleryHorizontal },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
   { label: "Evento Principal", href: "/admin/evento-principal", icon: Calendar },
