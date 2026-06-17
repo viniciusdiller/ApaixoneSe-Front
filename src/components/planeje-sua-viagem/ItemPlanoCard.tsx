@@ -30,7 +30,8 @@ function getCategoria(item: ItemPlanoViagem) {
       label: "Restaurante",
       nome: item.gastronomia.nome,
       detalhe: item.gastronomia.endereco,
-      color: "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
+      color:
+        "text-orange-600 bg-orange-50 dark:bg-orange-900/20 dark:text-orange-400",
     };
   if (item.hospedagem)
     return {
@@ -46,7 +47,8 @@ function getCategoria(item: ItemPlanoViagem) {
       label: "Evento",
       nome: item.evento.titulo,
       detalhe: item.evento.local,
-      color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
+      color:
+        "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
     };
   if (item.atividade)
     return {
@@ -54,7 +56,8 @@ function getCategoria(item: ItemPlanoViagem) {
       label: "Atividade",
       nome: item.atividade.titulo,
       detalhe: item.atividade.local,
-      color: "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
+      color:
+        "text-green-600 bg-green-50 dark:bg-green-900/20 dark:text-green-400",
     };
   if (item.servicoTurista)
     return {
@@ -113,14 +116,18 @@ export function ItemPlanoCard({ item, index, onDeleted }: Props) {
       className="group flex items-start gap-3 rounded-xl border border-border bg-background p-3.5 transition-shadow hover:shadow-sm"
     >
       {/* Ícone de categoria */}
-      <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cat.color}`}>
+      <div
+        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${cat.color}`}
+      >
         {cat.icon}
       </div>
 
       {/* Conteúdo */}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2">
-          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${cat.color}`}>
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${cat.color}`}
+          >
             {cat.label}
           </span>
           {/* Aviso: não é reserva */}
@@ -129,21 +136,25 @@ export function ItemPlanoCard({ item, index, onDeleted }: Props) {
           </span>
         </div>
 
-        <p className="truncate text-sm font-semibold text-foreground">{cat.nome}</p>
+        <p className="truncate text-sm font-semibold text-foreground">
+          {cat.nome}
+        </p>
 
         {cat.detalhe && (
-          <p className="truncate text-xs text-muted-foreground">{cat.detalhe}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {cat.detalhe}
+          </p>
         )}
 
-        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <div className="mt-1 flex flex-col items-start gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Clock className="h-3.5 w-3.5" />
             {formatDataHora(item.dataHoraAgendada)}
           </span>
           {item.anotacao && (
-            <span className="flex items-center gap-1">
+            <span className="flex items-start gap-1">
               <StickyNote className="h-3.5 w-3.5" />
-              <span className="max-w-[180px] truncate">{item.anotacao}</span>
+              <span className="">{item.anotacao}</span>
             </span>
           )}
         </div>
