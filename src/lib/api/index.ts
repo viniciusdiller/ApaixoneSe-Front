@@ -11,6 +11,7 @@ export { catMovelApi } from "./cat-movel";
 export { eventoPrincipalApi } from "./eventoPrincipal";
 export { visitasApi } from "./visitas";
 export { casaDeCambioApi } from "./casa-de-cambio";
+export { fiquePorDentroApi } from "./fique-por-dentro";
 export { clearToken, getToken, getUserData, isAuthenticated, setToken, setUserData } from "./auth";
 export { usersApi } from "./users";
 export {
