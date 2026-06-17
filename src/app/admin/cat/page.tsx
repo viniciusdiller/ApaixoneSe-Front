@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { catApi } from "@/lib/api";
 import { catMovelApi } from "@/lib/api/cat-movel";
 import type { Cat, CatMovel } from "@/lib/api";
-import { catMovelMidia } from "@/lib/api/types";
+import { catMovelMidia } from "@/lib/catMovelMidia";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
@@ -246,7 +246,6 @@ export default function AdminCatPage() {
       const fd = new FormData();
       fd.append("titulo", movelForm.titulo);
       fd.append("descricao", movelForm.descricao);
-      // campos separados que o backend espera
       if (movelImagem) fd.append("imagem", movelImagem);
       if (movelVideo) fd.append("video", movelVideo);
 
@@ -265,7 +264,7 @@ export default function AdminCatPage() {
     } finally { setMovelSaving(false); }
   }
 
-  // Deriva mídia do CAT Móvel usando o helper de types.ts
+  // Deriva mídia do CAT Móvel
   const movelMidia = movel ? catMovelMidia(movel) : { url: null, type: null };
 
   return (
@@ -381,7 +380,6 @@ export default function AdminCatPage() {
 
           {!movelLoading && movel && (
             <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden">
-              {/* Mídia — derivada via catMovelMidia() */}
               {movelMidia.url && (() => {
                 const src = safeMediaUrl(movelMidia.url);
                 return src ? (

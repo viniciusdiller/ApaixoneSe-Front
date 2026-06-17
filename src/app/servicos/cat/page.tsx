@@ -7,7 +7,7 @@ import { ArrowLeft, AlertCircle, Info, Video, ChevronLeft, ChevronRight, MapPin,
 import { catApi } from "@/lib/api";
 import { catMovelApi } from "@/lib/api/cat-movel";
 import type { Cat, CatMovel } from "@/lib/api";
-import { catMovelMidia } from "@/lib/api/types";
+import { catMovelMidia } from "@/lib/catMovelMidia";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 // ─── Carrossel ───────────────────────────────────────────────────────────────
@@ -77,7 +77,6 @@ function StickyVideo({ url }: { url: string }) {
 
 // ─── Card CAT Móvel ──────────────────────────────────────────────────────────
 function CatMovelCard({ item }: { item: CatMovel }) {
-  // Deriva mídia a partir dos campos reais do backend
   const { url, type } = catMovelMidia(item);
   const mediaSrc = safeMediaUrl(url);
 
