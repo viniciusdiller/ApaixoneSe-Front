@@ -5,7 +5,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   GalleryHorizontal,
-  ImagePlus,
   Loader2,
   Pencil,
   Plus,
@@ -21,30 +20,17 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 
-// ─── tipos internos ───────────────────────────────────────────────────────────
+// ─── tipos internos ────────────────────────────────────────────────────────────
 type ModalMode = "create" | "edit";
 
 interface FormState {
   ordem: string;
   file: File | null;
-  previewUrl: string | null;
 }
 
-const EMPTY_FORM: FormState = { ordem: "", file: null, previewUrl: null };
+const EMPTY_FORM: FormState = { ordem: "", file: null };
 
-// ─── Thumb da tabela ──────────────────────────────────────────────────────────
-function ItemThumb({ item }: { item: FiquePorDentro }) {
-  const src = safeMediaUrl(item.imagemUrl);
-  if (!src)
-    return <span className="text-xs text-muted-foreground">Sem imagem</span>;
-  return (
-    <div className="relative h-12 w-20 overflow-hidden rounded-lg border border-border">
-      <Image src={src} alt={`Ordem ${item.ordem}`} fill className="object-cover" />
-    </div>
-  );
-}
-
-// ─── Upload de imagem simples (1 arquivo) ─────────────────────────────────────
+// ─── Upload de imagem simples ──────────────────────────────────────────────────
 function SingleImageUpload({
   file,
   existingUrl,
@@ -57,24 +43,17 @@ function SingleImageUpload({
   onClear: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const previewSrc = file
-    ? URL.createObjectURL(file)
-    : safeMediaUrl(existingUrl);
+  const previewSrc = file ? URL.createObjectURL(file) : safeMediaUrl(existingUrl);
 
   return (
     <div className="space-y-2">
       <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Imagem *
+        Imagem {file || existingUrl ? "" : "*"}
       </label>
       {previewSrc ? (
         <div className="relative overflow-hidden rounded-xl border border-border">
           <div className="relative aspect-[4/3] w-full">
-            <Image
-              src={previewSrc}
-              alt="Preview"
-              fill
-              className="object-cover"
-            />
+            <Image src={previewSrc} alt="Preview" fill className="object-cover" />
           </div>
           <button
             type="button"
@@ -82,7 +61,7 @@ function SingleImageUpload({
             className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white hover:bg-red-600 transition-colors"
           >
             <X size={12} />
-            {file ? "Cancelar" : "Remover"}
+            {file ? "Cancelar" : "Trocar imagem"}
           </button>
           {file && (
             <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
@@ -115,7 +94,7 @@ function SingleImageUpload({
   );
 }
 
-// ─── Página principal ─────────────────────────────────────────────────────────
+// ─── Página principal ──────────────────────────────────────────────────────────
 export default function AdminFiquePorDentroPage() {
   const [items, setItems] = useState<FiquePorDentro[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,7 +109,7 @@ export default function AdminFiquePorDentroPage() {
   });
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  // ─── carrega ────────────────────────────────────────────────────────────────
+  // ─── carrega ──────────────────────────────────────────────────────────────────
   const load = () => {
     setLoading(true);
     fiquePorDentroApi
@@ -144,13 +123,13 @@ export default function AdminFiquePorDentroPage() {
 
   useEffect(() => { load(); }, []);
 
-  // ─── toast ───────────────────────────────────────────────────────────────────
+  // ─── toast ────────────────────────────────────────────────────────────────────
   function toast(type: "success" | "error", msg: string) {
     setFeedback({ type, msg });
     setTimeout(() => setFeedback(null), 4000);
   }
 
-  // ─── handlers ────────────────────────────────────────────────────────────────
+  // ─── handlers ─────────────────────────────────────────────────────────────────
   function openCreate() {
     setForm(EMPTY_FORM);
     setError("");
@@ -158,7 +137,7 @@ export default function AdminFiquePorDentroPage() {
   }
 
   function openEdit(item: FiquePorDentro) {
-    setForm({ ordem: item.ordem, file: null, previewUrl: item.imagemUrl ?? null });
+    setForm({ ordem: item.ordem, file: null });
     setError("");
     setModal({ open: true, mode: "edit", editing: item });
   }
@@ -182,10 +161,10 @@ export default function AdminFiquePorDentroPage() {
 
       if (modal.mode === "create") {
         await fiquePorDentroApi.create(fd);
-        toast("success", "Item criado com sucesso!");
+        toast("success", "Imagem adicionada com sucesso!");
       } else if (modal.editing) {
         await fiquePorDentroApi.update(modal.editing.id, fd);
-        toast("success", "Item atualizado!");
+        toast("success", "Imagem atualizada!");
       }
       closeModal();
       load();
@@ -201,10 +180,10 @@ export default function AdminFiquePorDentroPage() {
   }
 
   async function handleDelete(item: FiquePorDentro) {
-    if (!confirm(`Excluir o item de ordem "${item.ordem}"?`)) return;
+    if (!confirm(`Excluir a imagem de ordem "${item.ordem}"?`)) return;
     try {
       await fiquePorDentroApi.remove(item.id);
-      toast("success", "Item removido.");
+      toast("success", "Imagem removida.");
       load();
     } catch {
       toast("error", "Erro ao remover.");
@@ -222,7 +201,7 @@ export default function AdminFiquePorDentroPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Fique Por Dentro</h1>
           <p className="text-sm text-muted-foreground">
-            Gerencie as imagens exibidas na seção &quot;Fique Por Dentro&quot; da página inicial.
+            Gerencie as imagens exibidas na seção &quot;Fique Por Dentro&quot; da página inicial (máx. 5 imagens, ordens 1–5).
           </p>
         </div>
       </div>
@@ -244,7 +223,7 @@ export default function AdminFiquePorDentroPage() {
       {/* Barra de ações */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {items.length} imagem{items.length !== 1 ? "ns" : ""} cadastrada{items.length !== 1 ? "s" : ""}
+          {items.length}/5 imagem{items.length !== 1 ? "ns" : ""} cadastrada{items.length !== 1 ? "s" : ""}
         </p>
         <div className="flex items-center gap-2">
           <button
@@ -255,14 +234,15 @@ export default function AdminFiquePorDentroPage() {
           </button>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            disabled={items.length >= 5}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Plus className="h-4 w-4" /> Nova Imagem
           </button>
         </div>
       </div>
 
-      {/* Tabela / Grid */}
+      {/* Grid de cards */}
       {loading ? (
         <LoadingGrid count={4} />
       ) : items.length === 0 ? (
@@ -270,7 +250,7 @@ export default function AdminFiquePorDentroPage() {
           <p className="text-4xl mb-4">🖼️</p>
           <p className="text-base font-semibold text-foreground mb-1">Nenhuma imagem cadastrada</p>
           <p className="text-sm text-muted-foreground mb-6">
-            Adicione imagens para exibir na seção &quot;Fique Por Dentro&quot; da home.
+            Adicione até 5 imagens para exibir na seção &quot;Fique Por Dentro&quot; da home.
           </p>
           <button
             onClick={openCreate}
@@ -280,51 +260,48 @@ export default function AdminFiquePorDentroPage() {
           </button>
         </div>
       ) : (
-        <>
-          {/* Grid de prévia */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-            {items.map((item, i) => {
-              const src = safeMediaUrl(item.imagemUrl);
-              return (
-                <motion.div
-                  key={item.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.05 }}
-                  className="group relative aspect-[3/4] overflow-hidden rounded-2xl border-2 border-border bg-muted"
-                >
-                  {src && (
-                    <Image
-                      src={src}
-                      alt={`Fique Por Dentro ${item.ordem}`}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  )}
-                  {/* Badge de ordem */}
-                  <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white">
-                    #{item.ordem}
-                  </span>
-                  {/* Overlay de ações */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                      onClick={() => openEdit(item)}
-                      className="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-white transition-colors"
-                    >
-                      <Pencil size={13} /> Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item)}
-                      className="flex items-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 transition-colors"
-                    >
-                      <Trash2 size={13} /> Excluir
-                    </button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {items.map((item, i) => {
+            const src = safeMediaUrl(item.imagemUrl);
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className="group relative aspect-[3/4] overflow-hidden rounded-2xl border-2 border-border bg-muted"
+              >
+                {src && (
+                  <Image
+                    src={src}
+                    alt={`Fique Por Dentro ordem ${item.ordem}`}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                )}
+                {/* Badge de ordem */}
+                <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white">
+                  #{item.ordem}
+                </span>
+                {/* Overlay de ações */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    onClick={() => openEdit(item)}
+                    className="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-white transition-colors"
+                  >
+                    <Pencil size={13} /> Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="flex items-center gap-1.5 rounded-lg bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600 transition-colors"
+                  >
+                    <Trash2 size={13} /> Excluir
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       )}
 
       {/* Modal Criar/Editar */}
@@ -339,17 +316,26 @@ export default function AdminFiquePorDentroPage() {
             <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
               Ordem *
             </label>
-            <input
-              type="number"
-              min="1"
+            <select
               value={form.ordem}
               onChange={(e) => setForm((f) => ({ ...f, ordem: e.target.value }))}
               required
-              placeholder="Ex: 1, 2, 3…"
-              className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-            />
+              className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition bg-background"
+            >
+              <option value="">Selecione uma posição…</option>
+              {["1", "2", "3", "4", "5"].map((v) => {
+                const ocupada = items.some(
+                  (it) => it.ordem === v && it.id !== modal.editing?.id
+                );
+                return (
+                  <option key={v} value={v} disabled={ocupada}>
+                    Posição {v}{ocupada ? " (ocupada)" : ""}
+                  </option>
+                );
+              })}
+            </select>
             <p className="mt-1 text-xs text-muted-foreground">
-              Define a posição desta imagem no carrossel (menor número = mais à esquerda).
+              Define onde esta imagem aparece no carrossel. Posições já ocupadas estão desabilitadas.
             </p>
           </div>
 
@@ -357,8 +343,8 @@ export default function AdminFiquePorDentroPage() {
           <SingleImageUpload
             file={form.file}
             existingUrl={modal.mode === "edit" ? modal.editing?.imagemUrl : null}
-            onChange={(f) => setForm((prev) => ({ ...prev, file: f, previewUrl: null }))}
-            onClear={() => setForm((prev) => ({ ...prev, file: null, previewUrl: null }))}
+            onChange={(f) => setForm((prev) => ({ ...prev, file: f }))}
+            onClear={() => setForm((prev) => ({ ...prev, file: null }))}
           />
 
           {error && (
