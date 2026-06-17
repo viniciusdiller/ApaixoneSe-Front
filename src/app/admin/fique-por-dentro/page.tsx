@@ -94,7 +94,7 @@ function SingleImageUpload({
   );
 }
 
-// ─── Página principal ──────────────────────────────────────────────────────────
+// ─── Página principal ────────────────────────────────────────────────────────
 export default function AdminFiquePorDentroPage() {
   const [items, setItems] = useState<FiquePorDentro[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,10 +109,9 @@ export default function AdminFiquePorDentroPage() {
   }>({ open: false, mode: "create", editing: null });
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  // Qual item será afetado pelo swap (posição já ocupada)
-  const swapTarget = items.find(
-    (it) => it.ordem === form.ordem && it.id !== modal.editing?.id
-  ) ?? null;
+  // item que ocupa a posição selecionada (diferente do que está sendo editado)
+  const swapTarget =
+    items.find((it) => it.ordem === form.ordem && it.id !== modal.editing?.id) ?? null;
 
   const load = () => {
     setLoading(true);
@@ -158,6 +157,7 @@ export default function AdminFiquePorDentroPage() {
     setSaving(true);
     try {
       if (modal.mode === "create") {
+        // ── Criar ──────────────────────────────────────────────────────────
         const fd = new FormData();
         fd.append("ordem", form.ordem);
         if (form.file) fd.append("imagem", form.file);
@@ -167,27 +167,36 @@ export default function AdminFiquePorDentroPage() {
       } else if (modal.editing) {
         const ordemOriginal = modal.editing.ordem;
         const ordemNova = form.ordem;
-        const precisaSwap = swapTarget !== null;
 
-        if (precisaSwap && swapTarget) {
-          // Passo 1: move o item conflitante para a posição original do item editado
+        if (swapTarget) {
+          // ── Swap com 3 passos para evitar conflito de unique constraint ──
+          //
+          // Passo 1: move o ocupante para uma posição temporária (999)
+          //          assim a posição nova fica livre
+          const fdTemp = new FormData();
+          fdTemp.append("ordem", "999");
+          await fiquePorDentroApi.update(swapTarget.id, fdTemp);
+
+          // Passo 2: move o item editado para a posição desejada
+          const fdMain = new FormData();
+          fdMain.append("ordem", ordemNova);
+          if (form.file) fdMain.append("imagem", form.file);
+          await fiquePorDentroApi.update(modal.editing.id, fdMain);
+
+          // Passo 3: move o ocupante (agora em 999) para a posição original
           const fdSwap = new FormData();
           fdSwap.append("ordem", ordemOriginal);
           await fiquePorDentroApi.update(swapTarget.id, fdSwap);
+
+          toast("success", `Posições ${ordemOriginal} e ${ordemNova} trocadas com sucesso!`);
+        } else {
+          // ── Edição simples (posição livre ou só troca de imagem) ──────────
+          const fd = new FormData();
+          fd.append("ordem", ordemNova);
+          if (form.file) fd.append("imagem", form.file);
+          await fiquePorDentroApi.update(modal.editing.id, fd);
+          toast("success", "Imagem atualizada!");
         }
-
-        // Passo 2: atualiza o item editado com a nova ordem (e imagem, se houver)
-        const fd = new FormData();
-        fd.append("ordem", ordemNova);
-        if (form.file) fd.append("imagem", form.file);
-        await fiquePorDentroApi.update(modal.editing.id, fd);
-
-        toast(
-          "success",
-          precisaSwap
-            ? `Posições ${ordemOriginal} e ${ordemNova} trocadas com sucesso!`
-            : "Imagem atualizada!"
-        );
       }
 
       closeModal();
@@ -239,7 +248,7 @@ export default function AdminFiquePorDentroPage() {
             ? "bg-emerald-50 text-emerald-800 border-emerald-200"
             : "bg-red-50 text-red-800 border-red-200"
         }`}>
-          <span>{feedback.type === "success" ? "✓" : "✕"}</span>
+          <span>{feedback.type === "success" ? "✓" : "✗"}</span>
           {feedback.msg}
         </div>
       )}
