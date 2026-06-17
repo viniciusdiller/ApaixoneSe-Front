@@ -1,23 +1,33 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fiquePorDentroApi } from "@/lib/api/fique-por-dentro";
 import type { FiquePorDentro } from "@/lib/api/types";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
-function SkeletonCard() {
+// Direção da transição
+type Dir = 1 | -1;
+
+const variants = {
+  enter: (dir: Dir) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir: Dir) => ({ x: dir > 0 ? "-100%" : "100%", opacity: 0 }),
+};
+
+function SkeletonBanner() {
   return (
-    <div className="animate-pulse flex-shrink-0 w-64 h-80 rounded-2xl bg-muted" />
+    <div className="w-full aspect-[21/9] md:aspect-[3/1] animate-pulse bg-muted rounded-2xl" />
   );
 }
 
 export function FiquePorDentroSection() {
   const [items, setItems] = useState<FiquePorDentro[]>([]);
   const [loading, setLoading] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [index, setIndex] = useState(0);
+  const [dir, setDir] = useState<Dir>(1);
 
   useEffect(() => {
     fiquePorDentroApi
@@ -29,17 +39,31 @@ export function FiquePorDentroSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  const scroll = (dir: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
-  };
+  const go = useCallback(
+    (next: number, direction: Dir) => {
+      setDir(direction);
+      setIndex((next + items.length) % items.length);
+    },
+    [items.length]
+  );
 
-  // Não renderiza a seção se não houver itens (e não estiver carregando)
+  const prev = () => go(index - 1, -1);
+  const next = () => go(index + 1, 1);
+
+  // Autoplay a cada 5 s
+  useEffect(() => {
+    if (items.length <= 1) return;
+    const id = setInterval(() => go(index + 1, 1), 5000);
+    return () => clearInterval(id);
+  }, [index, items.length, go]);
+
   if (!loading && items.length === 0) return null;
 
+  const current = items[index];
+  const src = current ? safeMediaUrl(current.imagemUrl) : null;
+
   return (
-    <section className="bg-background px-4 py-16 overflow-hidden">
+    <section className="bg-background py-12 px-4 overflow-hidden">
       <div className="container mx-auto">
         {/* Cabeçalho */}
         <motion.div
@@ -47,75 +71,89 @@ export function FiquePorDentroSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-8 text-center"
         >
-          <h2 className="text-center font-display text-4xl font-bold uppercase text-foreground md:text-5xl">
+          <h2 className="font-display text-4xl font-bold uppercase text-foreground md:text-5xl">
             Fique Por Dentro
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
             Novidades, destaques e o que está acontecendo em Saquarema
           </p>
         </motion.div>
 
-        {/* Carrossel */}
-        <div className="relative">
-          {/* Botão esquerda */}
-          <button
-            onClick={() => scroll("left")}
-            aria-label="Rolar para esquerda"
-            className="absolute left-0 top-1/2 z-10 -translate-y-1/2 -translate-x-2 flex h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-md border border-border text-foreground transition hover:bg-muted md:-translate-x-5"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
+        {/* Banner */}
+        <div className="relative w-full overflow-hidden rounded-2xl border border-border shadow-lg">
+          {/* Proporção: 21:9 mobile → 3:1 desktop */}
+          <div className="aspect-[21/9] md:aspect-[3/1] w-full relative bg-muted">
 
-          {/* Faixa rolável */}
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory px-2"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
             {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonCard key={i} />
-              ))
-            ) : (
-              items.map((item, i) => {
-                const src = safeMediaUrl(item.imagemUrl);
-                if (!src) return null;
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.07 }}
-                    className="group relative flex-shrink-0 w-64 h-80 rounded-2xl overflow-hidden border border-border snap-start cursor-pointer"
-                  >
-                    <Image
-                      src={src}
-                      alt={`Fique Por Dentro ${item.ordem}`}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      sizes="256px"
-                    />
-                    {/* Gradiente sutil no hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    {/* Linha accent no hover */}
-                    <div className="absolute bottom-0 left-0 h-1 w-0 bg-accent transition-all duration-500 group-hover:w-full" />
-                  </motion.div>
-                );
-              })
+              <SkeletonBanner />
+            ) : src ? (
+              <AnimatePresence initial={false} custom={dir} mode="popLayout">
+                <motion.div
+                  key={current.id}
+                  custom={dir}
+                  variants={variants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                  className="absolute inset-0"
+                >
+                  <Image
+                    src={src}
+                    alt={`Fique Por Dentro — imagem ${current.ordem}`}
+                    fill
+                    priority
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 100vw"
+                  />
+                  {/* Gradiente sutil nas bordas laterais para dar profundidade */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10 pointer-events-none" />
+                </motion.div>
+              </AnimatePresence>
+            ) : null}
+
+            {/* Seta esquerda */}
+            {items.length > 1 && (
+              <>
+                <button
+                  onClick={prev}
+                  aria-label="Imagem anterior"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm border border-white/20 transition hover:bg-black/60 active:scale-95"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+
+                {/* Seta direita */}
+                <button
+                  onClick={next}
+                  aria-label="Próxima imagem"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm border border-white/20 transition hover:bg-black/60 active:scale-95"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </>
             )}
           </div>
 
-          {/* Botão direita */}
-          <button
-            onClick={() => scroll("right")}
-            aria-label="Rolar para direita"
-            className="absolute right-0 top-1/2 z-10 -translate-y-1/2 translate-x-2 flex h-10 w-10 items-center justify-center rounded-full bg-background/90 shadow-md border border-border text-foreground transition hover:bg-muted md:translate-x-5"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
+          {/* Dots */}
+          {items.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
+              {items.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => go(i, i > index ? 1 : -1)}
+                  aria-label={`Ir para imagem ${i + 1}`}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i === index
+                      ? "w-6 bg-white"
+                      : "w-2 bg-white/50 hover:bg-white/80"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
