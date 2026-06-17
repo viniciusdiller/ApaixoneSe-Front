@@ -45,7 +45,9 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
             aria-hidden="true"
           />
 
-          {/* Painel — z-[70] fica acima do overlay */}
+          {/* Painel — z-[70] acima do overlay
+              Mobile : começa em 72px (abaixo da navbar ~64px) e vai até o fundo
+              Desktop: centralizado com inset-y-8, sem conflito com navbar */}
           <motion.div
             key="panel"
             role="dialog"
@@ -55,7 +57,7 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 32, scale: 0.97 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-4 bottom-0 top-16 z-[70] mx-auto flex max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl md:inset-x-auto md:inset-y-8 md:w-full md:rounded-2xl"
+            className="fixed inset-x-0 bottom-0 top-[72px] z-[70] mx-auto flex w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl md:inset-x-auto md:inset-y-8 md:w-[calc(100%-2rem)] md:rounded-2xl"
           >
             {/* Cabeçalho fixo */}
             <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
@@ -70,9 +72,9 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
               <button
                 onClick={onClose}
                 aria-label="Fechar modal"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
