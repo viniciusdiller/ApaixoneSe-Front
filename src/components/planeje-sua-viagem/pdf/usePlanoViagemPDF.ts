@@ -34,10 +34,10 @@ export function usePlanoViagemPDF(plano: PlanoViagem) {
       ]);
 
       // 3. Monta o documento PDF
-      const documento = createElement(PlanoViagemPDF, { plano: planoCompleto, itens });
+      const documento = createElement(PlanoViagemPDF as any, { plano: planoCompleto, itens });
 
       // 4. Gera o blob e dispara download
-      const blob = await pdf(documento).toBlob();
+      const blob = await pdf(documento as any).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       const nomeArquivo = planoCompleto.titulo

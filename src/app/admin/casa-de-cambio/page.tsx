@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { casaDeCambioApi } from "@/lib/api";
 import type { CasaDeCambio } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -34,6 +35,9 @@ export default function AdminCasaDeCambioPage() {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { user } = useAuth();
+
+  if (!user) return null;
 
   const load = () => {
     setLoading(true);
@@ -72,6 +76,7 @@ export default function AdminCasaDeCambioPage() {
         nome: form.nome,
         telefone: form.telefone,
         endereco: form.endereco,
+        usuarioId: user.id,
       };
 
       modal.editing
