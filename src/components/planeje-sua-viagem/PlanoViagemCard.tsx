@@ -1,12 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronUp,
+  FileDown,
+  Loader2,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PlanoViagem } from "@/lib/api/types";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
 import { PlanoViagemForm } from "./PlanoViagemForm";
 import { ItemPlanoList } from "./ItemPlanoList";
+import { usePlanoViagemPDF } from "./pdf/usePlanoViagemPDF";
 
 interface Props {
   plano: PlanoViagem;
@@ -27,6 +36,8 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [deletando, setDeletando] = useState(false);
+
+  const { exportando, exportarPDF } = usePlanoViagemPDF(plano);
 
   async function handleDelete() {
     if (!confirm(`Excluir o plano "${plano.titulo}"?`)) return;
@@ -87,6 +98,22 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
 
         {/* Ações */}
         <div className="flex shrink-0 items-center gap-1">
+          {/* Exportar PDF */}
+          <button
+            onClick={exportarPDF}
+            disabled={exportando}
+            aria-label="Exportar plano como PDF"
+            title="Exportar PDF"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary disabled:opacity-50"
+          >
+            {exportando ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileDown className="h-3.5 w-3.5" />
+            )}
+          </button>
+
+          {/* Editar */}
           <button
             onClick={() => setEditing(true)}
             aria-label="Editar plano"
@@ -94,6 +121,8 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
           >
             <Pencil className="h-3.5 w-3.5" />
           </button>
+
+          {/* Excluir */}
           <button
             onClick={handleDelete}
             disabled={deletando}
@@ -102,6 +131,8 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
+
+          {/* Expandir itens */}
           <button
             onClick={() => setExpanded((p) => !p)}
             aria-expanded={expanded}
@@ -117,7 +148,7 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
         </div>
       </div>
 
-      {/* Itens expandíveis */}
+      {/* Itens expansíveis */}
       <AnimatePresence>
         {expanded && (
           <motion.div
