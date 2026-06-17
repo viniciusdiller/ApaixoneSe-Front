@@ -33,19 +33,19 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay */}
+          {/* Overlay — z-[60] fica acima da navbar (z-50) */}
           <motion.div
             key="overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm"
             onClick={onClose}
             aria-hidden="true"
           />
 
-          {/* Painel */}
+          {/* Painel — z-[70] fica acima do overlay */}
           <motion.div
             key="panel"
             role="dialog"
@@ -55,7 +55,7 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 32, scale: 0.97 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-4 bottom-0 top-16 z-50 mx-auto flex max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl md:inset-x-auto md:inset-y-8 md:w-full md:rounded-2xl"
+            className="fixed inset-x-4 bottom-0 top-16 z-[70] mx-auto flex max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-2xl md:inset-x-auto md:inset-y-8 md:w-full md:rounded-2xl"
           >
             {/* Cabeçalho fixo */}
             <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
