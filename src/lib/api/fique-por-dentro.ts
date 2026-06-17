@@ -1,23 +1,21 @@
-import { apiFetch } from "./config";
+import { api } from "./api";
 import type { FiquePorDentro } from "./types";
 
-/**
- * Fique Por Dentro — coleção de imagens ordenadas.
- * Rotas:
- *   GET    /fique-por-dentro         → lista todos
- *   POST   /fique-por-dentro         → cria (FormData: ordem, imagem)
- *   PUT    /fique-por-dentro/:id     → atualiza (FormData: ordem?, imagem?)
- *   DELETE /fique-por-dentro/:id     → remove
- */
 export const fiquePorDentroApi = {
-  getAll: () => apiFetch<FiquePorDentro[]>("/fique-por-dentro"),
+  getAll: (): Promise<FiquePorDentro[]> =>
+    api.get("/fique-por-dentro"),
 
-  create: (data: FormData) =>
-    apiFetch<FiquePorDentro>("/fique-por-dentro", { method: "POST", body: data }),
+  create: (formData: FormData): Promise<FiquePorDentro> =>
+    api.postForm("/fique-por-dentro", formData),
 
-  update: (id: string, data: FormData) =>
-    apiFetch<FiquePorDentro>(`/fique-por-dentro/${id}`, { method: "PUT", body: data }),
+  /** Substitui apenas a imagem de um item (sem trocar ordem) */
+  update: (id: string, formData: FormData): Promise<FiquePorDentro> =>
+    api.putForm(`/fique-por-dentro/${id}`, formData),
 
-  remove: (id: string) =>
-    apiFetch<void>(`/fique-por-dentro/${id}`, { method: "DELETE" }),
+  /** Troca as ordens de dois itens atomicamente */
+  swap: (idA: string, idB: string): Promise<{ message: string }> =>
+    api.put("/fique-por-dentro/swap", { idA, idB }),
+
+  remove: (id: string): Promise<void> =>
+    api.delete(`/fique-por-dentro/${id}`),
 };
