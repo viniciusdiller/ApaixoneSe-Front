@@ -9,21 +9,21 @@ export const casaDeCambioApi = {
   getAll: () => apiFetch<CasaDeCambio[]>("/casa-de-cambio"),
   getById: (id: string) => apiFetch<CasaDeCambio>(`/casa-de-cambio/${id}`),
 
-  /** Cria com FormData (multipart com logo/foto) */
-  create: (data: FormData) =>
+  /** Cria via JSON — o backend usa @Body() com class-validator, sem FileInterceptor */
+  create: (data: CreateCasaDeCambioDto) =>
     apiFetch<CasaDeCambio>("/casa-de-cambio", {
       method: "POST",
-      body: data,
+      body: JSON.stringify(data),
     }),
 
-  /** Atualiza com FormData — usado nos formulários de edição */
-  update: (id: string, data: FormData) =>
+  /** Atualiza via JSON */
+  update: (id: string, data: UpdateCasaDeCambioDto) =>
     apiFetch<CasaDeCambio>(`/casa-de-cambio/${id}`, {
       method: "PUT",
-      body: data,
+      body: JSON.stringify(data),
     }),
 
-  /** Atualiza campos simples via JSON (ex: { status: "APROVADO" }) */
+  /** Atualiza campo específico (ex: status) via JSON */
   updateStatus: (id: string, data: Partial<UpdateCasaDeCambioDto>) =>
     apiFetch<CasaDeCambio>(`/casa-de-cambio/${id}`, {
       method: "PUT",

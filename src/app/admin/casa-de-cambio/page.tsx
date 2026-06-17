@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { casaDeCambioApi } from "@/lib/api";
 import type { CasaDeCambio } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -26,7 +27,10 @@ const statusClass = (s: string) =>
 export default function AdminCasaDeCambioPage() {
   const [items, setItems] = useState<CasaDeCambio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; editing: CasaDeCambio | null }>({
+  const [modal, setModal] = useState<{
+    open: boolean;
+    editing: CasaDeCambio | null;
+  }>({
     open: false,
     editing: null,
   });
@@ -34,6 +38,9 @@ export default function AdminCasaDeCambioPage() {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { user } = useAuth();
+
+  if (!user) return null;
 
   const load = () => {
     setLoading(true);
@@ -67,14 +74,17 @@ export default function AdminCasaDeCambioPage() {
     setError("");
     setSaving(true);
     try {
-      const fd = new FormData();
-      fd.append("nome", form.nome);
-      fd.append("telefone", form.telefone);
-      fd.append("endereco", form.endereco);
+      // Envia JSON puro — o backend usa @Body() com class-validator, sem FileInterceptor
+      const payload = {
+        nome: form.nome,
+        telefone: form.telefone,
+        endereco: form.endereco,
+        usuarioId: user.id,
+      };
 
       modal.editing
-        ? await casaDeCambioApi.update(modal.editing.id, fd)
-        : await casaDeCambioApi.create(fd);
+        ? await casaDeCambioApi.update(modal.editing.id, payload)
+        : await casaDeCambioApi.create(payload);
 
       closeModal();
       load();
@@ -102,7 +112,13 @@ export default function AdminCasaDeCambioPage() {
 
   const set =
     (k: keyof typeof empty) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | string) => {
+    (
+      e:
+        | React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
+        | string,
+    ) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
     };
@@ -112,15 +128,17 @@ export default function AdminCasaDeCambioPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            Casas de Câmbio
+            Casas de C&#226;mbio
           </h1>
-          <p className="text-sm text-muted-foreground">{items.length} registros</p>
+          <p className="text-sm text-muted-foreground">
+            {items.length} registros
+          </p>
         </div>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> Nova Casa de Câmbio
+          <Plus className="h-4 w-4" /> Nova Casa de C&#226;mbio
         </button>
       </div>
 
@@ -132,7 +150,7 @@ export default function AdminCasaDeCambioPage() {
           columns={[
             { key: "nome", label: "Nome" },
             { key: "telefone", label: "Telefone" },
-            { key: "endereco", label: "Endereço" },
+            { key: "endereco", label: "Endere&#231;o" },
             {
               key: "status",
               label: "Status",
@@ -167,34 +185,47 @@ export default function AdminCasaDeCambioPage() {
         />
       )}
 
-      {/* Modal Visualização */}
+      {/* Modal Visualiza&#231;&#227;o */}
       <AdminModal
-        title="Detalhes da Casa de Câmbio"
+        title="Detalhes da Casa de C&#226;mbio"
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
         {viewing && (
           <div className="space-y-3">
             <div>
-              <p className="font-display font-bold text-lg uppercase tracking-wide">{viewing.nome}</p>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>
+              <p className="font-display font-bold text-lg uppercase tracking-wide">
+                {viewing.nome}
+              </p>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}
+              >
                 {viewing.status}
               </span>
             </div>
             <ViewRow label="Telefone" value={viewing.telefone} />
-            <ViewRow label="Endereço" value={viewing.endereco} />
+            <ViewRow label="Endere&#231;o" value={viewing.endereco} />
           </div>
         )}
       </AdminModal>
 
       {/* Modal Criar/Editar */}
       <AdminModal
-        title={modal.editing ? "Editar Casa de Câmbio" : "Nova Casa de Câmbio"}
+        title={
+          modal.editing
+            ? "Editar Casa de C&#226;mbio"
+            : "Nova Casa de C&#226;mbio"
+        }
         open={modal.open}
         onClose={closeModal}
       >
         <form onSubmit={handleSave} className="space-y-4">
-          <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
+          <AdminFormField
+            label="Nome"
+            value={form.nome}
+            onChange={set("nome")}
+            required
+          />
           <AdminFormField
             label="Telefone"
             value={form.telefone}
@@ -204,7 +235,12 @@ export default function AdminCasaDeCambioPage() {
             {...numericInputProps}
             required
           />
-          <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
+          <AdminFormField
+            label="Endere&#231;o"
+            value={form.endereco}
+            onChange={set("endereco")}
+            required
+          />
 
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
@@ -238,7 +274,9 @@ function ViewRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </dt>
       <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
