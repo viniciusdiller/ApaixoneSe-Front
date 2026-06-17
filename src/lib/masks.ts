@@ -1,7 +1,6 @@
 export const onlyDigits = (value: string) => value.replace(/\D/g, "");
 
-const limit = (value: string, maxLength: number) =>
-  value.slice(0, maxLength);
+const limit = (value: string, maxLength: number) => value.slice(0, maxLength);
 
 export function maskPhone(value: string): string {
   const digits = limit(onlyDigits(value), 11);
@@ -51,5 +50,4 @@ export function maskPersonName(value: string): string {
 
 export const numericInputProps = {
   inputMode: "numeric" as const,
-  pattern: "[0-9]*",
 };
