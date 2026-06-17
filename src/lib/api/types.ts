@@ -307,6 +307,39 @@ export interface CreateCatDto {
 
 export type UpdateCatDto = Partial<CreateCatDto>;
 
+// ─── CatMovel ─────────────────────────────────────────────────────────────────
+/**
+ * Shape real retornado pelo backend em GET /cat-movel.
+ * Para derivar a mídia ativa, use catMovelMidia() de @/lib/catMovelMidia.
+ */
+export interface CatMovel {
+  id: string;
+  titulo: string;
+  descricao: string;
+  /** URL da imagem (WebP) — exclusivo com videoUrl */
+  imagemUrl?: string | null;
+  /** URL do vídeo — exclusivo com imagemUrl */
+  videoUrl?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCatMovelDto {
+  titulo: string;
+  descricao: string;
+}
+
+export type UpdateCatMovelDto = Partial<CreateCatMovelDto>;
+
+// ─── FiquePorDentro ───────────────────────────────────────────────────────────
+export interface FiquePorDentro {
+  id: string;
+  ordem: string;
+  imagemUrl: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // ─── Evento Principal ─────────────────────────────────────────────────────────
 export interface EventoPrincipal {
   id: string;

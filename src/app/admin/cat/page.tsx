@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { catApi } from "@/lib/api";
-import type { Cat } from "@/lib/api";
+import { catMovelApi } from "@/lib/api/cat-movel";
+import type { Cat, CatMovel } from "@/lib/api";
+import { catMovelMidia } from "@/lib/catMovelMidia";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
@@ -18,79 +20,38 @@ import {
   Play,
   Trash2,
   ImagePlus,
+  Save,
+  MapPin,
+  RefreshCw,
 } from "lucide-react";
 import Image from "next/image";
 
-// ─── tipos internos ───────────────────────────────────────────────────────────
+// ─── Tabs ───────────────────────────────────────────────────────────────────
+type Tab = "cat" | "cat-movel";
+const TABS: { key: Tab; label: string; emoji: string }[] = [
+  { key: "cat", label: "CAT Fixo", emoji: "🏛️" },
+  { key: "cat-movel", label: "CAT Móvel", emoji: "📍" },
+];
 
-/**
- * mode "existing": imagem já salva no servidor (não re-enviada)
- * mode "new":      arquivo recém selecionado
- * mode "deleted":  existia no servidor, foi removida pelo admin
- *                  (frontend guarda para não exibir —
- *                   o backend não tem endpoint de delete unitário,
- *                   então a exclusão efetiva ocorre quando o admin
- *                   salvar e o backend sobrescrever com as novas imagens)
- */
+// ─── tipos internos ──────────────────────────────────────────────────────────
 type ManagedImage =
   | { mode: "existing"; url: string }
   | { mode: "new"; file: File; preview: string }
   | { mode: "deleted"; url: string };
 
-// ─── buildFormData ──────────────────────────────────────────────────────────────
-
-/**
- * Monta o FormData com base no que o backend aceita:
- *   texto   → sempre enviado
- *   imagens → SOMENTE quando há arquivos novos OU houve exclusões
- *             (nesse caso enviamos todos os arquivos novos; as existentes
- *              não deletadas ficarão no banco porque o backend não as toca
- *              quando imagensUrl vier vazio)
- *   video   → SOMENTE quando o admin selecionou um novo arquivo
- *             (não enviar = manter o vídeo existente)
- *
- * NOTA sobre exclusão de imagens:
- *   O backend atual NÃO tem endpoint de exclusão unitária de imagem.
- *   Quando o admin "exclui" uma imagem existente e envia novas, o backend
- *   sobrescreve imagensUrl com as novas. Imagens existentes que não foram
- *   excluídas pelo admin continuam no banco (não são reenviadas — o
- *   backend só substitui quando recebe novos arquivos).
- *   Para exclusão unitária real, será necessário um endpoint dedicado no back.
- */
-function buildFormData(
-  texto: string,
-  images: ManagedImage[],
-  newVideo: File | null,
-): FormData {
+// ─── buildFormData (CAT Fixo) ────────────────────────────────────────────────
+function buildFormData(texto: string, images: ManagedImage[], newVideo: File | null): FormData {
   const fd = new FormData();
   fd.append("texto", texto);
-
-  // Apenas arquivos novos (não re-enviamos os existentes)
-  const newFiles = images.filter((i) => i.mode === "new") as {
-    mode: "new";
-    file: File;
-    preview: string;
-  }[];
-
+  const newFiles = images.filter((i) => i.mode === "new") as { mode: "new"; file: File; preview: string }[];
   newFiles.forEach(({ file }) => fd.append("imagens", file));
-
-  // Vídeo: só envia se o admin selecionou um novo arquivo
   if (newVideo) fd.append("video", newVideo);
-
   return fd;
 }
 
-// ─── ImageManager ─────────────────────────────────────────────────────────────
-
-function ImageManager({
-  images,
-  onChange,
-}: {
-  images: ManagedImage[];
-  onChange: (images: ManagedImage[]) => void;
-}) {
+// ─── ImageManager ────────────────────────────────────────────────────────────
+function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: (images: ManagedImage[]) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
-
   const visible = images.filter((i) => i.mode !== "deleted");
   const total = visible.length;
 
@@ -98,529 +59,434 @@ function ImageManager({
     if (!files) return;
     const added: ManagedImage[] = Array.from(files)
       .filter((f) => f.type.startsWith("image/"))
-      .map((f) => ({
-        mode: "new" as const,
-        file: f,
-        preview: URL.createObjectURL(f),
-      }));
+      .map((f) => ({ mode: "new" as const, file: f, preview: URL.createObjectURL(f) }));
     onChange([...images, ...added]);
   };
 
   const remove = (visibleIdx: number) => {
-    // Mapeia índice visível para índice real no array
     let count = 0;
     const next: ManagedImage[] = [];
-
     images.forEach((img) => {
-      if (img.mode === "deleted") {
-        next.push(img);
-        return;
-      }
-
+      if (img.mode === "deleted") { next.push(img); return; }
       if (count === visibleIdx) {
         count++;
-        if (img.mode === "new") {
-          URL.revokeObjectURL(img.preview);
-          return; // Remove completamente imagens "new"
-        }
-        // img é "existing" aqui, tem url
-        next.push({ mode: "deleted" as const, url: img.url });
-        return;
+        if (img.mode === "new") { URL.revokeObjectURL(img.preview); return; }
+        next.push({ mode: "deleted" as const, url: img.url }); return;
       }
-
       count++;
       next.push(img);
     });
-
     onChange(next);
   };
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Imagens ({total} / 10)
-        </label>
+        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imagens ({total} / 10)</label>
         {total < 10 && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="flex items-center gap-1 rounded-md border border-primary/40 bg-primary/5 px-2.5 py-1 text-xs text-primary transition hover:bg-primary/10"
-          >
+          <button type="button" onClick={() => inputRef.current?.click()} className="flex items-center gap-1 rounded-md border border-primary/40 bg-primary/5 px-2.5 py-1 text-xs text-primary transition hover:bg-primary/10">
             <ImagePlus size={13} /> Adicionar imagem
           </button>
         )}
       </div>
-
       {total === 0 ? (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-8 text-sm text-muted-foreground transition hover:border-primary hover:text-primary"
-        >
+        <button type="button" onClick={() => inputRef.current?.click()} className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-8 text-sm text-muted-foreground transition hover:border-primary hover:text-primary">
           <UploadCloud size={24} />
           <span>Clique para adicionar imagens</span>
         </button>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {visible.map((img, visIdx) => {
-            const src =
-              img.mode === "existing"
-                ? safeMediaUrl(img.url)
-                : img.mode === "new"
-                  ? img.preview
-                  : null;
+            const src = img.mode === "existing" ? safeMediaUrl(img.url) : img.mode === "new" ? img.preview : null;
             return src ? (
-              <div
-                key={visIdx}
-                className={`group relative aspect-square overflow-hidden rounded-xl border-2 ${
-                  img.mode === "new"
-                    ? "border-primary/60 ring-1 ring-primary/30"
-                    : "border-border"
-                }`}
-              >
-                <Image
-                  src={src}
-                  alt={`Imagem ${visIdx + 1}`}
-                  fill
-                  className="object-cover"
-                />
-
-                {img.mode === "new" && (
-                  <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                    NOVA
-                  </span>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => remove(visIdx)}
-                  title="Remover imagem"
-                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
-                >
+              <div key={visIdx} className={`group relative aspect-square overflow-hidden rounded-xl border-2 ${img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`}>
+                <Image src={src} alt={`Imagem ${visIdx + 1}`} fill className="object-cover" />
+                {img.mode === "new" && <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">NOVA</span>}
+                <button type="button" onClick={() => remove(visIdx)} title="Remover imagem" className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600">
                   <Trash2 size={11} />
                 </button>
-
-                <span className="absolute bottom-1 left-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
-                  {visIdx + 1}
-                </span>
+                <span className="absolute bottom-1 left-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">{visIdx + 1}</span>
               </div>
             ) : null;
           })}
-
           {total < 10 && (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 text-muted-foreground transition hover:border-primary hover:text-primary"
-            >
+            <button type="button" onClick={() => inputRef.current?.click()} className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 text-muted-foreground transition hover:border-primary hover:text-primary">
               <Plus size={20} />
             </button>
           )}
         </div>
       )}
-
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={(e) => addFiles(e.target.files)}
-      />
+      <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addFiles(e.target.files)} />
     </div>
   );
 }
 
-// ─── VideoUpload ──────────────────────────────────────────────────────────────
-
-function VideoUpload({
-  newFile,
-  existingUrl,
-  onChange,
-  onClear,
-}: {
-  newFile: File | null;
-  existingUrl?: string | null;
-  onChange: (f: File) => void;
-  onClear: () => void;
-}) {
+// ─── VideoUpload (CAT Fixo) ──────────────────────────────────────────────────
+function VideoUpload({ newFile, existingUrl, onChange, onClear }: { newFile: File | null; existingUrl?: string | null; onChange: (f: File) => void; onClear: () => void }) {
   const ref = useRef<HTMLInputElement>(null);
-  // Mostra: novo arquivo > existente no servidor > nada
-  const preview = newFile
-    ? URL.createObjectURL(newFile)
-    : safeMediaUrl(existingUrl);
+  const preview = newFile ? URL.createObjectURL(newFile) : safeMediaUrl(existingUrl);
   const hasExisting = !!existingUrl && !newFile;
-
   return (
     <div className="space-y-3">
-      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Vídeo (opcional) — MP4, MOV, WEBM
-      </label>
-
+      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vídeo (opcional) — MP4, MOV, WEBM</label>
       {preview ? (
         <div className="relative overflow-hidden rounded-xl border border-border bg-black">
           <video src={preview} controls className="max-h-48 w-full" />
-          <button
-            type="button"
-            onClick={onClear}
-            className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white hover:bg-red-600"
-          >
-            <X size={12} />
-            {hasExisting ? "Remover vídeo atual" : "Cancelar seleção"}
+          <button type="button" onClick={onClear} className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-1 text-xs text-white hover:bg-red-600">
+            <X size={12} />{hasExisting ? "Remover vídeo atual" : "Cancelar seleção"}
           </button>
-          {newFile && (
-            <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-              NOVO
-            </span>
-          )}
+          {newFile && <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">NOVO</span>}
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => ref.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-6 text-sm text-muted-foreground transition hover:border-primary hover:text-primary"
-        >
+        <button type="button" onClick={() => ref.current?.click()} className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-muted/30 py-6 text-sm text-muted-foreground transition hover:border-primary hover:text-primary">
           <Play size={24} />
-          <span>
-            {existingUrl
-              ? "Vídeo removido — clique para enviar um novo"
-              : "Clique para selecionar um vídeo"}
-          </span>
+          <span>{existingUrl ? "Vídeo removido — clique para enviar um novo" : "Clique para selecionar um vídeo"}</span>
         </button>
       )}
-
-      <input
-        ref={ref}
-        type="file"
-        accept="video/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onChange(f);
-        }}
-      />
+      <input ref={ref} type="file" accept="video/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onChange(f); }} />
     </div>
   );
 }
 
 // ─── CatThumb ────────────────────────────────────────────────────────────────
-
 function CatThumb({ cat }: { cat: Cat }) {
   const first = cat.imagensUrl?.[0];
   const src = safeMediaUrl(first);
-
-  if (src) {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-border">
-          <Image src={src} alt="thumb" fill className="object-cover" />
-        </div>
-        <span className="text-xs text-muted-foreground">
-          {cat.imagensUrl.length} imagem
-          {cat.imagensUrl.length !== 1 ? "ns" : ""}
-          {cat.videoUrl && " + vídeo"}
-        </span>
-      </div>
-    );
-  }
-
-  if (cat.videoUrl) {
-    return (
-      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-        <Video size={14} /> Vídeo
-      </span>
-    );
-  }
-
+  if (src) return (
+    <div className="flex items-center gap-2">
+      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-border"><Image src={src} alt="thumb" fill className="object-cover" /></div>
+      <span className="text-xs text-muted-foreground">{cat.imagensUrl.length} imagem{cat.imagensUrl.length !== 1 ? "ns" : ""}{cat.videoUrl && " + vídeo"}</span>
+    </div>
+  );
+  if (cat.videoUrl) return <span className="flex items-center gap-1 text-xs text-muted-foreground"><Video size={14} /> Vídeo</span>;
   return <span className="text-xs text-muted-foreground">—</span>;
 }
 
-// ─── Página principal ─────────────────────────────────────────────────────────
+// ─── Página principal ────────────────────────────────────────────────────────
+export default function AdminCatPage() {
+  const [activeTab, setActiveTab] = useState<Tab>("cat");
 
-export default function AdminCategoriasPage() {
+  // CAT Fixo
   const [items, setItems] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; editing: Cat | null }>({
-    open: false,
-    editing: null,
-  });
+  const [modal, setModal] = useState<{ open: boolean; editing: Cat | null }>({ open: false, editing: null });
   const [viewing, setViewing] = useState<Cat | null>(null);
-
-  // form state
   const [texto, setTexto] = useState("");
   const [images, setImages] = useState<ManagedImage[]>([]);
-  // newVideo: arquivo de vídeo recém selecionado
   const [newVideo, setNewVideo] = useState<File | null>(null);
-  // videoCleared: admin pediu para remover o vídeo existente (sem enviar novo)
   const [videoCleared, setVideoCleared] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const load = () => {
-    setLoading(true);
-    catApi
-      .getAll()
-      .then(setItems)
-      .finally(() => setLoading(false));
-  };
-  useEffect(load, []);
+  // CAT Móvel (singleton)
+  const [movel, setMovel] = useState<CatMovel | null>(null);
+  const [movelLoading, setMovelLoading] = useState(true);
+  const [movelSaving, setMovelSaving] = useState(false);
+  const [movelFeedback, setMovelFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [movelModal, setMovelModal] = useState(false);
+  const [movelForm, setMovelForm] = useState({ titulo: "", descricao: "" });
+  const [movelImagem, setMovelImagem] = useState<File | null>(null);
+  const [movelVideo, setMovelVideo] = useState<File | null>(null);
+  const movelImagemRef = useRef<HTMLInputElement>(null);
+  const movelVideoRef = useRef<HTMLInputElement>(null);
 
-  const resetForm = () => {
-    setTexto("");
-    setImages([]);
-    setNewVideo(null);
-    setVideoCleared(false);
-    setError("");
-  };
-
-  const openCreate = () => {
-    resetForm();
-    setModal({ open: true, editing: null });
+  const loadCat = () => { setLoading(true); catApi.getAll().then(setItems).finally(() => setLoading(false)); };
+  const loadMovel = () => {
+    setMovelLoading(true);
+    catMovelApi.get().then(setMovel).catch(() => setMovel(null)).finally(() => setMovelLoading(false));
   };
 
+  useEffect(() => { loadCat(); loadMovel(); }, []);
+
+  function movelToast(type: "success" | "error", msg: string) {
+    setMovelFeedback({ type, msg });
+    setTimeout(() => setMovelFeedback(null), 4000);
+  }
+
+  // CAT Fixo handlers
+  const resetForm = () => { setTexto(""); setImages([]); setNewVideo(null); setVideoCleared(false); setError(""); };
+  const openCreate = () => { resetForm(); setModal({ open: true, editing: null }); };
   const openEdit = (item: Cat) => {
     resetForm();
     setTexto(item.texto);
-    setImages(
-      (item.imagensUrl ?? []).map((url) => ({
-        mode: "existing" as const,
-        url,
-      })),
-    );
+    setImages((item.imagensUrl ?? []).map((url) => ({ mode: "existing" as const, url })));
     setModal({ open: true, editing: item });
   };
-
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSaving(true);
+    e.preventDefault(); setError(""); setSaving(true);
     try {
       const fd = buildFormData(texto, images, newVideo);
-      modal.editing
-        ? await catApi.update(modal.editing.id, fd)
-        : await catApi.create(fd);
-      closeModal();
-      load();
+      modal.editing ? await catApi.update(modal.editing.id, fd) : await catApi.create(fd);
+      closeModal(); loadCat();
     } catch (err: unknown) {
       let msg = "Erro ao salvar.";
-      if (err instanceof Error) {
-        try {
-          const p = JSON.parse(err.message);
-          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message;
-        } catch {
-          msg = err.message;
-        }
-      }
+      if (err instanceof Error) { try { const p = JSON.parse(err.message); msg = Array.isArray(p.message) ? p.message.join(", ") : p.message; } catch { msg = err.message; } }
       setError(msg);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (item: Cat) => {
-    if (!confirm(`Excluir este registro CAT?`)) return;
-    await catApi.remove(item.id);
-    load();
+    if (!confirm("Excluir este registro CAT?")) return;
+    await catApi.remove(item.id); loadCat();
   };
 
-  // URL do vídeo a exibir no player:
-  // - se admin selecionou novo arquivo: não mostra o antigo (será substituído)
-  // - se admin limpou sem novo: não mostra nada (será substituído após novo upload)
-  // - caso contrário: mostra o vídeo existente
-  const displayedVideoUrl =
-    videoCleared || newVideo ? null : (modal.editing?.videoUrl ?? null);
+  const displayedVideoUrl = videoCleared || newVideo ? null : (modal.editing?.videoUrl ?? null);
+
+  // CAT Móvel handlers
+  function openMovelModal() {
+    setMovelForm({ titulo: movel?.titulo ?? "", descricao: movel?.descricao ?? "" });
+    setMovelImagem(null); setMovelVideo(null); setMovelModal(true);
+  }
+
+  async function handleSaveMovel(e: React.FormEvent) {
+    e.preventDefault(); setMovelSaving(true);
+    try {
+      const fd = new FormData();
+      fd.append("titulo", movelForm.titulo);
+      fd.append("descricao", movelForm.descricao);
+      if (movelImagem) fd.append("imagem", movelImagem);
+      if (movelVideo) fd.append("video", movelVideo);
+
+      if (movel) {
+        await catMovelApi.update(fd);
+        movelToast("success", "CAT Móvel atualizado com sucesso!");
+      } else {
+        await catMovelApi.create(fd);
+        movelToast("success", "CAT Móvel configurado com sucesso!");
+      }
+      setMovelModal(false); loadMovel();
+    } catch (err: unknown) {
+      let msg = "Erro ao salvar CAT Móvel.";
+      if (err instanceof Error) { try { const p = JSON.parse(err.message); msg = Array.isArray(p.message) ? p.message.join(", ") : p.message ?? msg; } catch { msg = err.message; } }
+      movelToast("error", msg);
+    } finally { setMovelSaving(false); }
+  }
+
+  // Deriva mídia do CAT Móvel
+  const movelMidia = movel ? catMovelMidia(movel) : { url: null, type: null };
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
+    <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-primary/10 rounded-xl"><MapPin className="w-6 h-6 text-primary" /></div>
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            CAT
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Central de Atendimento ao Turista — {items.length} registros
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">CAT</h1>
+          <p className="text-sm text-muted-foreground">Gerencie o CAT Fixo e o CAT Móvel.</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" /> Novo Registro
-        </button>
       </div>
 
-      {loading ? (
-        <LoadingGrid count={3} />
-      ) : (
-        <AdminTable
-          data={items}
-          columns={[
-            {
-              key: "texto",
-              label: "Texto",
-              render: (_val, row) => (
-                <span className="line-clamp-2 max-w-sm text-sm">
-                  {row.texto}
-                </span>
-              ),
-            },
-            {
-              key: "imagensUrl",
-              label: "Mídia",
-              render: (_val, row) => <CatThumb cat={row} />,
-            },
-          ]}
-          extraActions={(row) => (
-            <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Pencil size={16} />
-              </button>
-            </>
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-muted rounded-xl w-fit">
+        {TABS.map(({ key, label, emoji }) => (
+          <button key={key} onClick={() => setActiveTab(key)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === key ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            <span>{emoji}</span>{label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── ABA: CAT FIXO ── */}
+      {activeTab === "cat" && (
+        <div>
+          <div className="mb-6 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Central de Atendimento ao Turista — {items.length} registros</p>
+            <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+              <Plus className="h-4 w-4" /> Novo Registro
+            </button>
+          </div>
+
+          {loading ? <LoadingGrid count={3} /> : (
+            <AdminTable
+              data={items}
+              columns={[
+                { key: "texto", label: "Texto", render: (_val, row) => <span className="line-clamp-2 max-w-sm text-sm">{row.texto}</span> },
+                { key: "imagensUrl", label: "Mídia", render: (_val, row) => <CatThumb cat={row} /> },
+              ]}
+              extraActions={(row) => (
+                <>
+                  <button onClick={() => setViewing(row)} title="Ver detalhes" className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Eye size={16} /></button>
+                  <button onClick={() => openEdit(row)} title="Editar" className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Pencil size={16} /></button>
+                </>
+              )}
+              onDelete={handleDelete}
+            />
           )}
-          onDelete={handleDelete}
-        />
-      )}
 
-      {/* ── Modal Visualização ── */}
-      <AdminModal
-        title="Detalhes do Registro CAT"
-        open={!!viewing}
-        onClose={() => setViewing(null)}
-      >
-        {viewing && (
-          <div className="space-y-6 text-sm">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Texto
-              </span>
-              <p className="whitespace-pre-wrap text-foreground">
-                {viewing.texto}
-              </p>
-            </div>
-
-            {viewing.imagensUrl?.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Imagens ({viewing.imagensUrl.length})
-                </span>
-                <div className="grid grid-cols-3 gap-2">
-                  {viewing.imagensUrl.map((url, i) => {
-                    const src = safeMediaUrl(url);
-                    return src ? (
-                      <div
-                        key={i}
-                        className="relative aspect-square overflow-hidden rounded-lg border border-border"
-                      >
-                        <Image
-                          src={src}
-                          alt={`Imagem ${i + 1}`}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : null;
-                  })}
+          {/* Modal Visualização */}
+          <AdminModal title="Detalhes do Registro CAT" open={!!viewing} onClose={() => setViewing(null)}>
+            {viewing && (
+              <div className="space-y-6 text-sm">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Texto</span>
+                  <p className="whitespace-pre-wrap text-foreground">{viewing.texto}</p>
                 </div>
+                {viewing.imagensUrl?.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imagens ({viewing.imagensUrl.length})</span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {viewing.imagensUrl.map((url, i) => { const src = safeMediaUrl(url); return src ? (<div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border"><Image src={src} alt={`Imagem ${i + 1}`} fill className="object-cover" /></div>) : null; })}
+                    </div>
+                  </div>
+                )}
+                {viewing.videoUrl && (() => { const src = safeMediaUrl(viewing.videoUrl!); return src ? (<div className="flex flex-col gap-2"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vídeo</span><video src={src} controls className="w-full rounded-xl border border-border bg-black" /></div>) : null; })()}
               </div>
             )}
+          </AdminModal>
 
-            {viewing.videoUrl &&
-              (() => {
-                const src = safeMediaUrl(viewing.videoUrl);
+          {/* Modal Criar/Editar */}
+          <AdminModal title={modal.editing ? "Editar CAT" : "Novo Registro CAT"} open={modal.open} onClose={closeModal}>
+            <form onSubmit={handleSave} className="space-y-5">
+              <AdminFormField label="Texto descritivo" value={texto} onChange={setTexto} multiline required />
+              <ImageManager images={images} onChange={setImages} />
+              <VideoUpload newFile={newVideo} existingUrl={displayedVideoUrl} onChange={(f) => { setNewVideo(f); setVideoCleared(false); }} onClear={() => { setNewVideo(null); setVideoCleared(true); }} />
+              {videoCleared && !newVideo && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-400">⚠️ O vídeo será mantido no servidor até você enviar um novo arquivo no lugar.</p>
+              )}
+              {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">{error}</p>}
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={closeModal} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>
+                <button type="submit" disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">{saving ? "Salvando..." : "Salvar"}</button>
+              </div>
+            </form>
+          </AdminModal>
+        </div>
+      )}
+
+      {/* ── ABA: CAT MÓVEL ── */}
+      {activeTab === "cat-movel" && (
+        <div className="space-y-4">
+          {movelFeedback && (
+            <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${
+              movelFeedback.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-red-50 text-red-800 border-red-200"
+            }`}>
+              <span>{movelFeedback.type === "success" ? "✓" : "✕"}</span>{movelFeedback.msg}
+            </div>
+          )}
+
+          {movelLoading && <div className="animate-pulse"><div className="h-40 rounded-2xl bg-muted" /></div>}
+
+          {!movelLoading && !movel && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 py-20 text-center">
+              <p className="text-4xl mb-4">📍</p>
+              <p className="text-base font-semibold text-foreground mb-1">CAT Móvel ainda não configurado</p>
+              <p className="text-sm text-muted-foreground mb-6">Clique abaixo para configurar o CAT Móvel pela primeira vez.</p>
+              <button onClick={openMovelModal} className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+                <Plus className="w-4 h-4" /> Configurar CAT Móvel
+              </button>
+            </div>
+          )}
+
+          {!movelLoading && movel && (
+            <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden">
+              {movelMidia.url && (() => {
+                const src = safeMediaUrl(movelMidia.url);
                 return src ? (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Vídeo
-                    </span>
-                    <video
-                      src={src}
-                      controls
-                      className="w-full rounded-xl border border-border bg-black"
-                    />
+                  <div className="relative aspect-[16/9] w-full bg-muted">
+                    {movelMidia.type === "video"
+                      ? <video src={src} controls className="w-full h-full object-cover" />
+                      : <Image src={src} alt={movel.titulo} fill className="object-cover" />}
                   </div>
                 ) : null;
               })()}
-          </div>
-        )}
-      </AdminModal>
-
-      {/* ── Modal Criar / Editar ── */}
-      <AdminModal
-        title={modal.editing ? "Editar CAT" : "Novo Registro CAT"}
-        open={modal.open}
-        onClose={closeModal}
-      >
-        <form onSubmit={handleSave} className="space-y-5">
-          <AdminFormField
-            label="Texto descritivo"
-            value={texto}
-            onChange={setTexto}
-            multiline
-            required
-          />
-
-          <ImageManager images={images} onChange={setImages} />
-
-          <VideoUpload
-            newFile={newVideo}
-            existingUrl={displayedVideoUrl}
-            onChange={(f) => {
-              setNewVideo(f);
-              setVideoCleared(false);
-            }}
-            onClear={() => {
-              setNewVideo(null);
-              setVideoCleared(true);
-            }}
-          />
-
-          {/* Aviso quando o admin limpou o vídeo sem enviar um novo */}
-          {videoCleared && !newVideo && (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-400">
-              ⚠️ O vídeo será mantido no servidor até você enviar um novo
-              arquivo no lugar. O backend atual não suporta remoção de vídeo sem
-              substituição.
-            </p>
+              <div className="p-6 flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-foreground mb-1">{movel.titulo}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{movel.descricao}</p>
+                  {movelMidia.type && (
+                    <div className="mt-3">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                        {movelMidia.type === "video" ? <Video size={11} /> : <ImagePlus size={11} />}
+                        {movelMidia.type === "video" ? "Vídeo" : "Imagem"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <button onClick={openMovelModal} className="shrink-0 flex items-center gap-2 border border-border hover:bg-muted px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <Pencil className="w-4 h-4" /> Editar
+                </button>
+              </div>
+            </div>
           )}
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
-              {error}
-            </p>
+          {!movelLoading && (
+            <button onClick={loadMovel} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <RefreshCw className="w-3 h-3" /> Recarregar
+            </button>
           )}
+        </div>
+      )}
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={closeModal}
-              className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {saving ? "Salvando..." : "Salvar"}
-            </button>
+      {/* ── MODAL CAT MÓVEL ── */}
+      {movelModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
+              <h2 className="text-base font-semibold">{movel ? "Editar CAT Móvel" : "Configurar CAT Móvel"}</h2>
+              <button onClick={() => setMovelModal(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"><X className="w-4 h-4" /></button>
+            </div>
+            <form onSubmit={handleSaveMovel} className="px-6 py-5 space-y-5">
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Título *</label>
+                <input value={movelForm.titulo} onChange={(e) => setMovelForm((f) => ({ ...f, titulo: e.target.value }))} required className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition" placeholder="Título do CAT Móvel" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Descrição *</label>
+                <textarea value={movelForm.descricao} onChange={(e) => setMovelForm((f) => ({ ...f, descricao: e.target.value }))} required rows={4} className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition" placeholder="Descrição do CAT Móvel" />
+              </div>
+
+              {/* Imagem */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                  Imagem <span className="normal-case font-normal text-muted-foreground/70">(substitui a atual)</span>
+                </label>
+                {movelImagem ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5">
+                    <ImagePlus className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm text-primary truncate flex-1">{movelImagem.name}</span>
+                    <button type="button" onClick={() => setMovelImagem(null)} className="text-muted-foreground hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => movelImagemRef.current?.click()} className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-border px-3 py-3 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <ImagePlus className="w-4 h-4" />
+                    {movelMidia.type === "image" ? "Trocar imagem atual" : "Selecionar imagem"}
+                  </button>
+                )}
+                <input ref={movelImagemRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setMovelImagem(f); setMovelVideo(null); } }} />
+              </div>
+
+              {/* Vídeo */}
+              <div>
+                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                  Vídeo <span className="normal-case font-normal text-muted-foreground/70">(substitui o atual)</span>
+                </label>
+                {movelVideo ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5">
+                    <Play className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm text-primary truncate flex-1">{movelVideo.name}</span>
+                    <button type="button" onClick={() => setMovelVideo(null)} className="text-muted-foreground hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => movelVideoRef.current?.click()} className="flex w-full items-center gap-2 rounded-xl border-2 border-dashed border-border px-3 py-3 text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+                    <Play className="w-4 h-4" />
+                    {movelMidia.type === "video" ? "Trocar vídeo atual" : "Selecionar vídeo"}
+                  </button>
+                )}
+                <input ref={movelVideoRef} type="file" accept="video/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setMovelVideo(f); setMovelImagem(null); } }} />
+                <p className="mt-1.5 text-xs text-muted-foreground">ℹ️ Selecione imagem <strong>ou</strong> vídeo. Enviar um substitui o outro.</p>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-1">
+                <button type="button" onClick={() => setMovelModal(false)} className="text-sm text-muted-foreground hover:text-foreground px-4 py-2 rounded-xl hover:bg-muted transition-colors">Cancelar</button>
+                <button type="submit" disabled={movelSaving} className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors">
+                  <Save className="w-4 h-4" />{movelSaving ? "Salvando..." : movel ? "Atualizar" : "Configurar"}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </AdminModal>
+        </div>
+      )}
     </div>
   );
 }
