@@ -67,14 +67,16 @@ export default function AdminCasaDeCambioPage() {
     setError("");
     setSaving(true);
     try {
-      const fd = new FormData();
-      fd.append("nome", form.nome);
-      fd.append("telefone", form.telefone);
-      fd.append("endereco", form.endereco);
+      // Envia JSON puro — o backend usa @Body() com class-validator, sem FileInterceptor
+      const payload = {
+        nome: form.nome,
+        telefone: form.telefone,
+        endereco: form.endereco,
+      };
 
       modal.editing
-        ? await casaDeCambioApi.update(modal.editing.id, fd)
-        : await casaDeCambioApi.create(fd);
+        ? await casaDeCambioApi.update(modal.editing.id, payload)
+        : await casaDeCambioApi.create(payload);
 
       closeModal();
       load();
@@ -112,7 +114,7 @@ export default function AdminCasaDeCambioPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            Casas de Câmbio
+            Casas de C&#226;mbio
           </h1>
           <p className="text-sm text-muted-foreground">{items.length} registros</p>
         </div>
@@ -120,7 +122,7 @@ export default function AdminCasaDeCambioPage() {
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> Nova Casa de Câmbio
+          <Plus className="h-4 w-4" /> Nova Casa de C&#226;mbio
         </button>
       </div>
 
@@ -132,7 +134,7 @@ export default function AdminCasaDeCambioPage() {
           columns={[
             { key: "nome", label: "Nome" },
             { key: "telefone", label: "Telefone" },
-            { key: "endereco", label: "Endereço" },
+            { key: "endereco", label: "Endere&#231;o" },
             {
               key: "status",
               label: "Status",
@@ -167,9 +169,9 @@ export default function AdminCasaDeCambioPage() {
         />
       )}
 
-      {/* Modal Visualização */}
+      {/* Modal Visualiza&#231;&#227;o */}
       <AdminModal
-        title="Detalhes da Casa de Câmbio"
+        title="Detalhes da Casa de C&#226;mbio"
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
@@ -182,14 +184,14 @@ export default function AdminCasaDeCambioPage() {
               </span>
             </div>
             <ViewRow label="Telefone" value={viewing.telefone} />
-            <ViewRow label="Endereço" value={viewing.endereco} />
+            <ViewRow label="Endere&#231;o" value={viewing.endereco} />
           </div>
         )}
       </AdminModal>
 
       {/* Modal Criar/Editar */}
       <AdminModal
-        title={modal.editing ? "Editar Casa de Câmbio" : "Nova Casa de Câmbio"}
+        title={modal.editing ? "Editar Casa de C&#226;mbio" : "Nova Casa de C&#226;mbio"}
         open={modal.open}
         onClose={closeModal}
       >
@@ -204,7 +206,7 @@ export default function AdminCasaDeCambioPage() {
             {...numericInputProps}
             required
           />
-          <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
+          <AdminFormField label="Endere&#231;o" value={form.endereco} onChange={set("endereco")} required />
 
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
