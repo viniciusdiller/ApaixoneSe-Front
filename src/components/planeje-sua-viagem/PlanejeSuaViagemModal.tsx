@@ -15,7 +15,7 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     },
-    [onClose]
+    [onClose],
   );
 
   useEffect(() => {
@@ -61,10 +61,10 @@ export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className={
               "fixed z-[70] flex flex-col overflow-hidden border border-border bg-background shadow-2xl " +
-              // Mobile
+              // Mobile (inset-x-0 aplica left: 0 e right: 0 globalmente)
               "inset-x-0 bottom-0 top-[64px] rounded-t-2xl " +
-              // Desktop
-              "md:bottom-8 md:left-1/2 md:right-auto md:top-[88px] md:w-full md:max-w-2xl md:-translate-x-1/2 md:rounded-2xl"
+              // Desktop: Removemos o left/translate e adicionamos o mx-auto
+              "md:bottom-8 md:top-[88px] md:w-full md:max-w-2xl md:mx-auto md:rounded-2xl"
             }
           >
             {/* Cabeçalho fixo */}
