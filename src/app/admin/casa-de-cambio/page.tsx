@@ -27,7 +27,10 @@ const statusClass = (s: string) =>
 export default function AdminCasaDeCambioPage() {
   const [items, setItems] = useState<CasaDeCambio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; editing: CasaDeCambio | null }>({
+  const [modal, setModal] = useState<{
+    open: boolean;
+    editing: CasaDeCambio | null;
+  }>({
     open: false,
     editing: null,
   });
@@ -109,7 +112,13 @@ export default function AdminCasaDeCambioPage() {
 
   const set =
     (k: keyof typeof empty) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | string) => {
+    (
+      e:
+        | React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
+        | string,
+    ) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
     };
@@ -121,7 +130,9 @@ export default function AdminCasaDeCambioPage() {
           <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
             Casas de C&#226;mbio
           </h1>
-          <p className="text-sm text-muted-foreground">{items.length} registros</p>
+          <p className="text-sm text-muted-foreground">
+            {items.length} registros
+          </p>
         </div>
         <button
           onClick={openCreate}
@@ -183,8 +194,12 @@ export default function AdminCasaDeCambioPage() {
         {viewing && (
           <div className="space-y-3">
             <div>
-              <p className="font-display font-bold text-lg uppercase tracking-wide">{viewing.nome}</p>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>
+              <p className="font-display font-bold text-lg uppercase tracking-wide">
+                {viewing.nome}
+              </p>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}
+              >
                 {viewing.status}
               </span>
             </div>
@@ -196,12 +211,21 @@ export default function AdminCasaDeCambioPage() {
 
       {/* Modal Criar/Editar */}
       <AdminModal
-        title={modal.editing ? "Editar Casa de C&#226;mbio" : "Nova Casa de C&#226;mbio"}
+        title={
+          modal.editing
+            ? "Editar Casa de C&#226;mbio"
+            : "Nova Casa de C&#226;mbio"
+        }
         open={modal.open}
         onClose={closeModal}
       >
         <form onSubmit={handleSave} className="space-y-4">
-          <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
+          <AdminFormField
+            label="Nome"
+            value={form.nome}
+            onChange={set("nome")}
+            required
+          />
           <AdminFormField
             label="Telefone"
             value={form.telefone}
@@ -211,7 +235,12 @@ export default function AdminCasaDeCambioPage() {
             {...numericInputProps}
             required
           />
-          <AdminFormField label="Endere&#231;o" value={form.endereco} onChange={set("endereco")} required />
+          <AdminFormField
+            label="Endere&#231;o"
+            value={form.endereco}
+            onChange={set("endereco")}
+            required
+          />
 
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
@@ -245,7 +274,9 @@ function ViewRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </dt>
       <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
