@@ -13,6 +13,7 @@ import {
   Trash2,
   UploadCloud,
   X,
+  ArrowLeftRight,
 } from "lucide-react";
 import { fiquePorDentroApi } from "@/lib/api/fique-por-dentro";
 import type { FiquePorDentro } from "@/lib/api/types";
@@ -20,7 +21,6 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 
-// ─── tipos internos ────────────────────────────────────────────────────────────
 type ModalMode = "create" | "edit";
 
 interface FormState {
@@ -30,7 +30,7 @@ interface FormState {
 
 const EMPTY_FORM: FormState = { ordem: "", file: null };
 
-// ─── Upload de imagem simples ──────────────────────────────────────────────────
+// ─── Upload de imagem simples ────────────────────────────────────────────────
 function SingleImageUpload({
   file,
   existingUrl,
@@ -48,7 +48,7 @@ function SingleImageUpload({
   return (
     <div className="space-y-2">
       <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        Imagem {file || existingUrl ? "" : "*"}
+        Imagem
       </label>
       {previewSrc ? (
         <div className="relative overflow-hidden rounded-xl border border-border">
@@ -102,14 +102,18 @@ export default function AdminFiquePorDentroPage() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const [modal, setModal] = useState<{ open: boolean; mode: ModalMode; editing: FiquePorDentro | null }>({
-    open: false,
-    mode: "create",
-    editing: null,
-  });
+  const [modal, setModal] = useState<{
+    open: boolean;
+    mode: ModalMode;
+    editing: FiquePorDentro | null;
+  }>({ open: false, mode: "create", editing: null });
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  // ─── carrega ──────────────────────────────────────────────────────────────────
+  // Qual item será afetado pelo swap (posição já ocupada)
+  const swapTarget = items.find(
+    (it) => it.ordem === form.ordem && it.id !== modal.editing?.id
+  ) ?? null;
+
   const load = () => {
     setLoading(true);
     fiquePorDentroApi
@@ -123,13 +127,11 @@ export default function AdminFiquePorDentroPage() {
 
   useEffect(() => { load(); }, []);
 
-  // ─── toast ────────────────────────────────────────────────────────────────────
   function toast(type: "success" | "error", msg: string) {
     setFeedback({ type, msg });
     setTimeout(() => setFeedback(null), 4000);
   }
 
-  // ─── handlers ─────────────────────────────────────────────────────────────────
   function openCreate() {
     setForm(EMPTY_FORM);
     setError("");
@@ -150,28 +152,53 @@ export default function AdminFiquePorDentroPage() {
     e.preventDefault();
     setError("");
 
-    if (!form.ordem.trim()) { setError("Informe a ordem."); return; }
+    if (!form.ordem.trim()) { setError("Selecione uma posição."); return; }
     if (modal.mode === "create" && !form.file) { setError("Selecione uma imagem."); return; }
 
     setSaving(true);
     try {
-      const fd = new FormData();
-      fd.append("ordem", form.ordem.trim());
-      if (form.file) fd.append("imagem", form.file);
-
       if (modal.mode === "create") {
+        const fd = new FormData();
+        fd.append("ordem", form.ordem);
+        if (form.file) fd.append("imagem", form.file);
         await fiquePorDentroApi.create(fd);
         toast("success", "Imagem adicionada com sucesso!");
+
       } else if (modal.editing) {
+        const ordemOriginal = modal.editing.ordem;
+        const ordemNova = form.ordem;
+        const precisaSwap = swapTarget !== null;
+
+        if (precisaSwap && swapTarget) {
+          // Passo 1: move o item conflitante para a posição original do item editado
+          const fdSwap = new FormData();
+          fdSwap.append("ordem", ordemOriginal);
+          await fiquePorDentroApi.update(swapTarget.id, fdSwap);
+        }
+
+        // Passo 2: atualiza o item editado com a nova ordem (e imagem, se houver)
+        const fd = new FormData();
+        fd.append("ordem", ordemNova);
+        if (form.file) fd.append("imagem", form.file);
         await fiquePorDentroApi.update(modal.editing.id, fd);
-        toast("success", "Imagem atualizada!");
+
+        toast(
+          "success",
+          precisaSwap
+            ? `Posições ${ordemOriginal} e ${ordemNova} trocadas com sucesso!`
+            : "Imagem atualizada!"
+        );
       }
+
       closeModal();
       load();
     } catch (err: unknown) {
       let msg = "Erro ao salvar.";
       if (err instanceof Error) {
-        try { const p = JSON.parse(err.message); msg = Array.isArray(p.message) ? p.message.join(", ") : p.message ?? msg; } catch { msg = err.message; }
+        try {
+          const p = JSON.parse(err.message);
+          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message ?? msg;
+        } catch { msg = err.message; }
       }
       setError(msg);
     } finally {
@@ -180,7 +207,7 @@ export default function AdminFiquePorDentroPage() {
   }
 
   async function handleDelete(item: FiquePorDentro) {
-    if (!confirm(`Excluir a imagem de ordem "${item.ordem}"?`)) return;
+    if (!confirm(`Excluir a imagem da posição ${item.ordem}?`)) return;
     try {
       await fiquePorDentroApi.remove(item.id);
       toast("success", "Imagem removida.");
@@ -190,7 +217,6 @@ export default function AdminFiquePorDentroPage() {
     }
   }
 
-  // ─── render ───────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
       {/* Header */}
@@ -201,20 +227,18 @@ export default function AdminFiquePorDentroPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Fique Por Dentro</h1>
           <p className="text-sm text-muted-foreground">
-            Gerencie as imagens exibidas na seção &quot;Fique Por Dentro&quot; da página inicial (máx. 5 imagens, ordens 1–5).
+            Gerencie as imagens da seção &quot;Fique Por Dentro&quot; da home (máx. 5 imagens).
           </p>
         </div>
       </div>
 
-      {/* Feedback toast */}
+      {/* Feedback */}
       {feedback && (
-        <div
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${
-            feedback.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-red-50 text-red-800 border-red-200"
-          }`}
-        >
+        <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${
+          feedback.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+            : "bg-red-50 text-red-800 border-red-200"
+        }`}>
           <span>{feedback.type === "success" ? "✓" : "✕"}</span>
           {feedback.msg}
         </div>
@@ -242,19 +266,19 @@ export default function AdminFiquePorDentroPage() {
         </div>
       </div>
 
-      {/* Grid de cards */}
+      {/* Grid */}
       {loading ? (
         <LoadingGrid count={4} />
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 py-20 text-center">
           <p className="text-4xl mb-4">🖼️</p>
-          <p className="text-base font-semibold text-foreground mb-1">Nenhuma imagem cadastrada</p>
+          <p className="text-base font-semibold mb-1">Nenhuma imagem cadastrada</p>
           <p className="text-sm text-muted-foreground mb-6">
-            Adicione até 5 imagens para exibir na seção &quot;Fique Por Dentro&quot; da home.
+            Adicione até 5 imagens para a seção &quot;Fique Por Dentro&quot;.
           </p>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" /> Adicionar Imagem
           </button>
@@ -274,16 +298,14 @@ export default function AdminFiquePorDentroPage() {
                 {src && (
                   <Image
                     src={src}
-                    alt={`Fique Por Dentro ordem ${item.ordem}`}
+                    alt={`Posição ${item.ordem}`}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 )}
-                {/* Badge de ordem */}
                 <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white">
                   #{item.ordem}
                 </span>
-                {/* Overlay de ações */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                   <button
                     onClick={() => openEdit(item)}
@@ -304,17 +326,18 @@ export default function AdminFiquePorDentroPage() {
         </div>
       )}
 
-      {/* Modal Criar/Editar */}
+      {/* Modal */}
       <AdminModal
         title={modal.mode === "create" ? "Nova Imagem" : "Editar Imagem"}
         open={modal.open}
         onClose={closeModal}
       >
         <form onSubmit={handleSave} className="space-y-5">
-          {/* Campo ordem */}
+
+          {/* Campo posição */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-              Ordem *
+              Posição no carrossel *
             </label>
             <select
               value={form.ordem}
@@ -324,22 +347,32 @@ export default function AdminFiquePorDentroPage() {
             >
               <option value="">Selecione uma posição…</option>
               {["1", "2", "3", "4", "5"].map((v) => {
-                const ocupada = items.some(
+                const ocupante = items.find(
                   (it) => it.ordem === v && it.id !== modal.editing?.id
                 );
+                const isAtual = modal.editing?.ordem === v;
                 return (
-                  <option key={v} value={v} disabled={ocupada}>
-                    Posição {v}{ocupada ? " (ocupada)" : ""}
+                  <option key={v} value={v}>
+                    Posição {v}
+                    {isAtual ? " (atual)" : ocupante ? " ↔ trocar com esta" : " (livre)"}
                   </option>
                 );
               })}
             </select>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Define onde esta imagem aparece no carrossel. Posições já ocupadas estão desabilitadas.
-            </p>
+
+            {/* Aviso de swap */}
+            {swapTarget && (
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+                <ArrowLeftRight size={13} className="shrink-0" />
+                <span>
+                  A posição {form.ordem} está ocupada. Ao salvar, as posições{" "}
+                  <strong>{modal.editing?.ordem}</strong> e <strong>{form.ordem}</strong> serão trocadas automaticamente.
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Upload de imagem */}
+          {/* Upload */}
           <SingleImageUpload
             file={form.file}
             existingUrl={modal.mode === "edit" ? modal.editing?.imagemUrl : null}
@@ -368,6 +401,8 @@ export default function AdminFiquePorDentroPage() {
             >
               {saving ? (
                 <><Loader2 size={14} className="animate-spin" /> Salvando...</>
+              ) : swapTarget ? (
+                <><ArrowLeftRight size={14} /> Trocar Posições</>
               ) : (
                 <><Save size={14} /> Salvar</>
               )}
