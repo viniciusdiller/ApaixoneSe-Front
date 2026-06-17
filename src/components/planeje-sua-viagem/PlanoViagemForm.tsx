@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
 import type { CreatePlanoViagemDto, PlanoViagem } from "@/lib/api/types";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/context/AuthContext";
 
 interface Props {
   /** Plano a ser editado. Undefined = criar novo */

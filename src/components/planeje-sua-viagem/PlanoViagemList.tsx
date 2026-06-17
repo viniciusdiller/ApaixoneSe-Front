@@ -5,7 +5,7 @@ import { Plus, Loader2, Map } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
 import type { PlanoViagem } from "@/lib/api/types";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/context/AuthContext";
 import { PlanoViagemCard } from "./PlanoViagemCard";
 import { PlanoViagemForm } from "./PlanoViagemForm";
 
