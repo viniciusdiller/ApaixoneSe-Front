@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { CalendarDays, Loader2 } from "lucide-react";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
-import type { CreatePlanoViagemDto, PlanoViagem } from "@/lib/api/types";
-import { useAuth } from "@/context/AuthContext";
+import type { PlanoViagem } from "@/lib/api/types";
 
 interface Props {
   /** Plano a ser editado. Undefined = criar novo */
@@ -14,8 +13,6 @@ interface Props {
 }
 
 export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
-  const { user } = useAuth();
-
   const [titulo, setTitulo] = useState(plano?.titulo ?? "");
   const [dataInicio, setDataInicio] = useState(
     plano?.dataInicio?.slice(0, 10) ?? ""
@@ -26,21 +23,16 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
     setErro(null);
     setLoading(true);
 
     try {
-      const dto: CreatePlanoViagemDto = {
-        titulo,
-        dataInicio,
-        dataFim,
-        usuarioId: user.id,
-      };
+      // O backend extrai o usuário do JWT — não enviar usuarioId no body
+      const dto = { titulo, dataInicio, dataFim };
 
       const resultado = plano
         ? await planoViagemApi.update(plano.id, dto)
-        : await planoViagemApi.create(dto);
+        : await planoViagemApi.create(dto as never);
 
       onSuccess(resultado);
     } catch {

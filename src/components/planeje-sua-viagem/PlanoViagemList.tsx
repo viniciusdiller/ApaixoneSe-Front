@@ -22,9 +22,7 @@ export function PlanoViagemList() {
     }
     planoViagemApi
       .getAll()
-      .then((todos) =>
-        setPlanos(todos.filter((p) => p.usuarioId === user.id))
-      )
+      .then(setPlanos)
       .catch(() => setPlanos([]))
       .finally(() => setLoading(false));
   }, [user]);
