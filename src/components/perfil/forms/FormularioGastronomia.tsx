@@ -1,49 +1,80 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { gastronomiaApi } from "@/lib/api";
-import { AdminFormField } from "@/components/admin/AdminFormField";
+import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { FileText, ExternalLink } from "lucide-react";
 
-// Suas interfaces para saber se é criação ou edição
 interface FormularioGastronomiaProps {
   modo: "criar" | "editar";
   estabelecimentoId?: string;
-  dadosIniciais?: any; // Aqui você passaria o objeto Gastronomia se fosse editar
+  dadosIniciais?: any; // Esse cara é o equivalente ao "item" que você passava no openEdit
 }
+
+// 1. OBJETO VAZIO (Exatamente como você tem no Admin)
+const emptyForm = {
+  nome: "",
+  telefone: "",
+  endereco: "",
+  especialidade: "",
+  cnpj: "",
+  responsavelNome: "",
+  responsavelCpf: "",
+  instagram: "",
+  logoUrl: "",
+};
 
 export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }: FormularioGastronomiaProps) {
   const router = useRouter();
   
-  // 1. REAPROVEITADO: O estado do formulário (já puxando os dados caso seja edição)
-  const [form, setForm] = useState({
-    nome: dadosIniciais?.nome || "",
-    telefone: dadosIniciais?.telefone || "",
-    endereco: dadosIniciais?.endereco || "",
-    especialidade: dadosIniciais?.especialidade || "",
-    cnpj: dadosIniciais?.cnpj || "",
-    responsavelNome: dadosIniciais?.responsavelNome || "",
-    responsavelCpf: dadosIniciais?.responsavelCpf || "",
-    instagram: dadosIniciais?.instagram || "",
-    logoUrl: dadosIniciais?.logoUrl || "",
-  });
-
+  const [form, setForm] = useState(emptyForm);
   const [files, setFiles] = useState<{ logo?: File; comprovante?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
 
-  // 2. REAPROVEITADO: O set() e setField() que você já usava
+  // =====================================================================
+  // 2. A MÁGICA DO openEdit e openCreate (Adaptada para a Página)
+  // Como não temos botão de abrir modal, o React usa o useEffect para
+  // rodar essa lógica assim que a página carrega.
+  // =====================================================================
+  useEffect(() => {
+    if (modo === "editar" && dadosIniciais) {
+      // ISSO AQUI É O SEU openEdit() LITERALMENTE COPIADO!
+      setForm({
+        nome: dadosIniciais.nome,
+        telefone: dadosIniciais.telefone,
+        endereco: dadosIniciais.endereco,
+        especialidade: dadosIniciais.especialidade ?? "",
+        cnpj: dadosIniciais.cnpj,
+        responsavelNome: dadosIniciais.responsavelNome,
+        responsavelCpf: dadosIniciais.responsavelCpf,
+        instagram: dadosIniciais.instagram ?? "",
+        logoUrl: dadosIniciais.logoUrl ?? "",
+        // Nota: usuarioId, validade e documentoPdfUrl não precisam ir pro 'form' 
+        // pois o usuario comum não edita validade/dono.
+      });
+    } else {
+      // ISSO AQUI É O SEU openCreate()
+      setForm(emptyForm);
+      setFiles({});
+    }
+  }, [modo, dadosIniciais]);
+
+
+  // Funções de preencher input iguais as do Admin
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | string) => {
     const value = typeof e === "string" ? e : e.target.value;
     setForm((prev) => ({ ...prev, [k]: value }));
   };
   const setField = (k: string, value: string) => setForm((prev) => ({ ...prev, [k]: value }));
 
-  // 3. ADAPTADO: O seu handleSave limpo (sem validade e sem closeModal)
+  // =====================================================================
+  // 3. SEU handleSave EXATAMENTE COM O MESMO IF/ELSE (Sem a validade)
+  // =====================================================================
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -62,16 +93,17 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
+      // SUA LÓGICA DE EDITAR OU CRIAR AQUI!
       if (modo === "editar" && estabelecimentoId) {
         await gastronomiaApi.update(estabelecimentoId, fd);
+        // Não chamamos updateStatus(validade) pois isso é dever do admin
         alert("Atualizado com sucesso!");
       } else {
         await gastronomiaApi.create(fd);
         alert("Enviado para análise com sucesso!");
       }
       
-      // Redireciona o usuário para o perfil dele
-      router.push("/perfil"); 
+      router.push("/perfil/parcerias"); 
     } catch (err: unknown) {
       try {
         const p = JSON.parse((err as Error).message);
@@ -88,34 +120,31 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
   const comprovantePreviewUrl = files.comprovante ? URL.createObjectURL(files.comprovante) : safeMediaUrl(comprovanteExistente);
 
   return (
-    // Em vez de estar dentro de um <AdminModal>, é só uma <div> normal na página
     <div className="max-w-2xl mx-auto p-6 bg-card rounded-xl border border-border shadow-sm">
       <h2 className="text-2xl font-bold mb-6">
         {modo === "criar" ? "Cadastrar Novo Estabelecimento" : "Editar Estabelecimento"}
       </h2>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* 4. REAPROVEITADO: A grade exata de inputs que você usou no Admin */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
-          <AdminFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
+          <PerfilFormField label="Nome" value={form.nome} onChange={set("nome")} required />
+          <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
         </div>
         
-        <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
+        <PerfilFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AdminFormField label="Especialidade" value={form.especialidade} onChange={set("especialidade")} />
-          <AdminFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} required />
+          <PerfilFormField label="Especialidade" value={form.especialidade} onChange={set("especialidade")} />
+          <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} required />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AdminFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} required />
-          <AdminFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} required />
+          <PerfilFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} required />
+          <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} required />
         </div>
         
-        <AdminFormField label="Instagram" value={form.instagram} onChange={set("instagram")} />
+        <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} />
 
-        {/* Upload da Logo */}
         <FileUploadField
           label="Logo do Estabelecimento"
           accept="image"
@@ -132,7 +161,6 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
           }}
         />
 
-        {/* Upload do Comprovante (Copiado do seu código, mas sem a parte da data de validade) */}
         <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <FileText size={13} /> Comprovante (PDF ou Imagem)
@@ -166,7 +194,7 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
         {error && <p className="text-sm text-red-500">{error}</p>}
         
         <div className="flex justify-end gap-3 pt-4">
-          <button type="button" onClick={() => router.push("/perfil")} className="px-4 py-2 text-sm border rounded-md">
+          <button type="button" onClick={() => router.back()} className="px-4 py-2 text-sm border rounded-md">
             Cancelar
           </button>
           <button type="submit" disabled={saving} className="px-4 py-2 text-sm text-white bg-primary rounded-md disabled:opacity-50">

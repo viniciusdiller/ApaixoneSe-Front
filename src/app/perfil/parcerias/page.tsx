@@ -29,14 +29,14 @@ export default function NovoEstabelecimentoPage() {
         {/* Cartões de Escolha usando nosso Componente */}
         <div className="grid gap-6 sm:grid-cols-2">
           <CategoriaCard
-            href="/perfil/novo-estabelecimento/hospedagem"
+            href="/perfil/parcerias/hospedagem/novo"
             titulo="Hospedagem"
             descricao="Pousadas, hotéis, hostels, campings e casas de temporada."
             Icone={Bed}
           />
 
           <CategoriaCard
-            href="/perfil/novo-estabelecimento/gastronomia"
+            href="/perfil/parcerias/gastronomia/novo"
             titulo="Gastronomia"
             descricao="Restaurantes, bares, quiosques, lanchonetes e cafés."
             Icone={Utensils}

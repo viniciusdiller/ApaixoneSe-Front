@@ -271,7 +271,7 @@ export default function PerfilPage() {
                   Cadastre sua hospedagem ou restaurante e torne-se um Parceiro!
                 </p>
                 <Link
-                  href="/perfil/novo-estabelecimento"
+                  href="/perfil/parcerias"
                   className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
                 >
                   Cadastrar Negócio
