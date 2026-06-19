@@ -34,16 +34,18 @@ export default function PaginaGastronomia({ params }: { params: { id?: string } 
 
   // Renderiza o nosso Componente Inteligente!
   return (
-    <div className="p-4 md:p-8">
-      {isNovo ? (
-        <FormularioGastronomia modo="criar" />
-      ) : (
-        <FormularioGastronomia 
-          modo="editar" 
-          estabelecimentoId={idDaUrl} 
-          dadosIniciais={dados} 
-        />
-      )}
-    </div>
+    <main className="min-h-screen bg-background pt-32 pb-16">
+      <div className="container mx-auto px-4">
+        {isNovo ? (
+          <FormularioGastronomia modo="criar" />
+        ) : (
+          <FormularioGastronomia 
+            modo="editar" 
+            estabelecimentoId={idDaUrl} 
+            dadosIniciais={dados} 
+          />
+        )}
+      </div>
+    </main>
   );
 }

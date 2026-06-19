@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { ArrowLeft, Bed, Utensils } from "lucide-react";
-import { CategoriaCard } from "@/components/perfil/CategoriaCard"; // Importando o novo componente!
+import { CategoriaCard } from "@/components/perfil/CategoriaCard"; 
 
-export default function NovoEstabelecimentoPage() {
+export default function ParceriasPage() {
   return (
     <main className="min-h-screen bg-background pb-16 pt-32">
       <div className="container mx-auto max-w-4xl px-4">
@@ -22,11 +22,11 @@ export default function NovoEstabelecimentoPage() {
             Cadastrar Negócio
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Escolha a categoria que melhor descreve o seu estabelecimento para começarmos.
+            Escolha a categoria que melhor descreve o seu negócio para começarmos.
           </p>
         </div>
 
-        {/* Cartões de Escolha usando nosso Componente */}
+        {/* Cartões de Escolha */}
         <div className="grid gap-6 sm:grid-cols-2">
           <CategoriaCard
             href="/perfil/parcerias/hospedagem/novo"
