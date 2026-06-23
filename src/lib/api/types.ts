@@ -92,6 +92,7 @@ export interface Evento {
   descricao: string;
   data: string;
   local: string;
+  fotoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -101,6 +102,7 @@ export interface CreateEventoDto {
   descricao: string;
   data: string;
   local: string;
+  fotoUrl?: string;
 }
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;
