@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import { hospedagemApi, gastronomiaApi } from "@/lib/api"; // <-- Importamos gastronomiaApi aqui!
+import { hospedagemApi, gastronomiaApi } from "@/lib/api"; // APIs importadas
 import {
   User,
   Building2,
   Pencil,
-  Trash2,
   LogOut,
   ShieldCheck,
   Store,
@@ -18,14 +17,14 @@ import {
   Phone,
 } from "lucide-react";
 
-// Tipo unificado para listar tudo na mesma tela
+// 1. Tipo unificado usando "categoria"
 type Negocio = {
   id: string;
   nome: string;
   endereco?: string;
   telefone?: string;
   logoUrl?: string;
-  tipo: "hospedagem" | "gastronomia"; // Ajuda a saber pra qual página o botão editar vai levar
+  categoria: "hospedagem" | "gastronomia" | "servico"; // Limpo e escalável!
 };
 
 export default function PerfilPage() {
@@ -46,21 +45,21 @@ export default function PerfilPage() {
     
     setLoadingEstabs(true);
     
-    // Busca as Hospedagens e as Gastronomias ao mesmo tempo!
+    // Busca as Hospedagens e as Gastronomias ao mesmo tempo
     Promise.all([
       hospedagemApi.getAll().catch(() => []),
       gastronomiaApi.getAll().catch(() => [])
     ])
       .then(([hospedagensData, gastronomiasData]) => {
-        // Filtra e formata as hospedagens
+        // Filtra e injeta a categoria
         const minhasHospedagens: Negocio[] = hospedagensData
           .filter((h: any) => String(h.usuarioId) === String(user.id))
-          .map((h: any) => ({ ...h, tipo: "hospedagem" }));
+          .map((h: any) => ({ ...h, categoria: "hospedagem" }));
 
-        // Filtra e formata as gastronomias
+        // Filtra e injeta a categoria
         const minhasGastronomias: Negocio[] = gastronomiasData
           .filter((g: any) => String(g.usuarioId) === String(user.id))
-          .map((g: any) => ({ ...g, tipo: "gastronomia" }));
+          .map((g: any) => ({ ...g, categoria: "gastronomia" }));
 
         // Junta tudo numa lista só
         setNegocios([...minhasHospedagens, ...minhasGastronomias]);
@@ -73,24 +72,6 @@ export default function PerfilPage() {
     logout();
     router.push("/");
   }
-
-  const handleDelete = async (item: Negocio) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
-
-    try {
-      // Deleta da API correta dependendo do tipo
-      if (item.tipo === "hospedagem") {
-        await hospedagemApi.delete(item.id);
-      } else {
-        await gastronomiaApi.delete(item.id);
-      }
-      
-      // Remove da tela
-      setNegocios((prev) => prev.filter((x) => x.id !== item.id));
-    } catch {
-      alert("Erro ao excluir.");
-    }
-  };
 
   if (isLoading || !user) {
     return (
@@ -194,7 +175,7 @@ export default function PerfilPage() {
                   Nenhum negócio cadastrado
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Suas hospedagens, restaurantes e serviços aparecerão aqui.
+                  Suas Parcerias aparecerão aqui.
                 </p>
               </div>
             ) : (
@@ -227,7 +208,7 @@ export default function PerfilPage() {
                           {item.nome}
                         </p>
                         <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                          {item.tipo}
+                          {item.categoria}
                         </span>
                       </div>
                       
@@ -248,20 +229,13 @@ export default function PerfilPage() {
                     {/* Ações */}
                     <div className="flex shrink-0 items-center gap-2">
                       <Link
-                        // MÁGICA AQUI: O botão leva para a rota de edição que criamos!
-                        href={`/perfil/parcerias/${item.tipo}/${item.id}`}
-                        title="Editar"
+                        // O botão leva para a rota de edição usando a categoria
+                        href={`/perfil/parcerias/${item.categoria}/${item.id}`}
+                        title="Gerenciar"
                         className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-primary hover:text-primary"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                       </Link>
-                      <button
-                        title="Excluir"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-destructive hover:text-destructive"
-                        onClick={() => handleDelete(item)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
                     </div>
                   </li>
                 ))}
