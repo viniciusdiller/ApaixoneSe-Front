@@ -6,6 +6,8 @@ import type { Evento, CreateEventoDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { FileUploadField } from "@/components/admin/FileUploadField";
+import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
@@ -14,6 +16,7 @@ const empty: CreateEventoDto = {
   descricao: "",
   data: "",
   local: "",
+  fotoUrl: "",
 };
 
 export default function AdminEventosPage() {
@@ -24,6 +27,7 @@ export default function AdminEventosPage() {
   );
   const [viewing, setViewing] = useState<Evento | null>(null);
   const [form, setForm] = useState<CreateEventoDto>(empty);
+  const [files, setFiles] = useState<{ foto?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,6 +42,7 @@ export default function AdminEventosPage() {
 
   const openCreate = () => {
     setForm(empty);
+    setFiles({});
     setError("");
     setModal({ open: true, editing: null });
   };
@@ -47,7 +52,9 @@ export default function AdminEventosPage() {
       descricao: item.descricao,
       data: item.data?.slice(0, 16) ?? "",
       local: item.local,
+      fotoUrl: item.fotoUrl ?? "",
     });
+    setFiles({});
     setError("");
     setModal({ open: true, editing: item });
   };
@@ -58,9 +65,16 @@ export default function AdminEventosPage() {
     setError("");
     setSaving(true);
     try {
+      const formData = new FormData();
+      formData.append("titulo", form.titulo);
+      formData.append("descricao", form.descricao);
+      formData.append("data", form.data);
+      formData.append("local", form.local);
+      if (files.foto) formData.append("foto", files.foto);
+
       modal.editing
-        ? await eventosApi.update(modal.editing.id, form)
-        : await eventosApi.create(form);
+        ? await eventosApi.update(modal.editing.id, formData)
+        : await eventosApi.create(formData);
       closeModal();
       load();
     } catch (err: unknown) {
@@ -94,6 +108,9 @@ export default function AdminEventosPage() {
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
+  const setField = (k: keyof CreateEventoDto, value: string) =>
+    setForm((prev) => ({ ...prev, [k]: value }));
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -119,6 +136,13 @@ export default function AdminEventosPage() {
         <AdminTable
           data={items}
           columns={[
+            {
+              key: "fotoUrl",
+              label: "Foto",
+              render: (_val, row) => (
+                <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
+              ),
+            },
             { key: "titulo", label: "Título" },
             { key: "local", label: "Local" },
             {
@@ -158,6 +182,14 @@ export default function AdminEventosPage() {
       >
         {viewing && (
           <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Foto
+              </dt>
+              <dd className="pt-1">
+                <MediaPreview url={viewing.fotoUrl ?? ""} label={viewing.titulo} />
+              </dd>
+            </div>
             <ViewRow label="Título" value={viewing.titulo} />
             <ViewRow label="Local" value={viewing.local} />
             <ViewRow
@@ -201,6 +233,20 @@ export default function AdminEventosPage() {
             onChange={set("descricao")}
             multiline
             required
+          />
+          <FileUploadField
+            label="Foto do Evento"
+            accept="image"
+            currentUrl={form.fotoUrl ?? ""}
+            hint="PNG, JPG ou WEBP"
+            onFileChange={(url, file) => {
+              setField("fotoUrl", url);
+              setFiles((prev) => ({ ...prev, foto: file }));
+            }}
+            onClear={() => {
+              setField("fotoUrl", "");
+              setFiles((prev) => ({ ...prev, foto: undefined }));
+            }}
           />
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">

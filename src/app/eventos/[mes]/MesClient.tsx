@@ -1,10 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { ArrowLeft, CalendarDays, MapPin, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  MapPin,
+  AlertCircle,
+  X,
+} from "lucide-react";
 import type { MesData } from "@/lib/eventos";
 import type { Evento } from "@/lib/api";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 function formatarData(isoDate: string): string {
   try {
@@ -26,6 +34,19 @@ interface Props {
 }
 
 export default function MesClient({ mesAtual, eventos, error }: Props) {
+  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+
+  useEffect(() => {
+    if (!selectedEvento) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedEvento(null);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [selectedEvento]);
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -104,35 +125,41 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
                 <motion.div
                   key={evento.id ?? index}
                   variants={itemVariants}
-                  className="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg sm:flex-row sm:items-center gap-6 relative overflow-hidden"
+                  className="group"
                 >
-                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-accent transform origin-left scale-y-0 transition-transform duration-300 group-hover:scale-y-100" />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEvento(evento)}
+                    className="relative flex w-full flex-col justify-between gap-6 overflow-hidden rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg sm:flex-row sm:items-center"
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-accent transform origin-left scale-y-0 transition-transform duration-300 group-hover:scale-y-100" />
 
-                  <div className="flex-1">
-                    <h3 className="font-display text-xl font-bold text-foreground md:text-2xl">
-                      {evento.titulo}
-                    </h3>
-                    {evento.descricao && (
-                      <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                        {evento.descricao}
-                      </p>
-                    )}
-                    {evento.local && (
-                      <div className="mt-3 flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4 text-accent" />
-                        <span className="text-sm font-medium">
-                          {evento.local}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                    <div className="flex-1">
+                      <h3 className="font-display text-xl font-bold text-foreground md:text-2xl">
+                        {evento.titulo}
+                      </h3>
+                      {evento.descricao && (
+                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
+                          {evento.descricao}
+                        </p>
+                      )}
+                      {evento.local && (
+                        <div className="mt-3 flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="h-4 w-4 text-accent" />
+                          <span className="text-sm font-medium">
+                            {evento.local}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex flex-col items-center justify-center rounded-xl bg-primary/5 px-6 py-4 text-primary sm:w-auto w-full sm:min-w-[140px]">
-                    <CalendarDays className="mb-2 h-6 w-6 text-accent" />
-                    <span className="font-display font-semibold text-center leading-tight">
-                      {formatarData(evento.data)}
-                    </span>
-                  </div>
+                    <div className="flex w-full flex-col items-center justify-center rounded-xl bg-primary/5 px-6 py-4 text-primary sm:w-auto sm:min-w-[140px]">
+                      <CalendarDays className="mb-2 h-6 w-6 text-accent" />
+                      <span className="font-display font-semibold text-center leading-tight">
+                        {formatarData(evento.data)}
+                      </span>
+                    </div>
+                  </button>
                 </motion.div>
               ))}
             </motion.div>
@@ -147,6 +174,66 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
           )}
         </div>
       </section>
+
+      {selectedEvento && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setSelectedEvento(null);
+          }}
+        >
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-white/20 bg-card shadow-2xl">
+            <div
+              className="relative min-h-[420px] p-6 sm:p-8"
+              style={{
+                backgroundImage: safeMediaUrl(selectedEvento.fotoUrl)
+                  ? `url(${safeMediaUrl(selectedEvento.fotoUrl)})`
+                  : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
+              <button
+                type="button"
+                onClick={() => setSelectedEvento(null)}
+                className="absolute right-4 top-4 z-20 rounded-full bg-black/40 p-2 text-white transition hover:bg-black/60"
+                aria-label="Fechar detalhes do evento"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="relative z-10 flex h-full min-h-[360px] flex-col justify-end">
+                <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/90">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {formatarData(selectedEvento.data)}
+                </p>
+                <h3 className="font-display text-3xl font-bold uppercase text-white sm:text-4xl">
+                  {selectedEvento.titulo}
+                </h3>
+                {selectedEvento.local && (
+                  <div className="mt-3 flex items-center gap-2 text-white/90">
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm font-medium sm:text-base">
+                      {selectedEvento.local}
+                    </span>
+                  </div>
+                )}
+                {selectedEvento.descricao && (
+                  <p className="mt-5 max-w-2xl rounded-xl border border-white/15 bg-black/35 p-4 text-sm leading-relaxed text-white/95 sm:text-base">
+                    {selectedEvento.descricao}
+                  </p>
+                )}
+                {!safeMediaUrl(selectedEvento.fotoUrl) && (
+                  <p className="mt-5 max-w-2xl rounded-xl border border-white/15 bg-black/35 p-4 text-sm leading-relaxed text-white/95 sm:text-base">
+                    {selectedEvento.descricao || "Evento sem foto cadastrada."}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
