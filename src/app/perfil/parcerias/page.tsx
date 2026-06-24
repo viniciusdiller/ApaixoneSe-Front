@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Bed, Utensils } from "lucide-react";
+import { ArrowLeft, Bed, Utensils, Compass } from "lucide-react"; // Importamos o Compass (Bússola)
 import { CategoriaCard } from "@/components/perfil/CategoriaCard"; 
 
 export default function ParceriasPage() {
@@ -28,6 +28,7 @@ export default function ParceriasPage() {
 
         {/* Cartões de Escolha */}
         <div className="grid gap-6 sm:grid-cols-2">
+          
           <CategoriaCard
             href="/perfil/parcerias/hospedagem/novo"
             titulo="Hospedagem"
@@ -41,6 +42,17 @@ export default function ParceriasPage() {
             descricao="Restaurantes, bares, quiosques, lanchonetes e cafés."
             Icone={Utensils}
           />
+
+          {/* NOVO CARD: Ocupando 2 colunas */}
+          <div className="sm:col-span-2">
+            <CategoriaCard
+              href="/perfil/parcerias/servico-turista/novo"
+              titulo="Serviços ao Turista"
+              descricao="Agências de turismo, guias locais, locadoras de veículos, passeios, esportes e lazer."
+              Icone={Compass}
+            />
+          </div>
+
         </div>
       </div>
     </main>

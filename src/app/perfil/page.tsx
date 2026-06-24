@@ -246,10 +246,12 @@ export default function PerfilPage() {
 
         {/* USUARIO: mensagem simples */}
         {user.perfil === "USUARIO" && (
-          <div className="flex flex-col gap-6">
-            <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <div className="flex flex-col gap-10"> {/* Aumentei o gap para separar bem as duas áreas */}
+            
+            {/* Cartão de Boas-vindas (Mantido no quadrado branco) */}
+            <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
               <User className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="font-medium text-foreground">
+              <p className="font-medium text-foreground text-lg">
                 Bem-vindo, {user.nome.split(" ")[0]}!
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -257,27 +259,29 @@ export default function PerfilPage() {
               </p>
               <Link
                 href="/"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 Explorar o site
               </Link>
             </div>
             
-            <div className="rounded-2xl border border-border bg-card p-8 text-center">
-              <Store className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-              <p className="font-medium text-foreground">
+            {/* CTA para virar Parceiro (Solto na página, sem borda, verde em destaque) */}
+            <div className="px-4 py-2 text-center">
+              <Store className="mx-auto mb-4 h-12 w-12 text-primary/80" />
+              <p className="text-xl font-bold text-primary">
                 Tem um negócio em Saquarema?
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Cadastre seu estabelecimento ou serviço e torne-se um Parceiro!
+              <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto">
+                Cadastre seu estabelecimento ou serviço e torne-se um Parceiro oficial da plataforma!
               </p>
               <Link
                 href="/perfil/parcerias"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:scale-105 active:scale-95"
               >
                 Cadastrar Negócio
               </Link>
             </div>
+
           </div> 
         )}
       </div>
