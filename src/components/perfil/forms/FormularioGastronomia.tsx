@@ -6,7 +6,9 @@ import { gastronomiaApi } from "@/lib/api";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
-import { FileText, ExternalLink, AlertTriangle } from "lucide-react"; // <-- Importamos o AlertTriangle
+import { FileText, ExternalLink, AlertTriangle } from "lucide-react"; 
+// <-- IMPORTAMOS AS MÁSCARAS AQUI
+import { maskCnpj, maskCpf, maskPersonName, maskPhone, numericInputProps } from "@/lib/masks";
 
 interface FormularioGastronomiaProps {
   modo: "criar" | "editar";
@@ -131,19 +133,23 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
         <form onSubmit={handleSave} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PerfilFormField label="Nome" value={form.nome} onChange={set("nome")} required />
-            <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} required />
+            {/* <-- TELEFONE COM MÁSCARA --> */}
+            <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} mask={maskPhone} maxLength={15} {...numericInputProps} required />
           </div>
           
           <PerfilFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PerfilFormField label="Especialidade" value={form.especialidade} onChange={set("especialidade")} />
-            <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} required />
+            {/* <-- CNPJ COM MÁSCARA --> */}
+            <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} mask={maskCnpj} maxLength={18} {...numericInputProps} required />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PerfilFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} required />
-            <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} required />
+            {/* <-- RESPONSÁVEL NOME COM MÁSCARA --> */}
+            <PerfilFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} mask={maskPersonName} required />
+            {/* <-- RESPONSÁVEL CPF COM MÁSCARA --> */}
+            <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} mask={maskCpf} maxLength={14} {...numericInputProps} required />
           </div>
           
           <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} />
