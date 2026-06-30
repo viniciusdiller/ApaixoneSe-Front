@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import type { Metadata } from "next";
 import "./globals.css";
 import { SiteShell } from "@/components/site-shell";
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <SiteShell>{children}</SiteShell>
         </AuthProvider>
+        <Toaster richColors position="bottom-left" />
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner"
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { gastronomiaApi } from "@/lib/api";
@@ -86,10 +87,10 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
 
       if (modo === "editar" && estabelecimentoId) {
         await gastronomiaApi.update(estabelecimentoId, fd);
-        alert("Atualizado com sucesso!");
+        toast.success("Atualizado com sucesso!");
       } else {
         await gastronomiaApi.create(fd);
-        alert("Enviado para análise com sucesso!");
+        toast.success("Enviado para análise com sucesso!");
       }
       
       router.push("/perfil"); 
@@ -112,9 +113,10 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
     try {
       await gastronomiaApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
+      toast.success("Estabelecimento excluido com Sucesso!")
       router.push("/perfil"); // Retorna ao perfil após excluir
     } catch (err) {
-      alert("Erro ao excluir o estabelecimento.");
+      toast.error("Erro ao excluir o estabelecimento.");
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -127,7 +129,7 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
     <>
       <div className="max-w-2xl mx-auto p-6 bg-card rounded-xl border border-border shadow-sm">
         <h2 className="text-2xl font-bold mb-6">
-          {modo === "criar" ? "Cadastrar Novo Estabelecimento" : "Gerenciar Estabelecimento"}
+          {modo === "criar" ? "Cadastrar em Gastronomia" : "Gerenciar Estabelecimento"}
         </h2>
 
         <form onSubmit={handleSave} className="space-y-6">

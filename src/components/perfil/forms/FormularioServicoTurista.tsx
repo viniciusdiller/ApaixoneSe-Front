@@ -8,6 +8,7 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { maskCnpj, maskPhone, numericInputProps } from "@/lib/masks";
 import { FileText, ExternalLink, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 interface FormularioServicoProps {
   modo: "criar" | "editar";
@@ -121,10 +122,10 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
 
       if (modo === "editar" && estabelecimentoId) {
         await servicoTuristaApi.update(estabelecimentoId, fd);
-        alert("Atualizado com sucesso!");
+        toast.success("Atualizado com sucesso!");
       } else {
         await servicoTuristaApi.create(fd);
-        alert("Enviado para análise com sucesso!");
+        toast.success("Enviado para análise com sucesso!");
       }
       
       router.push("/perfil"); 
@@ -145,10 +146,11 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
     setIsDeleting(true);
     try {
       await servicoTuristaApi.delete(estabelecimentoId);
+      toast.success("Serviço excluido com sucesso!")
       setShowDeleteModal(false);
       router.push("/perfil");
     } catch (err) {
-      alert("Erro ao excluir o serviço.");
+      toast.success("Erro ao excluir o serviço.");
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -162,7 +164,7 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
     <>
       <div className="max-w-2xl mx-auto p-6 bg-card rounded-xl border border-border shadow-sm">
         <h2 className="text-2xl font-bold mb-6">
-          {modo === "criar" ? "Cadastrar Novo Serviço" : "Gerenciar Serviço"}
+          {modo === "criar" ? "Cadastrar em Serviço para o Turista" : "Gerenciar Serviço"}
         </h2>
 
         <form onSubmit={handleSave} className="space-y-6">

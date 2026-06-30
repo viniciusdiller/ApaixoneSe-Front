@@ -9,6 +9,7 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { maskCnpj, maskCpf, maskPersonName, maskPhone, numericInputProps } from "@/lib/masks";
 import { FileText, ExternalLink, AlertTriangle, Tag } from "lucide-react";
+import { toast } from "sonner";
 
 interface FormularioHospedagemProps {
   modo: "criar" | "editar";
@@ -117,10 +118,10 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
 
       if (modo === "editar" && estabelecimentoId) {
         await hospedagemApi.update(estabelecimentoId, fd);
-        alert("Atualizado com sucesso!");
+        toast.success("Atualizado com sucesso!");
       } else {
         await hospedagemApi.create(fd);
-        alert("Enviado para análise com sucesso!");
+        toast.success("Enviado para análise com sucesso!");
       }
       
       router.push("/perfil"); 
@@ -142,9 +143,10 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
     try {
       await hospedagemApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
+      toast.success("Hospedagem excuida com Sucesso")
       router.push("/perfil");
     } catch (err) {
-      alert("Erro ao excluir o estabelecimento.");
+      toast.error("Erro ao excluir o Hospedagem.");
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -157,7 +159,7 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
     <>
       <div className="max-w-2xl mx-auto p-6 bg-card rounded-xl border border-border shadow-sm">
         <h2 className="text-2xl font-bold mb-6">
-          {modo === "criar" ? "Cadastrar Nova Hospedagem" : "Gerenciar Hospedagem"}
+          {modo === "criar" ? "Cadastrar em Hospedagem" : "Gerenciar Hospedagem"}
         </h2>
 
         <form onSubmit={handleSave} className="space-y-6">
@@ -282,7 +284,7 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
           <div className="mt-12 rounded-xl border border-red-500 p-6">
             <h3 className="text-xl font-bold text-red-600 mb-2">Zona de Perigo</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Ao excluir esta hospedagem, todos os dados, imagens e informações serão permanentemente removidos. Esta ação não pode ser desfeita.
+              Ao excluir este negócio, todos os dados, imagens e informações serão permanentemente removidos. Esta ação não pode ser desfeita.
             </p>
             <div className="flex justify-center">
               <button
