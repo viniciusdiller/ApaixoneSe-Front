@@ -54,7 +54,7 @@ export default function PerfilPage() {
 
         const meusServicos: NegocioModal[] = servicosData
           .filter((s: any) => String(s.usuarioId) === String(user.id))
-          .map((s: any) => ({ ...s, categoria: "servico" })); 
+          .map((s: any) => ({ ...s, categoria: "servico-turista" })); 
 
         setNegocios([...minhasHospedagens, ...minhasGastronomias, ...meusServicos]);
       })
