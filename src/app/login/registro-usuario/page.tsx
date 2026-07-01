@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle2, Mail } from "lucide-react";
 import Image from "next/image";
 import { usersApi } from "@/lib/api/users";
 import type { RegisterUserDto } from "@/lib/api/types";
@@ -17,7 +17,7 @@ export default function RegisterPage() {
     email: "",
     usuario: "",
     senha: "",
-    perfil: "USUARIO", // Perfil padrão para novos cadastros
+    perfil: "USUARIO",
   });
 
   const [showSenha, setShowSenha] = useState(false);
@@ -39,14 +39,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Chama a sua API que já estava pronta no ficheiro users.ts
       await usersApi.register(formData);
-      
       setSuccess(true);
-      // Aguarda 2 segundos para o utilizador ler a mensagem de sucesso e redireciona para o login
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
     } catch (err: unknown) {
       let msg = "Erro ao criar conta. Tente novamente.";
       try {
@@ -75,7 +69,7 @@ export default function RegisterPage() {
             />
           </div>
           <h1 className="text-2xl font-bold font-display uppercase text-foreground mb-6">
-            Crie sua conta
+            {success ? "Conta criada!" : "Crie sua conta"}
           </h1>
         </div>
 
@@ -86,9 +80,19 @@ export default function RegisterPage() {
         >
           {success ? (
             <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
-              <CheckCircle2 className="h-16 w-16 text-green-500" />
-              <p className="text-lg font-semibold text-foreground">Conta criada com sucesso!</p>
-              <p className="text-sm text-muted-foreground">Redirecionando para o login...</p>
+              <Mail className="h-16 w-16 text-primary" />
+              <p className="text-lg font-semibold text-foreground">
+                Verifique seu e-mail!
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Enviamos um link de confirmação para o seu e-mail. Por favor, acesse-o para ativar sua conta.
+              </p>
+              <Link 
+                href="/login"
+                className="mt-4 text-primary font-semibold hover:underline"
+              >
+                Voltar para o Login
+              </Link>
             </div>
           ) : (
             <>
@@ -171,7 +175,6 @@ export default function RegisterPage() {
 
               {error && (
                 <div className="flex items-center gap-2 px-1 py-2">
-                  {/* Trocamos 'text-destructive' por 'text-red-600' aqui também */}
                   <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
                   <p className="text-sm font-medium text-red-600">{error}</p>
                 </div>
@@ -191,15 +194,17 @@ export default function RegisterPage() {
           )}
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Já tem uma conta?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-primary underline-offset-4 transition hover:underline"
-          >
-            Faça login aqui
-          </Link>
-        </p>
+        {!success && (
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-primary underline-offset-4 transition hover:underline"
+            >
+              Faça login aqui
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );
