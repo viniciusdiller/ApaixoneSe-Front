@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react"
 import { useAuth } from "@/context/AuthContext";
 import { hospedagemApi, gastronomiaApi, servicoTuristaApi } from "@/lib/api"; 
 import { VisualizacaoModal, NegocioModal } from "@/components/perfil/VisualizacaoModal"; // <-- Importamos o modal!
@@ -54,7 +55,7 @@ export default function PerfilPage() {
 
         const meusServicos: NegocioModal[] = servicosData
           .filter((s: any) => String(s.usuarioId) === String(user.id))
-          .map((s: any) => ({ ...s, categoria: "servico" })); 
+          .map((s: any) => ({ ...s, categoria: "servico-turista" })); 
 
         setNegocios([...minhasHospedagens, ...minhasGastronomias, ...meusServicos]);
       })
@@ -80,7 +81,13 @@ export default function PerfilPage() {
   return (
     <div className="min-h-screen bg-background pb-20 pt-28">
       <div className="container mx-auto max-w-3xl px-4">
-        
+        <Link
+          href="/"
+          className="mb-8 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para página inicial
+        </Link>
         {/* Cabeçalho do perfil */}
         <div className="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow">

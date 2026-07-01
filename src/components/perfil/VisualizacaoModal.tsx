@@ -8,7 +8,7 @@ export type NegocioModal = {
   endereco?: string;
   telefone?: string;
   logoUrl?: string;
-  categoria: "hospedagem" | "gastronomia" | "servico";
+  categoria: "hospedagem" | "gastronomia" | "servico-turista";
   status?: string;
   cnpj?: string;
   instagram?: string;
