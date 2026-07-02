@@ -280,6 +280,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                   <LayoutDashboard className="h-3.5 w-3.5" />
                   <span>Painel Admin</span>
                 </Link>
+                <Link
+                  href="/perfil"
+                  className="flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:bg-primary-foreground/25"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  <span>Meu Perfil</span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   title="Sair"
@@ -445,17 +452,15 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                     </li>
                   )}
 
-                  {user.perfil !== "ADMIN" && (
-                    <li>
-                      <Link
-                        href="/perfil"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
-                      >
-                        <User className="h-4 w-4" /> Meu Perfil
-                      </Link>
-                    </li>
-                  )}
+                  <li>
+                    <Link
+                      href="/perfil"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
+                    >
+                      <User className="h-4 w-4" /> Meu Perfil
+                    </Link>
+                  </li>
 
                   <li>
                     <button
