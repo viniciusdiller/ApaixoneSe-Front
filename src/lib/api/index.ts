@@ -19,3 +19,4 @@ export {
   turistandoApi,
   projetoApi,
 } from "./secretaria-turismo";
+export { ondasNewsletterApi } from "./ondas-newsletter";

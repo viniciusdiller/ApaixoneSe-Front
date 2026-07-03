@@ -11,8 +11,8 @@ export type NegocioModal = {
   categoria: "hospedagem" | "gastronomia" | "servico-turista";
   status?: string;
   cnpj?: string;
-  instagram?: string;
-  site?: string;
+  instagram?: string | null;
+  site?: string | null;
   responsavelNome?: string;
   responsavelCpf?: string;
   textoDiferencial?: string;
@@ -31,7 +31,7 @@ interface VisualizacaoModalProps {
   onClose: () => void;
 }
 
-const Field = ({ label, value, icon: Icon }: { label: string; value?: string; icon?: any }) => {
+const Field = ({ label, value, icon: Icon }: { label: string; value?: string | null; icon?: any }) => {
   if (!value) return null;
   return (
     <div>

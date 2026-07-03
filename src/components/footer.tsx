@@ -3,9 +3,38 @@
 import Link from "next/link";
 import { Facebook, Instagram, Send, Waves, Youtube, Globe } from "lucide-react";
 import { useState } from "react";
+import { ondasNewsletterApi } from "@/lib/api/ondas-newsletter";
 
 export function Footer() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || loading) return;
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await ondasNewsletterApi.subscribe(normalizedEmail);
+      setSuccess(
+        response.message ||
+          "Inscrição confirmada! Você receberá todos os dias pela manhã o boletim de ondas."
+      );
+      setEmail("");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erro ao realizar inscrição.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <footer className="bg-primary text-primary-foreground">
@@ -177,28 +206,29 @@ export function Footer() {
               <p className="mb-2 text-xs text-primary-foreground/60">
                 Receba as ondas no seu e-mail
               </p>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setEmail("");
-                }}
-                className="flex"
-              >
+              <form onSubmit={onSubmit} className="flex">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu@email.com"
+                  disabled={loading}
                   className="flex-1 rounded-l-full border-0 bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:ring-1 focus:ring-accent"
                   required
                 />
                 <button
                   type="submit"
+                  disabled={loading}
                   className="rounded-r-full bg-accent px-4 py-2 text-accent-foreground transition-colors hover:bg-accent/90"
+                  aria-label="Inscrever na newsletter"
                 >
                   <Send className="h-4 w-4" />
                 </button>
               </form>
+              {success ? (
+                <p className="mt-2 text-xs text-emerald-300">{success}</p>
+              ) : null}
+              {error ? <p className="mt-2 text-xs text-red-300">{error}</p> : null}
             </div>
           </div>
         </div>
