@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Waves, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -159,5 +159,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
