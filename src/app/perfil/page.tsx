@@ -60,7 +60,7 @@ function formatDateBr(iso?: string) {
   return date.toLocaleDateString("pt-BR");
 }
 
-function getStatusBadge(status?: string) {
+function getStatusBadge(status?: string | null) {
   if (!status) return null;
 
   const statusUpper = status.toUpperCase();
@@ -160,7 +160,11 @@ export default function PerfilPage() {
       .then(([hospedagensData, gastronomiasData, servicosData]) => {
         const minhasHospedagens: NegocioModal[] = hospedagensData
           .filter((h) => String(h.usuarioId) === String(user.id))
-          .map((h) => ({ ...h, categoria: "hospedagem" }));
+          .map((h) => ({
+            ...h,
+            categoria: "hospedagem",
+            tags: h.tags ?? undefined,
+          }));
 
         const minhasGastronomias: NegocioModal[] = gastronomiasData
           .filter((g) => String(g.usuarioId) === String(user.id))
