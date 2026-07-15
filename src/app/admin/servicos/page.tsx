@@ -539,20 +539,38 @@ export default function AdminServicosPage() {
           <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
 
           {/* Roteiro */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Roteiro (opcional)</label>
-            <select
-              value={form.roteiro ?? ""}
-              onChange={set("roteiro")}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Nenhum</option>
-              {ROTEIROS.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
+<div className="space-y-2">
+  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    Especialidade (opcional - selecione um ou mais)
+  </label>
+  <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
+    {ROTEIROS.map((roteiro) => {
+      // Converte a string salva no estado em um array para checar os checkboxes
+      const roteirosArray = form.roteiro ? form.roteiro.split(", ") : [];
+      const isChecked = roteirosArray.includes(roteiro.value);
 
+      return (
+        <label key={roteiro.value} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
+          <input
+            type="checkbox"
+            className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+            checked={isChecked}
+            onChange={(e) => {
+              const current = form.roteiro ? form.roteiro.split(", ") : [];
+              const updated = e.target.checked
+                ? [...current, roteiro.value]
+                : current.filter((i) => i !== roteiro.value);
+              
+              // Salva a lista de valores como uma string separada por vírgula
+              setField("roteiro", updated.join(", "));
+            }}
+          />
+          {roteiro.label}
+        </label>
+      );
+    })}
+  </div>
+</div>
           {/* Logo + Foto */}
           <div className="grid grid-cols-2 gap-3">
             <FileUploadField
