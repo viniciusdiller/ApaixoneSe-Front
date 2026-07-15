@@ -298,7 +298,7 @@ export default function AdminGastronomiaPage() {
             },
             {
               key: "validade",
-              label: "Validade Comprovante",
+              label: "Validade Comprovante Cadastur",
               render: (_val, row) => (
                 <ValidityBadge
                   validade={
@@ -375,7 +375,7 @@ export default function AdminGastronomiaPage() {
             {/* Bloco Comprovante + Validade */}
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <FileText size={13} /> Comprovante
+                <FileText size={13} /> Comprovante Cadastur
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <ComprovanteBotao url={viewing.documentoPdfUrl} />
@@ -479,7 +479,7 @@ export default function AdminGastronomiaPage() {
           {/* Bloco Comprovante */}
           <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <FileText size={13} /> Comprovante
+              <FileText size={13} /> Comprovante Cadastur
             </p>
 
             {/* Upload */}
@@ -537,7 +537,7 @@ export default function AdminGastronomiaPage() {
             {/* Data de validade */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <CalendarClock size={13} /> Data de validade do comprovante
+                <CalendarClock size={13} /> Data de validade do comprovante cadastur
               </label>
               <input
                 type="date"

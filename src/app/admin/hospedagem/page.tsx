@@ -502,7 +502,7 @@ export default function AdminHospedagemPage() {
             {/* Bloco Comprovante + Validade */}
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <FileText size={13} /> Comprovante
+                <FileText size={13} /> Comprovante cadastur
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <ComprovanteBotao url={viewing.documentoPdfUrl} />
@@ -644,7 +644,7 @@ export default function AdminHospedagemPage() {
           {/* Bloco Comprovante */}
           <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <FileText size={13} /> Comprovante
+              <FileText size={13} /> Comprovante cadastur
             </p>
 
             <div className="space-y-2">
@@ -700,7 +700,7 @@ export default function AdminHospedagemPage() {
 
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <CalendarClock size={13} /> Data de validade do comprovante
+                <CalendarClock size={13} /> Data de validade do comprovante cadastur
               </label>
               <input
                 type="date"

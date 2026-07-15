@@ -38,6 +38,16 @@ const TIPOS_SERVICO: { value: TipoServicoTurista; label: string }[] = [
   { value: "LOCADORA_VEICULOS", label: "Locadora de Veículos" },
 ];
 
+const IDIOMAS_DISPONIVEIS = [
+  "Português",
+  "Inglês",
+  "Espanhol",
+  "Francês",
+  "Alemão",
+  "Italiano",
+  "Outro"
+];
+
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
   { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
@@ -485,8 +495,37 @@ export default function AdminServicosPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
-            <AdminFormField label="Idiomas" value={form.idiomas ?? ""} onChange={set("idiomas")} />
           </div>
+<div className="space-y-2">
+  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Idiomas</label>
+  <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
+    {IDIOMAS_DISPONIVEIS.map((idioma) => {
+      // Converte a string atual em um array para checar o checkbox
+      const idiomasArray = form.idiomas ? form.idiomas.split(", ") : [];
+      const isChecked = idiomasArray.includes(idioma);
+
+      return (
+        <label key={idioma} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
+          <input
+            type="checkbox"
+            className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+            checked={isChecked}
+            onChange={(e) => {
+              const current = form.idiomas ? form.idiomas.split(", ") : [];
+              const updated = e.target.checked
+                ? [...current, idioma]
+                : current.filter((i) => i !== idioma);
+              
+              // Salva de volta como string separada por vírgula
+              setField("idiomas", updated.join(", "));
+            }}
+          />
+          {idioma}
+        </label>
+      );
+    })}
+  </div>
+</div>
           <AdminFormField label="Endereço" value={form.endereco ?? ""} onChange={set("endereco")} />
           <AdminFormField
             label="CNPJ"
