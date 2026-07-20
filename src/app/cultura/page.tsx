@@ -1,14 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { locaisCulturais } from "@/lib/data";
-import { X, ArrowLeft } from "lucide-react";
+import { culturaApi } from "@/lib/api";
+import type { LocalCultural } from "@/lib/api";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { X, ArrowLeft, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function CulturaPage() {
-  const [localSelecionado, setLocalSelecionado] = useState<typeof locaisCulturais[0] | null>(null);
+  const [locais, setLocais] = useState<LocalCultural[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
+  const [localSelecionado, setLocalSelecionado] = useState<LocalCultural | null>(null);
+
+  useEffect(() => {
+    culturaApi
+      .getAll()
+      .then(setLocais)
+      .catch(() => setErro(true))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,32 +52,53 @@ export default function CulturaPage() {
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
           Lugares Culturais
         </h2>
-        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {locaisCulturais.map((local, i) => (
-            <motion.div
-              key={local.nome}
-              initial={{ opacity: 0, y: 26 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <article
-                onClick={() => setLocalSelecionado(local)}
-                className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
+
+        {loading ? (
+          <p className="mt-8 text-center text-muted-foreground">
+            Carregando lugares culturais...
+          </p>
+        ) : erro ? (
+          <div className="mt-8 rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+            <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
+            <p className="font-display text-2xl font-bold text-foreground">
+              Ops! Tivemos um imprevisto.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              Não conseguimos carregar os dados. Tente novamente mais tarde.
+            </p>
+          </div>
+        ) : locais.length === 0 ? (
+          <p className="mt-8 text-center text-muted-foreground">
+            Nenhum local cultural cadastrado ainda.
+          </p>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {locais.map((local, i) => (
+              <motion.div
+                key={local.id}
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <h3 className="relative z-10 font-display text-2xl uppercase transition-colors group-hover:text-primary">
-                  {local.nome}
-                </h3>
-                <p className="relative z-10 mt-2 text-sm text-muted-foreground line-clamp-3">
-                  {local.descricao}
-                </p>
-                <p className="relative z-10 mt-4 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
-                  Ler mais &rarr;
-                </p>
-              </article>
-            </motion.div>
-          ))}
-        </div>
+                <article
+                  onClick={() => setLocalSelecionado(local)}
+                  className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <h3 className="relative z-10 font-display text-2xl uppercase transition-colors group-hover:text-primary">
+                    {local.nome}
+                  </h3>
+                  <p className="relative z-10 mt-2 text-sm text-muted-foreground line-clamp-3">
+                    {local.descricao}
+                  </p>
+                  <p className="relative z-10 mt-4 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+                    Ler mais &rarr;
+                  </p>
+                </article>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="bg-muted px-4 py-14">
@@ -120,7 +154,7 @@ export default function CulturaPage() {
               onClick={() => setLocalSelecionado(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
             />
-            
+
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -135,23 +169,26 @@ export default function CulturaPage() {
                 <X className="h-5 w-5" />
               </button>
 
-              {localSelecionado.imagem && localSelecionado.imagem !== "/images/placeholder.svg" && (
-                <div className="relative h-64 w-full bg-primary/20">
-                  <Image
-                    src={localSelecionado.imagem}
-                    alt={localSelecionado.nome}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-              )}
+              {(() => {
+                const src = safeMediaUrl(localSelecionado.imagemUrl);
+                return src ? (
+                  <div className="relative h-64 w-full bg-primary/20">
+                    <Image
+                      src={src}
+                      alt={localSelecionado.nome}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  </div>
+                ) : null;
+              })()}
 
               <div className="p-8">
                 <h3 className="font-display text-3xl font-bold uppercase text-foreground">
                   {localSelecionado.nome}
                 </h3>
-                
+
                 <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                     {localSelecionado.texto || localSelecionado.descricao}

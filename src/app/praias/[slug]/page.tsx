@@ -1,20 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft, CheckCircle, XCircle } from "lucide-react"; // Ícones de clima removidos daqui
-import { praias } from "@/lib/Dados-Praia";
-import { BeachConditions } from "@/components/praia/condicao-praia"; // <--- Importe o novo componente
+import { useParams, notFound } from "next/navigation";
+import { ArrowLeft, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { pontosAguaApi } from "@/lib/api";
+import type { PontoAgua } from "@/lib/api";
+import { BeachConditions } from "@/components/praia/condicao-praia";
 
-export function generateStaticParams() {
-  return praias.map((p) => ({ slug: p.slug }));
-}
+export default function PraiaDetalhePage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [praia, setPraia] = useState<PontoAgua | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
 
-export default function PraiaDetalhePage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const praia = praias.find((p) => p.slug === params.slug);
-  if (!praia) notFound();
+  useEffect(() => {
+    pontosAguaApi
+      .getBySlug(slug)
+      .then(setPraia)
+      .catch(() => setErro(true))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (erro || !praia) notFound();
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,14 +46,15 @@ export default function PraiaDetalhePage({
             {praia.nome}
           </h1>
           <p className="mt-2 text-primary-foreground/80">
-            {praia.descricao_curta}
+            {praia.descricaoCurta}
           </p>
         </div>
       </section>
 
       <div className="container mx-auto max-w-4xl px-4 py-12">
-        {/* Aqui entra o componente que conecta na API */}
-        <BeachConditions lat={praia.lat} lng={praia.lng} />
+        {praia.latitude != null && praia.longitude != null && (
+          <BeachConditions lat={praia.latitude} lng={praia.longitude} />
+        )}
         <div className="mb-12">
           <h2 className="mb-4 font-display text-2xl font-bold uppercase text-foreground">
             Sobre a Praia
@@ -52,7 +69,9 @@ export default function PraiaDetalhePage({
             Informações Práticas
           </h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <InfoItem label="Dificuldade" value={praia.dificuldade} />
+            {praia.dificuldade && (
+              <InfoItem label="Dificuldade" value={praia.dificuldade} />
+            )}
             <InfoBool label="Estacionamento" value={praia.estacionamento} />
             <InfoBool label="Quiosques" value={praia.quiosques} />
             <InfoBool label="Acessível" value={praia.acessivel} />
@@ -63,7 +82,6 @@ export default function PraiaDetalhePage({
   );
 }
 
-// Funções auxiliares (InfoItem, InfoBool) continuam aqui...
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-muted p-3">

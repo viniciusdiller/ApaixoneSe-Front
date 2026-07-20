@@ -18,6 +18,7 @@ import {
   Banknote,
   Landmark,
   GalleryHorizontal,
+  Palette,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
@@ -27,6 +28,8 @@ const links = [
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
   { label: "Fique Por Dentro", href: "/admin/fique-por-dentro", icon: GalleryHorizontal },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
+  { label: "Praias e Lagoas", href: "/admin/praias-lagoas", icon: Waves },
+  { label: "Cultura", href: "/admin/cultura", icon: Palette },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
   { label: "Evento Principal", href: "/admin/evento-principal", icon: Calendar },
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },

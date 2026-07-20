@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { eventosApi } from "@/lib/api";
-import type { Evento, CreateEventoDto } from "@/lib/api";
+import { culturaApi } from "@/lib/api";
+import type { LocalCultural } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
@@ -11,30 +11,30 @@ import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
-const empty: CreateEventoDto = {
-  titulo: "",
+const empty = {
+  nome: "",
   descricao: "",
-  data: "",
-  local: "",
+  texto: "",
+  imagemUrl: "",
   endereco: "",
-  fotoUrl: "",
 };
 
-export default function AdminEventosPage() {
-  const [items, setItems] = useState<Evento[]>([]);
+export default function AdminCulturaPage() {
+  const [items, setItems] = useState<LocalCultural[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; editing: Evento | null }>(
-    { open: false, editing: null },
-  );
-  const [viewing, setViewing] = useState<Evento | null>(null);
-  const [form, setForm] = useState<CreateEventoDto>(empty);
-  const [files, setFiles] = useState<{ foto?: File }>({});
+  const [modal, setModal] = useState<{
+    open: boolean;
+    editing: LocalCultural | null;
+  }>({ open: false, editing: null });
+  const [viewing, setViewing] = useState<LocalCultural | null>(null);
+  const [form, setForm] = useState(empty);
+  const [files, setFiles] = useState<{ imagem?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const load = () => {
     setLoading(true);
-    eventosApi
+    culturaApi
       .getAll()
       .then(setItems)
       .finally(() => setLoading(false));
@@ -47,14 +47,13 @@ export default function AdminEventosPage() {
     setError("");
     setModal({ open: true, editing: null });
   };
-  const openEdit = (item: Evento) => {
+  const openEdit = (item: LocalCultural) => {
     setForm({
-      titulo: item.titulo,
+      nome: item.nome,
       descricao: item.descricao,
-      data: item.data?.slice(0, 16) ?? "",
-      local: item.local,
+      texto: item.texto,
+      imagemUrl: item.imagemUrl ?? "",
       endereco: item.endereco ?? "",
-      fotoUrl: item.fotoUrl ?? "",
     });
     setFiles({});
     setError("");
@@ -68,38 +67,41 @@ export default function AdminEventosPage() {
     setSaving(true);
     try {
       const formData = new FormData();
-      formData.append("titulo", form.titulo);
+      formData.append("nome", form.nome);
       formData.append("descricao", form.descricao);
-      formData.append("data", form.data);
-      formData.append("local", form.local);
+      formData.append("texto", form.texto);
       if (form.endereco) formData.append("endereco", form.endereco);
-      if (files.foto) formData.append("foto", files.foto);
+      if (files.imagem) formData.append("imagem", files.imagem);
 
       modal.editing
-        ? await eventosApi.update(modal.editing.id, formData)
-        : await eventosApi.create(formData);
+        ? await culturaApi.update(modal.editing.id, formData)
+        : await culturaApi.create(formData);
       closeModal();
       load();
     } catch (err: unknown) {
-      try {
-        const p = JSON.parse((err as Error).message);
-        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
-      } catch {
-        setError("Erro ao salvar.");
+      let msg = "Erro ao salvar.";
+      if (err instanceof Error) {
+        try {
+          const p = JSON.parse(err.message);
+          msg = Array.isArray(p.message) ? p.message.join(", ") : p.message;
+        } catch {
+          msg = err.message;
+        }
       }
+      setError(msg);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (item: Evento) => {
-    if (!confirm(`Excluir "${item.titulo}"?`)) return;
-    await eventosApi.remove(item.id);
+  const handleDelete = async (item: LocalCultural) => {
+    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    await culturaApi.remove(item.id);
     load();
   };
 
   const set =
-    (k: keyof CreateEventoDto) =>
+    (k: keyof typeof empty) =>
     (
       e:
         | React.ChangeEvent<
@@ -111,7 +113,7 @@ export default function AdminEventosPage() {
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
-  const setField = (k: keyof CreateEventoDto, value: string) =>
+  const setField = (k: keyof typeof empty, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
   return (
@@ -119,7 +121,7 @@ export default function AdminEventosPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            Eventos
+            Cultura
           </h1>
           <p className="text-sm text-muted-foreground">
             {items.length} registros
@@ -129,7 +131,7 @@ export default function AdminEventosPage() {
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> Novo Evento
+          <Plus className="h-4 w-4" /> Novo Local Cultural
         </button>
       </div>
 
@@ -140,19 +142,21 @@ export default function AdminEventosPage() {
           data={items}
           columns={[
             {
-              key: "fotoUrl",
-              label: "Foto",
+              key: "imagemUrl",
+              label: "Imagem",
               render: (_val, row) => (
-                <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
+                <MediaPreview url={row.imagemUrl ?? ""} label={row.nome} />
               ),
             },
-            { key: "titulo", label: "Título" },
-            { key: "local", label: "Local" },
+            { key: "nome", label: "Nome" },
             {
-              key: "data",
-              label: "Data",
-              render: (_val, row) =>
-                new Date(row.data).toLocaleDateString("pt-BR"),
+              key: "descricao",
+              label: "Descrição",
+              render: (_val, row) => (
+                <span className="line-clamp-2 max-w-sm text-sm">
+                  {row.descricao}
+                </span>
+              ),
             },
           ]}
           extraActions={(row) => (
@@ -179,49 +183,50 @@ export default function AdminEventosPage() {
 
       {/* Modal Visualização */}
       <AdminModal
-        title="Detalhes do Evento"
+        title="Detalhes do Local Cultural"
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
         {viewing && (
-          <dl className="space-y-3 text-sm">
+          <div className="space-y-3">
+            <MediaPreview url={viewing.imagemUrl ?? ""} label={viewing.nome} />
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Foto
-              </dt>
-              <dd className="pt-1">
-                <MediaPreview url={viewing.fotoUrl ?? ""} label={viewing.titulo} />
-              </dd>
+              <p className="font-display font-bold text-lg uppercase tracking-wide">
+                {viewing.nome}
+              </p>
             </div>
-            <ViewRow label="Título" value={viewing.titulo} />
-            <ViewRow label="Local" value={viewing.local} />
-            <ViewRow label="Endereço" value={viewing.endereco} />
-            <ViewRow
-              label="Data"
-              value={new Date(viewing.data).toLocaleString("pt-BR")}
-            />
             <ViewRow label="Descrição" value={viewing.descricao} />
-          </dl>
+            <ViewRow label="Texto" value={viewing.texto} />
+            <ViewRow label="Endereço" value={viewing.endereco} />
+          </div>
         )}
       </AdminModal>
 
       {/* Modal Criar/Editar */}
       <AdminModal
-        title={modal.editing ? "Editar Evento" : "Novo Evento"}
+        title={modal.editing ? "Editar Local Cultural" : "Novo Local Cultural"}
         open={modal.open}
         onClose={closeModal}
       >
         <form onSubmit={handleSave} className="space-y-4">
           <AdminFormField
-            label="Título"
-            value={form.titulo}
-            onChange={set("titulo")}
+            label="Nome"
+            value={form.nome}
+            onChange={set("nome")}
             required
           />
           <AdminFormField
-            label="Local"
-            value={form.local}
-            onChange={set("local")}
+            label="Descrição (curta, exibida no card)"
+            value={form.descricao}
+            onChange={set("descricao")}
+            multiline
+            required
+          />
+          <AdminFormField
+            label="Texto completo (exibido nos detalhes)"
+            value={form.texto}
+            onChange={set("texto")}
+            multiline
             required
           />
           <AdminFormField
@@ -230,39 +235,27 @@ export default function AdminEventosPage() {
             onChange={set("endereco")}
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
-          <AdminFormField
-            label="Data e Hora"
-            value={form.data}
-            onChange={set("data")}
-            type="datetime-local"
-            required
-          />
-          <AdminFormField
-            label="Descrição"
-            value={form.descricao}
-            onChange={set("descricao")}
-            multiline
-            required
-          />
           <FileUploadField
-            label="Foto do Evento"
+            label="Imagem"
             accept="image"
-            currentUrl={form.fotoUrl ?? ""}
+            currentUrl={form.imagemUrl ?? ""}
             hint="PNG, JPG ou WEBP"
             onFileChange={(url, file) => {
-              setField("fotoUrl", url);
-              setFiles((prev) => ({ ...prev, foto: file }));
+              setField("imagemUrl", url);
+              setFiles((prev) => ({ ...prev, imagem: file }));
             }}
             onClear={() => {
-              setField("fotoUrl", "");
-              setFiles((prev) => ({ ...prev, foto: undefined }));
+              setField("imagemUrl", "");
+              setFiles((prev) => ({ ...prev, imagem: undefined }));
             }}
           />
+
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}
             </p>
           )}
+
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
