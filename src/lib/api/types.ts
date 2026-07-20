@@ -70,6 +70,7 @@ export interface Atividade {
   latitude?: number | null;
   longitude?: number | null;
   roteiro: TipoRoteiro;
+  logoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -81,6 +82,7 @@ export interface CreateAtividadeDto {
   latitude?: number;
   longitude?: number;
   roteiro: TipoRoteiro;
+  logoUrl?: string;
 }
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;

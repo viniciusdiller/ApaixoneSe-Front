@@ -6,6 +6,8 @@ import type { Atividade, CreateAtividadeDto, TipoRoteiro } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { FileUploadField } from "@/components/admin/FileUploadField";
+import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
@@ -24,6 +26,7 @@ const empty: CreateAtividadeDto = {
   descricao: "",
   local: "",
   roteiro: "A_PE",
+  logoUrl: "",
 };
 
 export default function AdminAtividadesPage() {
@@ -35,6 +38,7 @@ export default function AdminAtividadesPage() {
   }>({ open: false, editing: null });
   const [viewing, setViewing] = useState<Atividade | null>(null);
   const [form, setForm] = useState<CreateAtividadeDto>(empty);
+  const [files, setFiles] = useState<{ logo?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -49,6 +53,7 @@ export default function AdminAtividadesPage() {
 
   const openCreate = () => {
     setForm(empty);
+    setFiles({});
     setError("");
     setModal({ open: true, editing: null });
   };
@@ -60,7 +65,9 @@ export default function AdminAtividadesPage() {
       roteiro: item.roteiro,
       latitude: item.latitude ?? undefined,
       longitude: item.longitude ?? undefined,
+      logoUrl: item.logoUrl ?? "",
     });
+    setFiles({});
     setError("");
     setModal({ open: true, editing: item });
   };
@@ -71,19 +78,25 @@ export default function AdminAtividadesPage() {
     setError("");
     setSaving(true);
     try {
-      const payload: CreateAtividadeDto = {
-        ...form,
-        latitude: form.latitude
-          ? parseFloat(String(form.latitude).replace(",", "."))
-          : undefined,
-        longitude: form.longitude
-          ? parseFloat(String(form.longitude).replace(",", "."))
-          : undefined,
-      };
+      const latitude = form.latitude
+        ? parseFloat(String(form.latitude).replace(",", "."))
+        : undefined;
+      const longitude = form.longitude
+        ? parseFloat(String(form.longitude).replace(",", "."))
+        : undefined;
+
+      const formData = new FormData();
+      formData.append("titulo", form.titulo);
+      formData.append("descricao", form.descricao);
+      formData.append("local", form.local);
+      formData.append("roteiro", form.roteiro);
+      if (latitude !== undefined) formData.append("latitude", String(latitude));
+      if (longitude !== undefined) formData.append("longitude", String(longitude));
+      if (files.logo) formData.append("logo", files.logo);
 
       modal.editing
-        ? await atividadesApi.update(modal.editing.id, payload)
-        : await atividadesApi.create(payload);
+        ? await atividadesApi.update(modal.editing.id, formData)
+        : await atividadesApi.create(formData);
       closeModal();
       load();
     } catch (err: unknown) {
@@ -116,6 +129,9 @@ export default function AdminAtividadesPage() {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
     };
+
+  const setField = (k: keyof CreateAtividadeDto, value: string) =>
+    setForm((prev) => ({ ...prev, [k]: value }));
 
   const handlePasteLatitude = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedData = e.clipboardData.getData("text");
@@ -170,6 +186,13 @@ export default function AdminAtividadesPage() {
         <AdminTable
           data={items}
           columns={[
+            {
+              key: "logoUrl",
+              label: "Logo",
+              render: (_val, row) => (
+                <MediaPreview url={row.logoUrl ?? ""} label={row.titulo} />
+              ),
+            },
             { key: "titulo", label: "Título" },
             { key: "local", label: "Local" },
             {
@@ -208,6 +231,14 @@ export default function AdminAtividadesPage() {
       >
         {viewing && (
           <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Logo
+              </dt>
+              <dd className="pt-1">
+                <MediaPreview url={viewing.logoUrl ?? ""} label={viewing.titulo} />
+              </dd>
+            </div>
             <ViewRow label="Título" value={viewing.titulo} />
             <ViewRow label="Local" value={viewing.local} />
             <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
@@ -279,6 +310,20 @@ export default function AdminAtividadesPage() {
               step="any"
             />
           </div>
+          <FileUploadField
+            label="Logo da Atividade"
+            accept="image"
+            currentUrl={form.logoUrl ?? ""}
+            hint="PNG, JPG ou WEBP"
+            onFileChange={(url, file) => {
+              setField("logoUrl", url);
+              setFiles((prev) => ({ ...prev, logo: file }));
+            }}
+            onClear={() => {
+              setField("logoUrl", "");
+              setFiles((prev) => ({ ...prev, logo: undefined }));
+            }}
+          />
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}

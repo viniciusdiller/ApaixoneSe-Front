@@ -1,7 +1,7 @@
 import { getToken } from "./auth";
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:6969";
+  process.env.NEXT_PUBLIC_API_URL || "http://172.17.56.58:3001/";
 
 /**
  * Wrapper central para todas as chamadas à API.
