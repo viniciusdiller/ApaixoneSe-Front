@@ -7,6 +7,8 @@ import type { CasaDeCambio } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { FileUploadField } from "@/components/admin/FileUploadField";
+import { MediaPreview } from "@/components/admin/MediaPreview";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 import { maskPhone, numericInputProps } from "@/lib/masks";
@@ -15,6 +17,7 @@ const empty = {
   nome: "",
   telefone: "",
   endereco: "",
+  logoUrl: "",
 };
 
 const statusClass = (s: string) =>
@@ -36,6 +39,7 @@ export default function AdminCasaDeCambioPage() {
   });
   const [viewing, setViewing] = useState<CasaDeCambio | null>(null);
   const [form, setForm] = useState(empty);
+  const [files, setFiles] = useState<{ logo?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const { user } = useAuth();
@@ -53,6 +57,7 @@ export default function AdminCasaDeCambioPage() {
 
   const openCreate = () => {
     setForm(empty);
+    setFiles({});
     setError("");
     setModal({ open: true, editing: null });
   };
@@ -62,7 +67,9 @@ export default function AdminCasaDeCambioPage() {
       nome: item.nome,
       telefone: item.telefone,
       endereco: item.endereco,
+      logoUrl: item.logoUrl ?? "",
     });
+    setFiles({});
     setError("");
     setModal({ open: true, editing: item });
   };
@@ -74,17 +81,15 @@ export default function AdminCasaDeCambioPage() {
     setError("");
     setSaving(true);
     try {
-      // Envia JSON puro — o backend usa @Body() com class-validator, sem FileInterceptor
-      const payload = {
-        nome: form.nome,
-        telefone: form.telefone,
-        endereco: form.endereco,
-        usuarioId: user.id,
-      };
+      const formData = new FormData();
+      formData.append("nome", form.nome);
+      formData.append("telefone", form.telefone);
+      formData.append("endereco", form.endereco);
+      if (files.logo) formData.append("logo", files.logo);
 
       modal.editing
-        ? await casaDeCambioApi.update(modal.editing.id, payload)
-        : await casaDeCambioApi.create(payload);
+        ? await casaDeCambioApi.update(modal.editing.id, formData)
+        : await casaDeCambioApi.create(formData);
 
       closeModal();
       load();
@@ -123,12 +128,15 @@ export default function AdminCasaDeCambioPage() {
       setForm((prev) => ({ ...prev, [k]: value }));
     };
 
+  const setField = (k: keyof typeof empty, value: string) =>
+    setForm((prev) => ({ ...prev, [k]: value }));
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
-            Casas de C&#226;mbio
+            Casas de Câmbio
           </h1>
           <p className="text-sm text-muted-foreground">
             {items.length} registros
@@ -138,7 +146,7 @@ export default function AdminCasaDeCambioPage() {
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> Nova Casa de C&#226;mbio
+          <Plus className="h-4 w-4" /> Nova Casa de Câmbio
         </button>
       </div>
 
@@ -148,9 +156,16 @@ export default function AdminCasaDeCambioPage() {
         <AdminTable
           data={items}
           columns={[
+            {
+              key: "logoUrl",
+              label: "Logo",
+              render: (_val, row) => (
+                <MediaPreview url={row.logoUrl ?? ""} label={row.nome} />
+              ),
+            },
             { key: "nome", label: "Nome" },
             { key: "telefone", label: "Telefone" },
-            { key: "endereco", label: "Endere&#231;o" },
+            { key: "endereco", label: "Endereço" },
             {
               key: "status",
               label: "Status",
@@ -185,14 +200,15 @@ export default function AdminCasaDeCambioPage() {
         />
       )}
 
-      {/* Modal Visualiza&#231;&#227;o */}
+      {/* Modal Visualização */}
       <AdminModal
-        title="Detalhes da Casa de C&#226;mbio"
+        title="Detalhes da Casa de Câmbio"
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
         {viewing && (
           <div className="space-y-3">
+            <MediaPreview url={viewing.logoUrl ?? ""} label={viewing.nome} />
             <div>
               <p className="font-display font-bold text-lg uppercase tracking-wide">
                 {viewing.nome}
@@ -204,7 +220,7 @@ export default function AdminCasaDeCambioPage() {
               </span>
             </div>
             <ViewRow label="Telefone" value={viewing.telefone} />
-            <ViewRow label="Endere&#231;o" value={viewing.endereco} />
+            <ViewRow label="Endereço" value={viewing.endereco} />
           </div>
         )}
       </AdminModal>
@@ -213,8 +229,8 @@ export default function AdminCasaDeCambioPage() {
       <AdminModal
         title={
           modal.editing
-            ? "Editar Casa de C&#226;mbio"
-            : "Nova Casa de C&#226;mbio"
+            ? "Editar Casa de Câmbio"
+            : "Nova Casa de Câmbio"
         }
         open={modal.open}
         onClose={closeModal}
@@ -236,10 +252,24 @@ export default function AdminCasaDeCambioPage() {
             required
           />
           <AdminFormField
-            label="Endere&#231;o"
+            label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
             required
+          />
+          <FileUploadField
+            label="Logo da Casa de Câmbio"
+            accept="image"
+            currentUrl={form.logoUrl ?? ""}
+            hint="PNG, JPG ou WEBP"
+            onFileChange={(url, file) => {
+              setField("logoUrl", url);
+              setFiles((prev) => ({ ...prev, logo: file }));
+            }}
+            onClear={() => {
+              setField("logoUrl", "");
+              setFiles((prev) => ({ ...prev, logo: undefined }));
+            }}
           />
 
           {error && (

@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { casaDeCambioApi } from "@/lib/api";
 import type { CasaDeCambio } from "@/lib/api";
-import { Banknote, ArrowLeft, Phone, MapPin, Instagram, Globe, AlertCircle } from "lucide-react";
+import { ArrowLeft, Phone, MapPin, Instagram, Globe, AlertCircle, ZoomIn, X } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 export default function CasaDeCambioPage() {
   const [items, setItems] = useState<CasaDeCambio[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
   useEffect(() => {
     casaDeCambioApi
@@ -85,40 +85,35 @@ export default function CasaDeCambioPage() {
           ) : (
             items.map((item) => {
               const logo = safeMediaUrl(item.logoUrl);
-              const foto = safeMediaUrl(item.fotoUrl);
               return (
                 <article
                   key={item.id}
                   className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
                 >
-                  {foto ? (
-                    <div className="relative h-52 shrink-0 overflow-hidden bg-muted">
-                      <Image src={foto} alt={item.nome} fill className="object-cover" />
-                    </div>
-                  ) : (
-                    <div className="h-52 shrink-0 flex items-center justify-center bg-primary/5">
-                      {logo ? (
-                        <Image src={logo} alt={item.nome} width={80} height={80} className="object-contain" />
-                      ) : (
-                        <Banknote className="h-16 w-16 text-primary/30" />
-                      )}
-                    </div>
-                  )}
-
                   <div className="flex grow flex-col p-5">
-                    <div className="flex items-center gap-3 mb-1">
-                      {logo && (
-                        <Image
-                          src={logo}
-                          alt={item.nome}
-                          width={32}
-                          height={32}
-                          className="rounded object-cover border border-border shrink-0"
-                        />
-                      )}
-                      <h3 className="font-display text-2xl font-bold uppercase">
+                    <div className="flex items-start justify-between gap-3 mb-1">
+                      <h3 className="min-w-0 flex-1 font-display text-2xl font-bold uppercase">
                         {item.nome}
                       </h3>
+
+                      {logo && (
+                        <button
+                          type="button"
+                          onClick={() => setZoomSrc(logo)}
+                          aria-label={`Ver logo de ${item.nome}`}
+                          className="group relative shrink-0 overflow-hidden rounded-full border border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={logo}
+                            alt={item.nome}
+                            className="h-14 w-14 object-cover"
+                          />
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/40">
+                            <ZoomIn className="h-4 w-4 text-white opacity-0 transition group-hover:opacity-100" />
+                          </span>
+                        </button>
+                      )}
                     </div>
 
                     {item.moedas && (
@@ -171,6 +166,36 @@ export default function CasaDeCambioPage() {
           )}
         </div>
       </section>
+
+      {zoomSrc && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setZoomSrc(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Logo em destaque"
+        >
+          <div
+            className="relative max-h-[90vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setZoomSrc(null)}
+              className="absolute -right-3 -top-3 z-10 rounded-full bg-white p-1.5 text-gray-800 shadow-lg hover:bg-gray-100 transition"
+              aria-label="Fechar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={zoomSrc}
+              alt="Logo em destaque"
+              className="max-h-[85vh] max-w-[85vw] rounded-lg object-contain shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

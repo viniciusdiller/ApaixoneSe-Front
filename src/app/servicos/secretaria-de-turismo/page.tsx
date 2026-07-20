@@ -197,7 +197,7 @@ export default function SecretariaTurismoPage() {
               {/* Turistando — chave correta: turistandos (plural) */}
               {secretaria.turistandos && secretaria.turistandos.length > 0 && (
                 <div className="space-y-10">
-                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Turistando</h2>
+                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Projetos</h2>
                   {secretaria.turistandos.map((t, i) => (
                     <div key={t.id} className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start">
                       <div className={i % 2 === 1 ? "lg:order-2" : ""}>
@@ -211,32 +211,6 @@ export default function SecretariaTurismoPage() {
                       )}
                     </div>
                   ))}
-                </div>
-              )}
-
-              {/* Projetos */}
-              {secretaria.projetos && secretaria.projetos.length > 0 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Projetos &amp; Cursos</h2>
-                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {secretaria.projetos.map((p) => (
-                      <div key={p.id} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                        {p.imagemUrl ? (
-                          <div className="relative w-full h-40">
-                            <Image src={safeMediaUrl(p.imagemUrl) ?? ""} alt={p.titulo} fill className="object-cover" />
-                          </div>
-                        ) : (
-                          <div className="w-full h-40 flex items-center justify-center bg-muted">
-                            <span className="text-4xl">📌</span>
-                          </div>
-                        )}
-                        <div className="p-4">
-                          <h3 className="font-semibold text-foreground text-sm mb-1">{p.titulo}</h3>
-                          <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">{p.descricao}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </div>

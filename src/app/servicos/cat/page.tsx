@@ -211,7 +211,17 @@ export default function CatPage() {
               </div>
             )}
             {!movelLoading && movel && (
-              <div className="max-w-2xl"><CatMovelCard item={movel} /></div>
+              movel.imagensUrl && movel.imagensUrl.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 max-w-5xl">
+                  <CatMovelCard item={movel} />
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Galeria de fotos</span>
+                    <Carousel urls={movel.imagensUrl} />
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-2xl"><CatMovelCard item={movel} /></div>
+              )
             )}
           </div>
         </section>

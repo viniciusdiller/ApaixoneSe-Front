@@ -324,6 +324,8 @@ export interface CatMovel {
   imagemUrl?: string | null;
   /** URL do vídeo — exclusivo com imagemUrl */
   videoUrl?: string | null;
+  /** Galeria de imagens exibida em carrossel ao lado da mídia principal */
+  imagensUrl?: string[] | null;
   createdAt?: string;
   updatedAt?: string;
 }
