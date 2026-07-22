@@ -13,6 +13,7 @@ import {
   Car,
   Banknote,
   FileText,
+  House,
 } from "lucide-react";
 import { catApi, secretariaTurismoApi } from "@/lib/api";
 import type { Cat, SecretariaTurismo } from "@/lib/api";
@@ -24,20 +25,6 @@ function truncateWords(text: string, max = 10): string {
 }
 
 const LOGO_COLORS = ["#6ab04c", "#da7101", "#006494", "#d63384"];
-
-function ColoredTitle() {
-  const words = ["Secretaria", "de", "Turismo"];
-  return (
-    <h2 className="text-2xl font-bold mb-2 leading-snug">
-      {words.map((word, i) => (
-        <span key={word} style={{ color: LOGO_COLORS[i % LOGO_COLORS.length] }}>
-          {word}
-          {i < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </h2>
-  );
-}
 
 export default function ServicosPage() {
   const router = useRouter();
@@ -172,13 +159,18 @@ export default function ServicosPage() {
 
         {/* ── Secretaria de Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Secretaria de Turismo — esquerda, sem ícone */}
+          {/* Secretaria de Turismo — esquerda */}
           <div
             onClick={() => router.push("/servicos/secretaria-de-turismo")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-[#6ab04c]/30
-           text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
           >
-            <ColoredTitle />
+            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
+              <House size={32} />
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2 text-foreground">
+              Secretaria de Turismo
+            </h2>
 
             <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
               Saquarema · RJ
