@@ -71,7 +71,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Compass size={32} />,
-      title: "Agências",
+      title: "Agências de turismo",
       description:
         "Pacotes completos, passeios de barco e roteiros personalizados para você.",
       label: "Ver agências",
@@ -79,7 +79,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Bike size={32} />,
-      title: "Esporte & Lazer",
+      title: "Esportes & Lazer",
       description:
         "Atividades esportivas, aventura e lazer para toda a família em Saquarema.",
       label: "Ver esportes",
@@ -95,7 +95,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Banknote size={32} />,
-      title: "Casa de Câmbio",
+      title: "Casas de Câmbio",
       description:
         "Troque sua moeda com segurança em casas de câmbio credenciadas em Saquarema.",
       label: "Ver casas de câmbio",
