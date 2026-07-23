@@ -7,6 +7,8 @@ import { ArrowLeft, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { pontosAguaApi } from "@/lib/api";
 import type { PontoAgua } from "@/lib/api";
 import { BeachConditions } from "@/components/praia/condicao-praia";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import Image from "next/image";
 
 export default function PraiaDetalhePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -31,6 +33,33 @@ export default function PraiaDetalhePage() {
   }
 
   if (erro || !praia) notFound();
+  const src = safeMediaUrl(praia.imagemUrl);
+  function InfoItem({ label, value }: { label: string; value: string }) {
+    return (
+      <div className="rounded-lg bg-muted p-3">
+        <p className="text-xs uppercase text-muted-foreground">{label}</p>
+        <p className="mt-1 font-medium capitalize text-foreground">{value}</p>
+      </div>
+    );
+  }
+
+  function InfoBool({ label, value }: { label: string; value: boolean }) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
+        {value ? (
+          <CheckCircle className="h-4 w-4 text-restinga" />
+        ) : (
+          <XCircle className="h-4 w-4 text-muted-foreground" />
+        )}
+        <div>
+          <p className="text-xs uppercase text-muted-foreground">{label}</p>
+          <p className="mt-0.5 text-sm font-medium text-foreground">
+            {value ? "Sim" : "Não"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,6 +81,31 @@ export default function PraiaDetalhePage() {
       </section>
 
       <div className="container mx-auto max-w-4xl px-4 py-12">
+        {src && (
+          <div className="relative mb-8 h-[40vh] w-full overflow-hidden rounded-3xl md:h-[60vh]">
+            <Image
+              src={src}
+              alt={praia.nome}
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        )}
+
+        {/* Tags / Filtros */}
+        {(praia.filtros ?? []).length > 0 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            {(praia.filtros ?? []).map((filtro) => (
+              <span
+                key={filtro}
+                className="rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold uppercase text-primary"
+              >
+                {filtro.replace(/_/g, " ")}
+              </span>
+            ))}
+          </div>
+        )}
         {praia.latitude != null && praia.longitude != null && (
           <BeachConditions lat={praia.latitude} lng={praia.longitude} />
         )}
@@ -77,33 +131,6 @@ export default function PraiaDetalhePage() {
             <InfoBool label="Acessível" value={praia.acessivel} />
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-muted p-3">
-      <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 font-medium capitalize text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function InfoBool({ label, value }: { label: string; value: boolean }) {
-  return (
-    <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-      {value ? (
-        <CheckCircle className="h-4 w-4 text-restinga" />
-      ) : (
-        <XCircle className="h-4 w-4 text-muted-foreground" />
-      )}
-      <div>
-        <p className="text-xs uppercase text-muted-foreground">{label}</p>
-        <p className="mt-0.5 text-sm font-medium text-foreground">
-          {value ? "Sim" : "Não"}
-        </p>
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="font-display text-5xl font-bold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-7xl lg:text-8xl"
+          className="font-display text-4xl font-bold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-6xl lg:text-7xl"
         >
           APAIXONE-SE
           <br />

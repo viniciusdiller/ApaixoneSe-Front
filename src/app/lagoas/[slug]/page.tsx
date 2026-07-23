@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, notFound } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, XCircle } from "lucide-react";
 import { pontosAguaApi } from "@/lib/api";
 import type { PontoAgua } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -34,6 +34,32 @@ export default function LagoaDetalhesPage() {
   if (erro || !lagoa) notFound();
 
   const src = safeMediaUrl(lagoa.imagemUrl);
+  function InfoItem({ label, value }: { label: string; value: string }) {
+    return (
+      <div className="rounded-lg bg-muted p-3">
+        <p className="text-xs uppercase text-muted-foreground">{label}</p>
+        <p className="mt-1 font-medium capitalize text-foreground">{value}</p>
+      </div>
+    );
+  }
+
+  function InfoBool({ label, value }: { label: string; value: boolean }) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
+        {value ? (
+          <CheckCircle className="h-4 w-4 text-restinga" />
+        ) : (
+          <XCircle className="h-4 w-4 text-muted-foreground" />
+        )}
+        <div>
+          <p className="text-xs uppercase text-muted-foreground">{label}</p>
+          <p className="mt-0.5 text-sm font-medium text-foreground">
+            {value ? "Sim" : "Não"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background pb-16">
@@ -89,6 +115,20 @@ export default function LagoaDetalhesPage() {
           <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
             {lagoa.descricao}
           </p>
+        </div>
+
+        <div className="mt-12">
+          <h2 className="mb-4 font-display text-2xl font-bold uppercase text-foreground">
+            Informações Práticas
+          </h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {lagoa.dificuldade && (
+              <InfoItem label="Dificuldade" value={lagoa.dificuldade} />
+            )}
+            <InfoBool label="Estacionamento" value={lagoa.estacionamento} />
+            <InfoBool label="Quiosques" value={lagoa.quiosques} />
+            <InfoBool label="Acessível" value={lagoa.acessivel} />
+          </div>
         </div>
       </div>
     </main>

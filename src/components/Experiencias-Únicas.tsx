@@ -9,14 +9,16 @@ const roteiros = [
   {
     slug: "a-pe",
     label: "A Pé",
-    descricao: "Trilhas e percursos para explorar Saquarema com contato direto com a natureza",
+    descricao:
+      "Trilhas e percursos para explorar Saquarema com contato direto com a natureza",
     imagem: "/images/itauna-surf.jpg",
     span: "",
   },
   {
     slug: "esporte-e-aventura",
     label: "Esporte e Aventura",
-    descricao: "Surf, kitesurf, vôlei e adrenalina no destino esportivo mais famoso do Brasil",
+    descricao:
+      "Surf, kitesurf, vôlei e adrenalina no destino esportivo mais famoso do Brasil",
     imagem: "/images/itauna-surf.jpg",
     span: "md:col-span-2",
   },
@@ -32,7 +34,7 @@ const roteiros = [
     label: "Cultural",
     descricao: "História, arte e fé que moldaram a identidade de Saquarema",
     imagem: "/images/igreja-nazare.jpg",
-    span: "md:col-span-2 md:row-span-2",
+    span: "",
   },
   {
     slug: "religioso",
@@ -102,7 +104,9 @@ export function BentoGrid() {
                   <h3 className="font-display text-xl font-bold uppercase text-white drop-shadow md:text-2xl">
                     {roteiro.label}
                   </h3>
-                  <p className="mt-1 text-sm text-white/80">{roteiro.descricao}</p>
+                  <p className="mt-1 text-sm text-white/80">
+                    {roteiro.descricao}
+                  </p>
                 </div>
 
                 <div className="absolute bottom-4 right-4 opacity-0 transition-opacity group-hover:opacity-100">
