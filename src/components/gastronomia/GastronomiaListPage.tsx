@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, MapPin, Phone, Instagram, X, UtensilsCrossed, CheckCircle2, ArrowLeft } from "lucide-react";
+import {
+  AlertCircle,
+  MapPin,
+  Phone,
+  Instagram,
+  X,
+  UtensilsCrossed,
+  CheckCircle2,
+  ArrowLeft,
+} from "lucide-react";
 import { gastronomiaApi } from "@/lib/api/gastronomia";
 import type { Gastronomia } from "@/lib/api/types";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -23,7 +32,7 @@ export function GastronomiaListPage() {
     gastronomiaApi
       .getAll()
       .then((data) =>
-        setRestaurantes(data.filter((r) => r.status === "APROVADO"))
+        setRestaurantes(data.filter((r) => r.status === "APROVADO")),
       )
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
@@ -31,7 +40,9 @@ export function GastronomiaListPage() {
 
   useEffect(() => {
     document.body.style.overflow = selecionado ? "hidden" : "unset";
-    return () => { document.body.style.overflow = "unset"; };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [selecionado]);
 
   const imgUrl = (r: Gastronomia) =>
@@ -66,7 +77,8 @@ export function GastronomiaListPage() {
             Gastronomia
           </h1>
           <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
-            Descubra os melhores restaurantes e os sabores autênticos de Saquarema.
+            Descubra os melhores restaurantes e os sabores autênticos de
+            Saquarema.
           </p>
         </div>
       </section>
@@ -96,7 +108,8 @@ export function GastronomiaListPage() {
                 Ops! Tivemos um imprevisto.
               </p>
               <p className="mt-2 text-muted-foreground">
-                Não conseguimos carregar os restaurantes. Tente novamente mais tarde.
+                Não conseguimos carregar os restaurantes. Tente novamente mais
+                tarde.
               </p>
             </div>
           ) : restaurantes.length === 0 ? (
@@ -106,7 +119,8 @@ export function GastronomiaListPage() {
                 Novos sabores chegando em breve!
               </p>
               <p className="mt-2 text-muted-foreground">
-                Estamos a selecionar os melhores estabelecimentos de Saquarema para você.
+                Estamos a selecionar os melhores estabelecimentos de Saquarema
+                para você.
               </p>
             </div>
           ) : (
@@ -132,8 +146,13 @@ export function GastronomiaListPage() {
           </h2>
           <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             {pratosTipicos.map((prato) => (
-              <li key={prato.nome} className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-display text-xl uppercase text-primary">{prato.nome}</h3>
+              <li
+                key={prato.nome}
+                className="rounded-xl border border-border bg-card p-6"
+              >
+                <h3 className="font-display text-xl uppercase text-primary">
+                  {prato.nome}
+                </h3>
                 <p className="mt-2 text-muted-foreground">{prato.descricao}</p>
               </li>
             ))}
@@ -183,9 +202,15 @@ export function GastronomiaListPage() {
                       }`}
                     >
                       {isVisitadoModal ? (
-                        <><CheckCircle2 className="h-4 w-4" /> Visitei este lugar!</>
+                        <>
+                          <CheckCircle2 className="h-4 w-4" /> Visitei este
+                          lugar!
+                        </>
                       ) : (
-                        <><CheckCircle2 className="h-4 w-4 opacity-40" /> Já fui aqui!</>
+                        <>
+                          <CheckCircle2 className="h-4 w-4 opacity-40" /> Já fui
+                          aqui!
+                        </>
                       )}
                     </button>
                   )}
@@ -218,9 +243,10 @@ export function GastronomiaListPage() {
                     <div className="flex items-center gap-3">
                       <Instagram className="h-5 w-5 shrink-0 text-primary" />
                       <a
-                        href={`https://instagram.com/${
-                          selecionado.instagram.replace("@", "")
-                        }`}
+                        href={`https://instagram.com/${selecionado.instagram.replace(
+                          "@",
+                          "",
+                        )}`}
                         target="_blank"
                         rel="noreferrer"
                         className="transition-colors hover:text-primary hover:underline"
