@@ -240,7 +240,7 @@ export default function SecretariaTurismoPage() {
               {/* Institucional */}
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
                 <div className="space-y-8">
-                  <div className="p-0 md:p-8 md:rounded-2xl md:border md:border-border md:bg-card md:shadow-sm">
+                  <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
                     <div className="mb-5 flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <Info size={20} />
