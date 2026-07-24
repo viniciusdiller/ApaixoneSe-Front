@@ -14,8 +14,6 @@ import {
   UtensilsCrossed,
   ArrowLeft,
   Trash2,
-  Building2,
-  User,
 } from "lucide-react";
 import {
   maskCnpj,
@@ -23,6 +21,10 @@ import {
   maskPersonName,
   maskPhone,
   numericInputProps,
+  validateCpf,
+  validateCnpj,
+  validatePhone,
+  validateInstagram,
 } from "@/lib/masks";
 
 interface FormularioGastronomiaProps {
@@ -43,6 +45,8 @@ const emptyForm = {
   logoUrl: "",
 };
 
+type FieldErrors = Partial<Record<keyof typeof emptyForm, string>>;
+
 export function FormularioGastronomia({
   modo,
   estabelecimentoId,
@@ -51,6 +55,7 @@ export function FormularioGastronomia({
   const router = useRouter();
 
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [files, setFiles] = useState<{ logo?: File; comprovante?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -76,6 +81,7 @@ export function FormularioGastronomia({
       setForm(emptyForm);
       setFiles({});
     }
+    setFieldErrors({});
   }, [modo, dadosIniciais]);
 
   const set =
@@ -83,14 +89,40 @@ export function FormularioGastronomia({
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | string) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
+      setFieldErrors((prev) => ({ ...prev, [k]: undefined }));
     };
 
   const setField = (k: string, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
+  const runValidations = (): FieldErrors => {
+    const errs: FieldErrors = {};
+
+    const phoneErr = validatePhone(form.telefone);
+    if (phoneErr) errs.telefone = phoneErr;
+
+    const cnpjErr = validateCnpj(form.cnpj);
+    if (cnpjErr) errs.cnpj = cnpjErr;
+
+    const cpfErr = validateCpf(form.responsavelCpf);
+    if (cpfErr) errs.responsavelCpf = cpfErr;
+
+    const igErr = validateInstagram(form.instagram);
+    if (igErr) errs.instagram = igErr;
+
+    return errs;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const errs = runValidations();
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -173,9 +205,7 @@ export function FormularioGastronomia({
                 fill="hsl(var(--card))"
               />
             </svg>
-
             <div className="relative z-10">
-              {/* Botão Voltar */}
               <button
                 type="button"
                 onClick={() => router.back()}
@@ -184,7 +214,6 @@ export function FormularioGastronomia({
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Voltar
               </button>
-
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
@@ -221,14 +250,14 @@ export function FormularioGastronomia({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField label="Nome" value={form.nome} onChange={set("nome")} placeholder="Ex: Restaurante Mar Aberto" required />
-              <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} placeholder="(21) 99999-9999" mask={maskPhone} maxLength={15} {...numericInputProps} required />
+              <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} placeholder="(21) 99999-9999" mask={maskPhone} maxLength={15} error={fieldErrors.telefone} {...numericInputProps} required />
             </div>
 
             <PerfilFormField label="Endereço" value={form.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro — Saquarema, RJ" required />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField label="Especialidade" value={form.especialidade} onChange={set("especialidade")} placeholder="Ex: Frutos do Mar, Churrasco, Vegano..." />
-              <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} placeholder="00.000.000/0001-00" mask={maskCnpj} maxLength={18} {...numericInputProps} required />
+              <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} placeholder="00.000.000/0001-00" mask={maskCnpj} maxLength={18} error={fieldErrors.cnpj} {...numericInputProps} required />
             </div>
           </section>
 
@@ -242,10 +271,10 @@ export function FormularioGastronomia({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} placeholder="Nome completo do responsável" mask={maskPersonName} required />
-              <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} placeholder="000.000.000-00" mask={maskCpf} maxLength={14} {...numericInputProps} required />
+              <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} placeholder="000.000.000-00" mask={maskCpf} maxLength={14} error={fieldErrors.responsavelCpf} {...numericInputProps} required />
             </div>
 
-            <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@seurestaurante" />
+            <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@seurestaurante" error={fieldErrors.instagram} />
           </section>
 
           {/* ── Bloco 3: Arquivos ── */}

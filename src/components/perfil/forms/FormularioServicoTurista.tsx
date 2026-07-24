@@ -6,17 +6,24 @@ import { servicoTuristaApi } from "@/lib/api";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
-import { maskCnpj, maskPhone, numericInputProps } from "@/lib/masks";
+import {
+  maskCnpj,
+  maskPhone,
+  numericInputProps,
+  validateCnpj,
+  validatePhone,
+  validateInstagram,
+  validateSite,
+} from "@/lib/masks";
 import {
   FileText,
   ExternalLink,
   AlertTriangle,
   Sparkles,
   Compass,
-  Building2,
   Route,
+  Building2,
   Trash2,
-  ArrowLeft,
 } from "lucide-react";
 
 interface FormularioServicoProps {
@@ -63,6 +70,8 @@ const emptyForm = {
   fotoUrl: "",
 };
 
+type FieldErrors = Partial<Record<keyof typeof emptyForm, string>>;
+
 export function FormularioServico({
   modo,
   estabelecimentoId,
@@ -71,6 +80,7 @@ export function FormularioServico({
   const router = useRouter();
 
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [files, setFiles] = useState<{
     logo?: File;
     foto?: File;
@@ -103,6 +113,7 @@ export function FormularioServico({
       setForm(emptyForm);
       setFiles({});
     }
+    setFieldErrors({});
   }, [modo, dadosIniciais]);
 
   const set =
@@ -116,14 +127,43 @@ export function FormularioServico({
     ) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
+      // Limpa erro do campo ao editar
+      setFieldErrors((prev) => ({ ...prev, [k]: undefined }));
     };
 
   const setField = (k: string, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
+  /** Valida todos os campos e retorna um mapa de erros. */
+  const runValidations = (): FieldErrors => {
+    const errs: FieldErrors = {};
+
+    const phoneErr = validatePhone(form.telefone);
+    if (phoneErr) errs.telefone = phoneErr;
+
+    if (form.cnpj) {
+      const cnpjErr = validateCnpj(form.cnpj);
+      if (cnpjErr) errs.cnpj = cnpjErr;
+    }
+
+    const igErr = validateInstagram(form.instagram);
+    if (igErr) errs.instagram = igErr;
+
+    const siteErr = validateSite(form.site);
+    if (siteErr) errs.site = siteErr;
+
+    return errs;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const errs = runValidations();
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
 
     const precisaComprovante = REQUER_COMPROVANTE.includes(form.tipo);
     if (
@@ -201,7 +241,7 @@ export function FormularioServico({
     <>
       <div className="mx-auto max-w-3xl overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-xl shadow-black/5">
 
-        {/* ── Cabeçalho branded ── */}
+        {/* ── Cabeçalho com identidade visual ── */}
         <div className="relative overflow-hidden border-b border-border/70">
           <div className="relative bg-primary px-6 pb-10 pt-8 md:px-8">
             <div
@@ -225,36 +265,24 @@ export function FormularioServico({
               />
             </svg>
 
-            <div className="relative z-10">
-              {/* Botão Voltar */}
-              <button
-                type="button"
-                onClick={() => router.back()}
-                className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-xs font-semibold text-primary-foreground/80 transition hover:bg-primary-foreground/20 hover:text-primary-foreground"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                Voltar
-              </button>
-
-              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Solicitação de serviço · Saquarema
-                  </div>
-                  <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
-                    {modo === "criar" ? "Cadastrar Novo Serviço" : "Gerenciar Serviço"}
-                  </h2>
-                  <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
-                    {modo === "criar"
-                      ? "Preencha os dados abaixo para submeter seu serviço turístico à análise da equipe."
-                      : "Atualize as informações do seu serviço cadastrado em Saquarema."}
-                  </p>
+            <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Solicitação de serviço · Saquarema
                 </div>
-                <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-sm text-primary-foreground/80">
-                  <Compass className="h-5 w-5" />
-                  <span className="hidden md:inline">Serviços Turísticos</span>
-                </div>
+                <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
+                  {modo === "criar" ? "Cadastrar Novo Serviço" : "Gerenciar Serviço"}
+                </h2>
+                <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
+                  {modo === "criar"
+                    ? "Preencha os dados abaixo para submeter seu serviço turístico à análise da equipe."
+                    : "Atualize as informações do seu serviço cadastrado em Saquarema."}
+                </p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-sm text-primary-foreground/80">
+                <Compass className="h-5 w-5" />
+                <span className="hidden md:inline">Serviços Turísticos</span>
               </div>
             </div>
           </div>
@@ -262,7 +290,7 @@ export function FormularioServico({
 
         <form onSubmit={handleSave} className="space-y-8 px-6 py-8 md:px-8">
 
-          {/* ── Bloco 1: Dados do Serviço ── */}
+          {/* ── Bloco 1: Dados Principais ── */}
           <section className="space-y-5">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
@@ -270,6 +298,7 @@ export function FormularioServico({
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
+            {/* Tipo */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Building2 className="h-3.5 w-3.5 text-primary" />
@@ -288,20 +317,78 @@ export function FormularioServico({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField label="NOME" value={form.nome} onChange={set("nome")} placeholder="Ex: Surf Experience Saquarema" required />
-              <PerfilFormField label="TELEFONE" value={form.telefone} onChange={set("telefone")} placeholder="(21) 99999-9999" mask={maskPhone} maxLength={15} {...numericInputProps} required />
+              <PerfilFormField
+                label="NOME"
+                value={form.nome}
+                onChange={set("nome")}
+                placeholder="Ex: Surf Experience Saquarema"
+                required
+              />
+              <PerfilFormField
+                label="TELEFONE"
+                value={form.telefone}
+                onChange={set("telefone")}
+                placeholder="(21) 99999-9999"
+                mask={maskPhone}
+                maxLength={15}
+                error={fieldErrors.telefone}
+                {...numericInputProps}
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField label="INSTAGRAM" value={form.instagram} onChange={set("instagram")} placeholder="@seuservico" />
-              <PerfilFormField label="IDIOMAS" value={form.idiomas} onChange={set("idiomas")} placeholder="Ex: Português, Inglês, Espanhol" />
+              <PerfilFormField
+                label="INSTAGRAM"
+                value={form.instagram}
+                onChange={set("instagram")}
+                placeholder="@seuservico"
+                error={fieldErrors.instagram}
+              />
+              <PerfilFormField
+                label="IDIOMAS"
+                value={form.idiomas}
+                onChange={set("idiomas")}
+                placeholder="Ex: Português, Inglês, Espanhol"
+              />
             </div>
 
-            <PerfilFormField label="ENDEREÇO" value={form.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro — Saquarema, RJ" />
-            <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} placeholder="00.000.000/0001-00" mask={maskCnpj} maxLength={18} {...numericInputProps} />
-            <PerfilFormField label="SITE" value={form.site} onChange={set("site")} placeholder="www.seusite.com.br" />
-            <PerfilFormField label="DESCRIÇÃO" value={form.descricao} onChange={set("descricao")} placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..." multiline rows={4} />
+            <PerfilFormField
+              label="ENDEREÇO"
+              value={form.endereco}
+              onChange={set("endereco")}
+              placeholder="Rua, número, bairro — Saquarema, RJ"
+            />
 
+            <PerfilFormField
+              label="CNPJ"
+              value={form.cnpj}
+              onChange={set("cnpj")}
+              placeholder="00.000.000/0001-00"
+              mask={maskCnpj}
+              maxLength={18}
+              error={fieldErrors.cnpj}
+              {...numericInputProps}
+            />
+
+            <PerfilFormField
+              label="SITE"
+              value={form.site}
+              onChange={set("site")}
+              placeholder="www.seusite.com.br"
+              error={fieldErrors.site}
+            />
+
+            <PerfilFormField
+              label="DESCRIÇÃO"
+              value={form.descricao}
+              onChange={set("descricao")}
+              placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
+              multiline
+              rows={4}
+            />
+
+            {/* Roteiro */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Route className="h-3.5 w-3.5 text-primary" />
@@ -329,16 +416,38 @@ export function FormularioServico({
             </div>
 
             <div className="grid grid-cols-1 gap-6 pt-1 md:grid-cols-2">
-              <FileUploadField label="LOGO *" accept="image" currentUrl={form.logoUrl} required={modo === "criar"} hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => { setField("logoUrl", url); setFiles((p) => ({ ...p, logo: file })); }}
-                onClear={() => { setField("logoUrl", ""); setFiles((p) => ({ ...p, logo: undefined })); }}
+              <FileUploadField
+                label="LOGO *"
+                accept="image"
+                currentUrl={form.logoUrl}
+                required={modo === "criar"}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("logoUrl", url);
+                  setFiles((p) => ({ ...p, logo: file }));
+                }}
+                onClear={() => {
+                  setField("logoUrl", "");
+                  setFiles((p) => ({ ...p, logo: undefined }));
+                }}
               />
-              <FileUploadField label="FOTO DO SERVIÇO" accept="image" currentUrl={form.fotoUrl} hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => { setField("fotoUrl", url); setFiles((p) => ({ ...p, foto: file })); }}
-                onClear={() => { setField("fotoUrl", ""); setFiles((p) => ({ ...p, foto: undefined })); }}
+              <FileUploadField
+                label="FOTO DO SERVIÇO"
+                accept="image"
+                currentUrl={form.fotoUrl}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("fotoUrl", url);
+                  setFiles((p) => ({ ...p, foto: file }));
+                }}
+                onClear={() => {
+                  setField("fotoUrl", "");
+                  setFiles((p) => ({ ...p, foto: undefined }));
+                }}
               />
             </div>
 
+            {/* Comprovante Cadastur */}
             {requerComprovante && (
               <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
                 <div className="flex items-center gap-2">
@@ -354,24 +463,40 @@ export function FormularioServico({
                   </label>
                   {comprovantePreviewUrl && (
                     <div className="mb-2 mt-1">
-                      <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
+                      <a
+                        href={comprovantePreviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+                      >
                         <FileText size={14} /> {files.comprovante ? files.comprovante.name : "Ver Cadastur atual"} <ExternalLink size={12} />
                       </a>
                     </div>
                   )}
-                  <button type="button" onClick={() => comprovanteRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary">
-                    <FileText size={14} /> {comprovanteExistente || files.comprovante ? "Substituir Arquivo" : "Selecionar arquivo"}
+                  <button
+                    type="button"
+                    onClick={() => comprovanteRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+                  >
+                    <FileText size={14} />
+                    {comprovanteExistente || files.comprovante ? "Substituir Arquivo" : "Selecionar arquivo"}
                   </button>
-                  <input ref={comprovanteRef} type="file" accept="application/pdf,image/*" className="hidden"
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) setFiles((p) => ({ ...p, comprovante: f })); }}
+                  <input
+                    ref={comprovanteRef}
+                    type="file"
+                    accept="application/pdf,image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                    }}
                   />
                 </div>
               </div>
             )}
           </section>
 
+          {/* ── Erro geral ── */}
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -379,18 +504,26 @@ export function FormularioServico({
             </div>
           )}
 
+          {/* ── Ações ── */}
           <div className="flex flex-col-reverse gap-3 border-t border-border/70 pt-6 sm:flex-row sm:justify-end">
-            <button type="button" onClick={() => router.back()}
-              className="rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={saving}
-              className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50"
+            >
               {saving ? "Salvando..." : modo === "criar" ? "Enviar para Análise" : "Salvar Alterações"}
             </button>
           </div>
         </form>
 
+        {/* ── Zona de Perigo ── */}
         {modo === "editar" && (
           <div className="mx-6 mb-8 mt-2 overflow-hidden rounded-2xl border border-red-200 md:mx-8">
             <div className="flex items-center gap-3 border-b border-red-200 bg-red-50 px-5 py-3">
@@ -401,8 +534,11 @@ export function FormularioServico({
               <p className="mb-4 text-sm text-muted-foreground">
                 Ao excluir este serviço, todos os dados, imagens e informações serão permanentemente removidos. Esta ação não pode ser desfeita.
               </p>
-              <button type="button" onClick={() => setShowDeleteModal(true)}
-                className="rounded-xl border border-red-300 bg-background px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="rounded-xl border border-red-300 bg-background px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
+              >
                 Excluir Serviço
               </button>
             </div>
@@ -410,6 +546,7 @@ export function FormularioServico({
         )}
       </div>
 
+      {/* ── Modal de Confirmação de Exclusão ── */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl animate-in zoom-in-95 duration-200">
@@ -419,13 +556,24 @@ export function FormularioServico({
               </div>
               <h3 className="mb-2 text-xl font-bold text-foreground">Você tem certeza?</h3>
               <p className="mb-6 text-sm text-muted-foreground">
-                Esta ação é irreversível. O serviço <strong>{form.nome || "selecionado"}</strong> será excluído permanentemente.
+                Esta ação é irreversível. O serviço{" "}
+                <strong>{form.nome || "selecionado"}</strong> será excluído permanentemente.
               </p>
               <div className="flex w-full gap-3">
-                <button type="button" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}
-                  className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50">Cancelar</button>
-                <button type="button" onClick={handleDelete} disabled={isDeleting}
-                  className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                  className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                >
                   {isDeleting ? "Excluindo..." : "Sim, Excluir"}
                 </button>
               </div>

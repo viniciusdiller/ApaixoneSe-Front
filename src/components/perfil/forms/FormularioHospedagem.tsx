@@ -13,6 +13,11 @@ import {
   maskPersonName,
   maskPhone,
   numericInputProps,
+  validateCpf,
+  validateCnpj,
+  validatePhone,
+  validateInstagram,
+  validateSite,
 } from "@/lib/masks";
 import {
   FileText,
@@ -23,8 +28,6 @@ import {
   BedDouble,
   ArrowLeft,
   Trash2,
-  User,
-  Building2,
 } from "lucide-react";
 
 interface FormularioHospedagemProps {
@@ -47,6 +50,8 @@ const emptyForm = {
   tags: [] as string[],
 };
 
+type FieldErrors = Partial<Record<string, string>>;
+
 export function FormularioHospedagem({
   modo,
   estabelecimentoId,
@@ -55,6 +60,7 @@ export function FormularioHospedagem({
   const router = useRouter();
 
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [files, setFiles] = useState<{ logo?: File; comprovante?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -69,11 +75,8 @@ export function FormularioHospedagem({
         const raw = dadosIniciais.tags;
         if (!raw) return [];
         if (Array.isArray(raw)) return raw as string[];
-        try {
-          return JSON.parse(raw as unknown as string) as string[];
-        } catch {
-          return [];
-        }
+        try { return JSON.parse(raw as unknown as string) as string[]; }
+        catch { return []; }
       })();
 
       setForm({
@@ -93,19 +96,19 @@ export function FormularioHospedagem({
       setForm(emptyForm);
       setFiles({});
     }
+    setFieldErrors({});
   }, [modo, dadosIniciais]);
 
   const set =
     (k: string) =>
     (
       e:
-        | React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-          >
+        | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
         | string,
     ) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
+      setFieldErrors((prev) => ({ ...prev, [k]: undefined }));
     };
 
   const setField = (k: string, value: string) =>
@@ -123,9 +126,37 @@ export function FormularioHospedagem({
     });
   };
 
+  const runValidations = (): FieldErrors => {
+    const errs: FieldErrors = {};
+
+    const phoneErr = validatePhone(form.telefone);
+    if (phoneErr) errs.telefone = phoneErr;
+
+    const cnpjErr = validateCnpj(form.cnpj);
+    if (cnpjErr) errs.cnpj = cnpjErr;
+
+    const cpfErr = validateCpf(form.responsavelCpf);
+    if (cpfErr) errs.responsavelCpf = cpfErr;
+
+    const igErr = validateInstagram(form.instagram);
+    if (igErr) errs.instagram = igErr;
+
+    const siteErr = validateSite(form.site);
+    if (siteErr) errs.site = siteErr;
+
+    return errs;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    const errs = runValidations();
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -137,12 +168,10 @@ export function FormularioHospedagem({
       fd.append("cnpj", form.cnpj);
       fd.append("responsavelNome", form.responsavelNome);
       fd.append("responsavelCpf", form.responsavelCpf);
-
       if (form.instagram) fd.append("instagram", form.instagram);
       if (form.site) fd.append("site", form.site);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
-
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -213,9 +242,7 @@ export function FormularioHospedagem({
                 fill="hsl(var(--card))"
               />
             </svg>
-
             <div className="relative z-10">
-              {/* Botão Voltar */}
               <button
                 type="button"
                 onClick={() => router.back()}
@@ -224,7 +251,6 @@ export function FormularioHospedagem({
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Voltar
               </button>
-
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
@@ -261,7 +287,7 @@ export function FormularioHospedagem({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField label="Nome" value={form.nome} onChange={set("nome")} placeholder="Ex: Pousada Praia de Itaúna" required />
-              <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} placeholder="(21) 99999-9999" mask={maskPhone} maxLength={15} {...numericInputProps} required />
+              <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} placeholder="(21) 99999-9999" mask={maskPhone} maxLength={15} error={fieldErrors.telefone} {...numericInputProps} required />
             </div>
 
             <PerfilFormField label="Endereço" value={form.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro — Saquarema, RJ" required />
@@ -269,11 +295,11 @@ export function FormularioHospedagem({
             <PerfilFormField label="Texto Diferencial" value={form.textoDiferencial} onChange={set("textoDiferencial")} placeholder="Descreva os diferenciais da sua hospedagem, localização, estrutura e benefícios para o hóspede..." multiline rows={4} required />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} placeholder="00.000.000/0001-00" mask={maskCnpj} maxLength={18} {...numericInputProps} required />
-              <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@suahospedagem" />
+              <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} placeholder="00.000.000/0001-00" mask={maskCnpj} maxLength={18} error={fieldErrors.cnpj} {...numericInputProps} required />
+              <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@suahospedagem" error={fieldErrors.instagram} />
             </div>
 
-            <PerfilFormField label="Site" value={form.site} onChange={set("site")} placeholder="www.suahospedagem.com.br" />
+            <PerfilFormField label="Site" value={form.site} onChange={set("site")} placeholder="www.suahospedagem.com.br" error={fieldErrors.site} />
           </section>
 
           {/* ── Bloco 2: Responsável Legal ── */}
@@ -286,7 +312,7 @@ export function FormularioHospedagem({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} placeholder="Nome completo do responsável" mask={maskPersonName} required />
-              <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} placeholder="000.000.000-00" mask={maskCpf} maxLength={14} {...numericInputProps} required />
+              <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} placeholder="000.000.000-00" mask={maskCpf} maxLength={14} error={fieldErrors.responsavelCpf} {...numericInputProps} required />
             </div>
           </section>
 
@@ -297,7 +323,6 @@ export function FormularioHospedagem({
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Comodidades</p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-
             <div className="space-y-3">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Tag className="h-4 w-4 text-primary" /> Selecione as comodidades (opcional)
@@ -327,14 +352,12 @@ export function FormularioHospedagem({
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Identidade Visual e Documentação</p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
-
             <div className="pt-1">
               <FileUploadField label="Logo da Hospedagem" accept="image" currentUrl={form.logoUrl} required={modo === "criar"} hint="PNG, JPG ou WEBP"
                 onFileChange={(url, file) => { setField("logoUrl", url); setFiles((p) => ({ ...p, logo: file })); }}
                 onClear={() => { setField("logoUrl", ""); setFiles((p) => ({ ...p, logo: undefined })); }}
               />
             </div>
-
             <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <FileText size={13} /> Comprovante (PDF ou Imagem)
