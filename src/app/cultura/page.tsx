@@ -13,7 +13,8 @@ export default function CulturaPage() {
   const [locais, setLocais] = useState<LocalCultural[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
-  const [localSelecionado, setLocalSelecionado] = useState<LocalCultural | null>(null);
+  const [localSelecionado, setLocalSelecionado] =
+    useState<LocalCultural | null>(null);
 
   useEffect(() => {
     culturaApi
@@ -120,11 +121,11 @@ export default function CulturaPage() {
               total sintonia com o mar.
             </p>
           </article>
-          <article className="rounded-xl border border-border bg-card p-6">
+          <article className="p-0 md:p-8 md:rounded-2xl md:border md:border-border md:bg-card md:shadow-sm">
             <h2 className="font-display text-3xl uppercase text-primary">
               Destaques Visuais
             </h2>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 "/images/destaques-visuais/Esquadrilha-Fumaça.jpg",
                 "/images/destaques-visuais/WSL.jpg",
@@ -135,7 +136,7 @@ export default function CulturaPage() {
               ].map((imagem) => (
                 <div
                   key={imagem}
-                  className="h-48 rounded-md bg-cover bg-center"
+                  className="h-28 md:h-48 rounded-md bg-cover bg-center"
                   style={{ backgroundImage: `url(${imagem})` }}
                 />
               ))}
