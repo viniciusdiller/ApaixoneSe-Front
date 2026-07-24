@@ -149,6 +149,8 @@ export default function SecretariaTurismoPage() {
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 4;
 
   useEffect(() => {
     secretariaTurismoApi
@@ -157,6 +159,14 @@ export default function SecretariaTurismoPage() {
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  const turistandos = secretaria?.turistandos || [];
+  const totalPages = Math.ceil(turistandos.length / ITEMS_PER_PAGE);
+
+  const currentTuristandos = turistandos.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   return (
     <main className="min-h-screen bg-background">
@@ -267,34 +277,67 @@ export default function SecretariaTurismoPage() {
                 </div>
               )}
 
-              {/* Turistando — chave correta: turistandos (plural) */}
-              {secretaria.turistandos && secretaria.turistandos.length > 0 && (
-                <div className="space-y-6">
+              {/* Turistando / Projetos */}
+              {turistandos.length > 0 && (
+                <div className="space-y-10">
                   <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">
                     Projetos
                   </h2>
-                  {secretaria.turistandos.map((t, i) => (
-                    <div
-                      key={t.id}
-                      className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start"
-                    >
-                      <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-                        <h3 className="text-lg font-semibold text-foreground mb-3">
-                          {t.titulo}
-                        </h3>
-                        <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
-                          {t.texto}
-                        </p>
-                      </div>
-                      {t.imagensUrl?.length > 0 && (
-                        <div
-                          className={`relative w-full aspect-video rounded-xl overflow-hidden shadow-sm ${i % 2 === 1 ? "lg:order-1" : ""}`}
-                        >
-                          <Carousel urls={t.imagensUrl} alt={t.titulo} />
+
+                  {/* 3. Renderizamos apenas os itens da página atual */}
+                  <div className="space-y-12">
+                    {currentTuristandos.map((t, i) => (
+                      <div
+                        key={t.id}
+                        className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start"
+                      >
+                        <div className={i % 2 === 1 ? "lg:order-2" : ""}>
+                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                            {t.titulo}
+                          </h3>
+                          <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
+                            {t.texto}
+                          </p>
                         </div>
-                      )}
+                        {t.imagensUrl?.length > 0 && (
+                          <div
+                            className={`relative w-full aspect-video rounded-xl overflow-hidden shadow-sm ${i % 2 === 1 ? "lg:order-1" : ""}`}
+                          >
+                            <Carousel urls={t.imagensUrl} alt={t.titulo} />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 4. Controles de Paginação (só aparecem se tiver mais de 1 página) */}
+                  {totalPages > 1 && (
+                    <div className="mt-8 flex items-center justify-center gap-4 border-t border-border pt-8">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        <ChevronLeft size={16} /> Anterior
+                      </button>
+
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Página {currentPage} de {totalPages}
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        Próxima <ChevronRight size={16} />
+                      </button>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
