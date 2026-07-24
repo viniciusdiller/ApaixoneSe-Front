@@ -17,8 +17,10 @@ import {
   CheckCircle2,
   Trash2,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { maskCnpj, maskCpf, maskPersonName, maskPhone, numericInputProps } from "@/lib/masks";
+import Link from "next/link";
 
 interface FormularioServicoTuristaProps {
   modo: "criar" | "editar";
@@ -146,7 +148,15 @@ export function FormularioServicoTurista({ modo, estabelecimentoId, dadosIniciai
   return (
     <>
       <div className="mx-auto max-w-2xl">
-        {/* ── HEADER DO FORMULÁRIO ── */}
+        {/* BOTÃO VOLTAR */}
+        <Link
+          href="/perfil/parcerias"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Link>
+
+        {/* HEADER DO FORMULÁRIO */}
         <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-secondary p-6 text-primary-foreground shadow-lg">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
@@ -341,3 +351,6 @@ export function FormularioServicoTurista({ modo, estabelecimentoId, dadosIniciai
     </>
   );
 }
+
+// Alias para compatibilidade com a pagina que importa como FormularioServico
+export { FormularioServicoTurista as FormularioServico };

@@ -12,16 +12,15 @@ import {
   AlertTriangle,
   Utensils,
   User,
-  MapPin,
-  Phone,
-  Instagram,
   FileCheck2,
   Send,
   CheckCircle2,
   Trash2,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { maskCnpj, maskCpf, maskPersonName, maskPhone, numericInputProps } from "@/lib/masks";
+import Link from "next/link";
 
 interface FormularioGastronomiaProps {
   modo: "criar" | "editar";
@@ -135,7 +134,15 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
   return (
     <>
       <div className="mx-auto max-w-2xl">
-        {/* ── HEADER DO FORMULÁRIO ── */}
+        {/* BOTÃO VOLTAR */}
+        <Link
+          href="/perfil/parcerias"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Link>
+
+        {/* HEADER DO FORMULÁRIO */}
         <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-secondary p-6 text-primary-foreground shadow-lg">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
@@ -168,15 +175,10 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <PerfilFormField label="Nome do Estabelecimento" value={form.nome} onChange={set("nome")} required placeholder="Ex: Restaurante Mar & Sol" />
+                <PerfilFormField label="Nome do Estabelecimento" value={form.nome} onChange={set("nome")} required placeholder="Ex: Restaurante Mar &amp; Sol" />
                 <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} mask={maskPhone} maxLength={15} {...numericInputProps} required placeholder="(00) 00000-0000" />
               </div>
-              <div className="relative">
-                <MapPin className="pointer-events-none absolute left-3 top-8 h-4 w-4 text-muted-foreground" />
-                <div className="pl-0">
-                  <PerfilFormField label="Endereço Completo" value={form.endereco} onChange={set("endereco")} required placeholder="Rua, número, bairro" />
-                </div>
-              </div>
+              <PerfilFormField label="Endereço Completo" value={form.endereco} onChange={set("endereco")} required placeholder="Rua, número, bairro" />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <PerfilFormField label="Especialidade" value={form.especialidade} onChange={set("especialidade")} placeholder="Ex: Frutos do Mar, Vegana..." />
                 <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} mask={maskCnpj} maxLength={18} {...numericInputProps} required placeholder="00.000.000/0000-00" />
@@ -195,7 +197,6 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
                 Dados do Responsável
               </h3>
             </div>
-
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField label="Nome Completo" value={form.responsavelNome} onChange={set("responsavelNome")} mask={maskPersonName} required placeholder="Nome do responsável" />
               <PerfilFormField label="CPF" value={form.responsavelCpf} onChange={set("responsavelCpf")} mask={maskCpf} maxLength={14} {...numericInputProps} required placeholder="000.000.000-00" />
@@ -230,53 +231,28 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
                 }}
               />
 
-              {/* upload de comprovante */}
               <div className="rounded-xl border border-dashed border-border bg-muted/30 p-5 transition-colors hover:border-primary/50">
                 <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <FileText className="h-3.5 w-3.5" /> Comprovante de Endereço ou Contrato Social
                 </p>
-
                 {comprovantePreviewUrl ? (
                   <div className="mb-3 flex items-center justify-between rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2">
-                    <a
-                      href={comprovantePreviewUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-xs font-medium text-green-700 hover:underline"
-                    >
+                    <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs font-medium text-green-700 hover:underline">
                       <FileCheck2 className="h-3.5 w-3.5" />
                       {files.comprovante ? files.comprovante.name : "Ver comprovante atual"}
                       <ExternalLink className="h-3 w-3" />
                     </a>
-                    <button
-                      type="button"
-                      onClick={() => setFiles((p) => ({ ...p, comprovante: undefined }))}
-                      className="text-muted-foreground transition hover:text-red-500"
-                    >
+                    <button type="button" onClick={() => setFiles((p) => ({ ...p, comprovante: undefined }))} className="text-muted-foreground transition hover:text-red-500">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : null}
-
-                <button
-                  type="button"
-                  onClick={() => comprovanteRef.current?.click()}
-                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition hover:border-primary hover:text-primary"
-                >
+                <button type="button" onClick={() => comprovanteRef.current?.click()} className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-foreground transition hover:border-primary hover:text-primary">
                   <FileText className="h-3.5 w-3.5" />
                   {comprovantePreviewUrl ? "Substituir arquivo" : "Selecionar arquivo"}
                 </button>
                 <p className="mt-2 text-xs text-muted-foreground">PDF ou imagem, máx. 10 MB</p>
-                <input
-                  ref={comprovanteRef}
-                  type="file"
-                  accept="application/pdf,image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) setFiles((p) => ({ ...p, comprovante: f }));
-                  }}
-                />
+                <input ref={comprovanteRef} type="file" accept="application/pdf,image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setFiles((p) => ({ ...p, comprovante: f })); }} />
               </div>
             </div>
           </div>
@@ -297,28 +273,14 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
 
           {/* AÇÕES */}
           <div className="flex items-center justify-between gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted"
-            >
+            <button type="button" onClick={() => router.back()} className="flex items-center gap-1.5 rounded-xl border border-border px-5 py-2.5 text-sm font-medium text-foreground transition hover:bg-muted">
               Cancelar
             </button>
-            <button
-              type="submit"
-              disabled={saving || !!success}
-              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60"
-            >
+            <button type="submit" disabled={saving || !!success} className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60">
               {saving ? (
-                <>
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  Salvando...
-                </>
+                <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Salvando...</>
               ) : (
-                <>
-                  <Send className="h-4 w-4" />
-                  {modo === "criar" ? "Enviar Solicitação" : "Salvar Alterações"}
-                </>
+                <><Send className="h-4 w-4" />{modo === "criar" ? "Enviar Solicitação" : "Salvar Alterações"}</>
               )}
             </button>
           </div>
@@ -328,21 +290,15 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
         {modo === "editar" && (
           <div className="mt-10 rounded-2xl border border-red-200 bg-red-50/50 p-6">
             <h3 className="mb-1 font-display text-lg font-bold uppercase text-red-700">Zona de Perigo</h3>
-            <p className="mb-5 text-sm text-muted-foreground">
-              Ao excluir este negócio, todos os dados e imagens serão removidos permanentemente. Esta ação não pode ser desfeita.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowDeleteModal(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-red-400 bg-background px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
-            >
+            <p className="mb-5 text-sm text-muted-foreground">Ao excluir este negócio, todos os dados e imagens serão removidos permanentemente. Esta ação não pode ser desfeita.</p>
+            <button type="button" onClick={() => setShowDeleteModal(true)} className="inline-flex items-center gap-2 rounded-xl border border-red-400 bg-background px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white">
               <Trash2 className="h-4 w-4" /> Excluir Negócio
             </button>
           </div>
         )}
       </div>
 
-      {/* MODAL DE CONFIRMAÇÃO */}
+      {/* MODAL */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
@@ -351,29 +307,11 @@ export function FormularioGastronomia({ modo, estabelecimentoId, dadosIniciais }
                 <AlertTriangle className="h-7 w-7 text-red-600" />
               </div>
               <h3 className="font-display text-xl font-bold uppercase text-foreground">Confirmar exclusão</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                O negócio <strong className="text-foreground">{form.nome || "selecionado"}</strong> será excluído permanentemente da plataforma.
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">O negócio <strong className="text-foreground">{form.nome || "selecionado"}</strong> será excluído permanentemente.</p>
               <div className="mt-6 flex w-full gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={isDeleting}
-                  className="flex-1 rounded-xl border border-border py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
-                >
-                  {isDeleting ? (
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                  ) : (
-                    <Trash2 className="h-4 w-4" />
-                  )}
+                <button type="button" onClick={() => setShowDeleteModal(false)} disabled={isDeleting} className="flex-1 rounded-xl border border-border py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50">Cancelar</button>
+                <button type="button" onClick={handleDelete} disabled={isDeleting} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">
+                  {isDeleting ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <Trash2 className="h-4 w-4" />}
                   {isDeleting ? "Excluindo..." : "Sim, Excluir"}
                 </button>
               </div>

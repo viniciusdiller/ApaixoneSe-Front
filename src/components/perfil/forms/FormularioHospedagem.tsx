@@ -17,8 +17,10 @@ import {
   CheckCircle2,
   Trash2,
   X,
+  ArrowLeft,
 } from "lucide-react";
 import { maskCnpj, maskCpf, maskPersonName, maskPhone, numericInputProps } from "@/lib/masks";
+import Link from "next/link";
 
 interface FormularioHospedagemProps {
   modo: "criar" | "editar";
@@ -36,10 +38,6 @@ const emptyForm = {
   responsavelCpf: "",
   instagram: "",
   logoUrl: "",
-  capacidade: "",
-  descricao: "",
-  checkIn: "",
-  checkOut: "",
 };
 
 const TIPOS_HOSPEDAGEM = [
@@ -75,10 +73,6 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
         responsavelCpf: dadosIniciais.responsavelCpf ?? "",
         instagram: dadosIniciais.instagram ?? "",
         logoUrl: dadosIniciais.logoUrl ?? "",
-        capacidade: dadosIniciais.capacidade != null ? String(dadosIniciais.capacidade) : "",
-        descricao: dadosIniciais.descricao ?? "",
-        checkIn: dadosIniciais.checkIn ?? "",
-        checkOut: dadosIniciais.checkOut ?? "",
       });
     } else {
       setForm(emptyForm);
@@ -86,7 +80,7 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
     }
   }, [modo, dadosIniciais]);
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement> | string) => {
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | string) => {
     const value = typeof e === "string" ? e : e.target.value;
     setForm((prev) => ({ ...prev, [k]: value }));
   };
@@ -107,10 +101,6 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
       fd.append("responsavelNome", form.responsavelNome);
       fd.append("responsavelCpf", form.responsavelCpf);
       if (form.instagram) fd.append("instagram", form.instagram);
-      if (form.capacidade) fd.append("capacidade", form.capacidade);
-      if (form.descricao) fd.append("descricao", form.descricao);
-      if (form.checkIn) fd.append("checkIn", form.checkIn);
-      if (form.checkOut) fd.append("checkOut", form.checkOut);
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -154,7 +144,15 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
   return (
     <>
       <div className="mx-auto max-w-2xl">
-        {/* ── HEADER DO FORMULÁRIO ── */}
+        {/* BOTÃO VOLTAR */}
+        <Link
+          href="/perfil/parcerias"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Link>
+
+        {/* HEADER DO FORMULÁRIO */}
         <div className="mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-secondary p-6 text-primary-foreground shadow-lg">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
@@ -207,17 +205,9 @@ export function FormularioHospedagem({ modo, estabelecimentoId, dadosIniciais }:
                     ))}
                   </select>
                 </div>
-                <PerfilFormField label="Capacidade (hóspedes)" value={form.capacidade} onChange={set("capacidade")} {...numericInputProps} placeholder="Ex: 20" />
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <PerfilFormField label="Check-in" value={form.checkIn} onChange={set("checkIn")} placeholder="Ex: 14:00" />
-                <PerfilFormField label="Check-out" value={form.checkOut} onChange={set("checkOut")} placeholder="Ex: 12:00" />
-              </div>
-              <PerfilFormField label="Descrição" value={form.descricao} onChange={set("descricao")} multiline rows={3} placeholder="Descreva o diferencial da sua hospedagem..." />
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} mask={maskCnpj} maxLength={18} {...numericInputProps} required placeholder="00.000.000/0000-00" />
-                <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@suapousada" />
               </div>
+              <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@suapousada" />
             </div>
           </div>
 
