@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle2, Mail, Waves } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  Mail,
+  Waves,
+} from "lucide-react";
 import Image from "next/image";
 import { usersApi } from "@/lib/api/users";
 import type { RegisterUserDto } from "@/lib/api/types";
@@ -105,15 +113,22 @@ export default function RegisterPage() {
               className="text-sm font-sans leading-relaxed max-w-xs"
               style={{ color: "hsl(179.5 60% 85%)" }}
             >
-              Descubra experiências únicas, roteiros inesquecíveis e a beleza das praias e lagoas de Arraial do Cabo.
+              Descubra experiências únicas, roteiros inesquecíveis e a beleza
+              das praias e lagoas de Saquerema.
             </p>
           </div>
 
           {/* Ondas decorativas */}
-          <div className="flex items-center gap-3 mt-2" style={{ color: "hsl(179.5 60% 75%)" }}>
+          <div
+            className="flex items-center gap-3 mt-2"
+            style={{ color: "hsl(179.5 60% 75%)" }}
+          >
             <Waves className="h-5 w-5" />
-            <span className="font-handwritten text-lg" style={{ color: "hsl(26.5 87.3% 78%)" }}>
-              Arraial do Cabo
+            <span
+              className="font-handwritten text-lg"
+              style={{ color: "hsl(26.5 87.3% 78%)" }}
+            >
+              Saquarema
             </span>
             <Waves className="h-5 w-5" />
           </div>
@@ -175,7 +190,8 @@ export default function RegisterPage() {
                   Verifique seu e-mail!
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Enviamos um link de confirmação para o seu e-mail. Por favor, acesse-o para ativar sua conta.
+                  Enviamos um link de confirmação para o seu e-mail. Por favor,
+                  acesse-o para ativar sua conta.
                 </p>
                 <Link
                   href="/login"
@@ -188,7 +204,10 @@ export default function RegisterPage() {
               <>
                 {/* Campo Nome */}
                 <div className="space-y-1.5">
-                  <label htmlFor="nome" className="text-sm font-semibold text-foreground">
+                  <label
+                    htmlFor="nome"
+                    className="text-sm font-semibold text-foreground"
+                  >
                     Nome Completo
                   </label>
                   <input
@@ -205,7 +224,10 @@ export default function RegisterPage() {
 
                 {/* Campo E-mail */}
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="text-sm font-semibold text-foreground">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-semibold text-foreground"
+                  >
                     E-mail
                   </label>
                   <input
@@ -222,7 +244,10 @@ export default function RegisterPage() {
 
                 {/* Campo Usuário */}
                 <div className="space-y-1.5">
-                  <label htmlFor="usuario" className="text-sm font-semibold text-foreground">
+                  <label
+                    htmlFor="usuario"
+                    className="text-sm font-semibold text-foreground"
+                  >
                     Nome de Usuário
                   </label>
                   <input
@@ -239,7 +264,10 @@ export default function RegisterPage() {
 
                 {/* Campo Senha */}
                 <div className="space-y-1.5">
-                  <label htmlFor="senha" className="text-sm font-semibold text-foreground">
+                  <label
+                    htmlFor="senha"
+                    className="text-sm font-semibold text-foreground"
+                  >
                     Senha
                   </label>
                   <div className="relative">
@@ -258,7 +286,11 @@ export default function RegisterPage() {
                       onClick={() => setShowSenha((v) => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
                     >
-                      {showSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showSenha ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
