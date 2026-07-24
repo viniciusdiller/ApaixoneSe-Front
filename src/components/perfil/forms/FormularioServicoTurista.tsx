@@ -2,12 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { servicoTuristaApi } from "@/lib/api"; 
+import { servicoTuristaApi } from "@/lib/api";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { maskCnpj, maskPhone, numericInputProps } from "@/lib/masks";
-import { FileText, ExternalLink, AlertTriangle } from "lucide-react";
+import {
+  FileText,
+  ExternalLink,
+  AlertTriangle,
+  Sparkles,
+  Compass,
+} from "lucide-react";
 
 interface FormularioServicoProps {
   modo: "criar" | "editar";
@@ -32,7 +38,11 @@ const ROTEIROS = [
   { value: "ECOLOGICO", label: "Ecológico" },
 ];
 
-const REQUER_COMPROVANTE = ["GUIA_TURISMO", "AGENCIA_TURISMO", "LOCADORA_VEICULOS"];
+const REQUER_COMPROVANTE = [
+  "GUIA_TURISMO",
+  "AGENCIA_TURISMO",
+  "LOCADORA_VEICULOS",
+];
 
 const emptyForm = {
   tipo: "GUIA_TURISMO",
@@ -49,11 +59,19 @@ const emptyForm = {
   fotoUrl: "",
 };
 
-export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: FormularioServicoProps) {
+export function FormularioServico({
+  modo,
+  estabelecimentoId,
+  dadosIniciais,
+}: FormularioServicoProps) {
   const router = useRouter();
-  
+
   const [form, setForm] = useState(emptyForm);
-  const [files, setFiles] = useState<{ logo?: File; foto?: File; comprovante?: File }>({});
+  const [files, setFiles] = useState<{
+    logo?: File;
+    foto?: File;
+    comprovante?: File;
+  }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
@@ -83,25 +101,40 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
     }
   }, [modo, dadosIniciais]);
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | string) => {
-    const value = typeof e === "string" ? e : e.target.value;
+  const set =
+    (k: string) =>
+    (
+      e:
+        | React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
+        | string,
+    ) => {
+      const value = typeof e === "string" ? e : e.target.value;
+      setForm((prev) => ({ ...prev, [k]: value }));
+    };
+
+  const setField = (k: string, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
-  };
-  const setField = (k: string, value: string) => setForm((prev) => ({ ...prev, [k]: value }));
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Validação do Comprovante
     const precisaComprovante = REQUER_COMPROVANTE.includes(form.tipo);
-    if (precisaComprovante && !dadosIniciais?.comprovanteUrl && !files.comprovante) {
-      setError("O comprovante Cadastur é obrigatório para este tipo de serviço.");
+    if (
+      precisaComprovante &&
+      !dadosIniciais?.comprovanteUrl &&
+      !files.comprovante
+    ) {
+      setError(
+        "O comprovante Cadastur é obrigatório para este tipo de serviço.",
+      );
       return;
     }
 
     setSaving(true);
-    
+
     try {
       const fd = new FormData();
       fd.append("tipo", form.tipo);
@@ -114,7 +147,7 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
       if (form.site) fd.append("site", form.site);
       if (form.idiomas) fd.append("idiomas", form.idiomas);
       if (form.roteiro) fd.append("roteiro", form.roteiro);
-      
+
       if (files.logo) fd.append("logo", files.logo);
       if (files.foto) fd.append("foto", files.foto);
       if (files.comprovante) fd.append("comprovante", files.comprovante);
@@ -126,8 +159,8 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
         await servicoTuristaApi.create(fd);
         alert("Enviado para análise com sucesso!");
       }
-      
-      router.push("/perfil"); 
+
+      router.push("/perfil");
     } catch (err: unknown) {
       try {
         const p = JSON.parse((err as Error).message);
@@ -156,166 +189,294 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
 
   const requerComprovante = REQUER_COMPROVANTE.includes(form.tipo);
   const comprovanteExistente = dadosIniciais?.comprovanteUrl ?? null;
-  const comprovantePreviewUrl = files.comprovante ? URL.createObjectURL(files.comprovante) : safeMediaUrl(comprovanteExistente);
+  const comprovantePreviewUrl = files.comprovante
+    ? URL.createObjectURL(files.comprovante)
+    : safeMediaUrl(comprovanteExistente);
 
   return (
     <>
-      <div className="max-w-2xl mx-auto p-6 bg-card rounded-xl border border-border shadow-sm">
-        <h2 className="text-2xl font-bold mb-6">
-          {modo === "criar" ? "Cadastrar Novo Serviço" : "Gerenciar Serviço"}
-        </h2>
+      <div className="mx-auto max-w-3xl overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-xl shadow-black/5">
+        <div className="relative border-b border-border/70 px-6 py-8 md:px-8">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(1,105,111,0.14),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(218,113,1,0.08),transparent_28%)]" />
 
-        <form onSubmit={handleSave} className="space-y-6">
-          
-          {/* TIPO */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">TIPO *</label>
-            <select
-              value={form.tipo}
-              onChange={set("tipo")}
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-            >
-              {TIPOS_SERVICO.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* NOME e TELEFONE */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PerfilFormField label="NOME" value={form.nome} onChange={set("nome")} required />
-            <PerfilFormField label="TELEFONE" value={form.telefone} onChange={set("telefone")} mask={maskPhone} maxLength={15} {...numericInputProps} required />
-          </div>
-
-          {/* INSTAGRAM e IDIOMAS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PerfilFormField label="INSTAGRAM" value={form.instagram} onChange={set("instagram")} />
-            <PerfilFormField label="IDIOMAS" value={form.idiomas} onChange={set("idiomas")} />
-          </div>
-          
-          {/* ENDEREÇO */}
-          <PerfilFormField label="ENDEREÇO" value={form.endereco} onChange={set("endereco")} />
-          
-          {/* CNPJ */}
-          <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} mask={maskCnpj} maxLength={18} {...numericInputProps} />
-          
-          {/* SITE */}
-          <PerfilFormField label="SITE" value={form.site} onChange={set("site")} />
-
-          {/* DESCRIÇÃO */}
-          <PerfilFormField label="DESCRIÇÃO" value={form.descricao} onChange={set("descricao")} multiline rows={4} />
-
-          {/* ROTEIRO */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">ROTEIRO (OPCIONAL)</label>
-            <select
-              value={form.roteiro}
-              onChange={set("roteiro")}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-            >
-              <option value="">Nenhum</option>
-              {ROTEIROS.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* LOGO e FOTO DO SERVIÇO */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border mt-6">
-            <FileUploadField
-              label="LOGO *"
-              accept="image"
-              currentUrl={form.logoUrl}
-              required={modo === "criar"}
-              hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => {
-                setField("logoUrl", url);
-                setFiles((p) => ({ ...p, logo: file }));
-              }}
-              onClear={() => {
-                setField("logoUrl", "");
-                setFiles((p) => ({ ...p, logo: undefined }));
-              }}
-            />
-            <FileUploadField
-              label="FOTO DO SERVIÇO"
-              accept="image"
-              currentUrl={form.fotoUrl}
-              hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => {
-                setField("fotoUrl", url);
-                setFiles((p) => ({ ...p, foto: file }));
-              }}
-              onClear={() => {
-                setField("fotoUrl", "");
-                setFiles((p) => ({ ...p, foto: undefined }));
-              }}
-            />
-          </div>
-
-          {/* AQUI ESTÁ O COMPROVANTE! */}
-          {requerComprovante && (
-            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <FileText size={13} /> Comprovante Cadastur
-              </p>
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">
-                  Arquivo {!comprovanteExistente && <span className="text-red-500">*</span>} — PDF ou imagem
-                </label>
-                {comprovantePreviewUrl && (
-                  <div className="mt-1 mb-2">
-                    <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-primary font-medium">
-                      <FileText size={14} /> {files.comprovante ? files.comprovante.name : "Ver Cadastur atual"} <ExternalLink size={12} />
-                    </a>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => comprovanteRef.current?.click()}
-                  className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
-                >
-                  <FileText size={14} /> {comprovanteExistente || files.comprovante ? "Substituir Arquivo" : "Selecionar arquivo"}
-                </button>
-                <input
-                  ref={comprovanteRef}
-                  type="file"
-                  accept="application/pdf,image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) setFiles((p) => ({ ...p, comprovante: f }));
-                  }}
-                />
+          <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+                <Sparkles className="h-3.5 w-3.5" /> Solicitação de serviço
               </div>
+
+              <h2 className="font-display text-3xl font-bold uppercase leading-none text-foreground md:text-4xl">
+                {modo === "criar"
+                  ? "Cadastrar Novo Serviço"
+                  : "Gerenciar Serviço"}
+              </h2>
+
+              <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
+                Uma camada visual mais sofisticada para apresentar serviços ao
+                turista sem alterar o fluxo existente.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm text-muted-foreground shadow-sm">
+              <div className="rounded-2xl bg-primary/10 p-2.5 text-primary">
+                <Compass className="h-5 w-5" />
+              </div>
+              <span>
+                Tipo, roteiro e arquivos organizados em blocos visuais.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSave} className="space-y-8 px-6 py-8 md:px-8">
+          <section className="space-y-5">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                Informações principais
+              </p>
+              <h3 className="font-display text-2xl font-bold uppercase text-foreground">
+                Dados do serviço
+              </h3>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                TIPO *
+              </label>
+              <select
+                value={form.tipo}
+                onChange={set("tipo")}
+                required
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+              >
+                {TIPOS_SERVICO.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <PerfilFormField
+                label="NOME"
+                value={form.nome}
+                onChange={set("nome")}
+                required
+              />
+              <PerfilFormField
+                label="TELEFONE"
+                value={form.telefone}
+                onChange={set("telefone")}
+                mask={maskPhone}
+                maxLength={15}
+                {...numericInputProps}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <PerfilFormField
+                label="INSTAGRAM"
+                value={form.instagram}
+                onChange={set("instagram")}
+              />
+              <PerfilFormField
+                label="IDIOMAS"
+                value={form.idiomas}
+                onChange={set("idiomas")}
+              />
+            </div>
+
+            <PerfilFormField
+              label="ENDEREÇO"
+              value={form.endereco}
+              onChange={set("endereco")}
+            />
+
+            <PerfilFormField
+              label="CNPJ"
+              value={form.cnpj}
+              onChange={set("cnpj")}
+              mask={maskCnpj}
+              maxLength={18}
+              {...numericInputProps}
+            />
+
+            <PerfilFormField
+              label="SITE"
+              value={form.site}
+              onChange={set("site")}
+            />
+
+            <PerfilFormField
+              label="DESCRIÇÃO"
+              value={form.descricao}
+              onChange={set("descricao")}
+              multiline
+              rows={4}
+            />
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                ROTEIRO (OPCIONAL)
+              </label>
+              <select
+                value={form.roteiro}
+                onChange={set("roteiro")}
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Nenhum</option>
+                {ROTEIROS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </section>
+
+          <section className="space-y-5 rounded-[24px] border border-border/70 bg-background/60 p-5 md:p-6">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                Arquivos
+              </p>
+              <h3 className="font-display text-2xl font-bold uppercase text-foreground">
+                Identidade visual do serviço
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 pt-1 md:grid-cols-2">
+              <FileUploadField
+                label="LOGO *"
+                accept="image"
+                currentUrl={form.logoUrl}
+                required={modo === "criar"}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("logoUrl", url);
+                  setFiles((p) => ({ ...p, logo: file }));
+                }}
+                onClear={() => {
+                  setField("logoUrl", "");
+                  setFiles((p) => ({ ...p, logo: undefined }));
+                }}
+              />
+
+              <FileUploadField
+                label="FOTO DO SERVIÇO"
+                accept="image"
+                currentUrl={form.fotoUrl}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("fotoUrl", url);
+                  setFiles((p) => ({ ...p, foto: file }));
+                }}
+                onClear={() => {
+                  setField("fotoUrl", "");
+                  setFiles((p) => ({ ...p, foto: undefined }));
+                }}
+              />
+            </div>
+
+            {requerComprovante && (
+              <div className="rounded-[22px] border border-dashed border-primary/20 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <FileText size={13} /> Comprovante Cadastur
+                </p>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Arquivo{" "}
+                    {!comprovanteExistente && (
+                      <span className="text-red-500">*</span>
+                    )}{" "}
+                    — PDF ou imagem
+                  </label>
+
+                  {comprovantePreviewUrl && (
+                    <div className="mb-2 mt-1">
+                      <a
+                        href={comprovantePreviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+                      >
+                        <FileText size={14} />{" "}
+                        {files.comprovante
+                          ? files.comprovante.name
+                          : "Ver Cadastur atual"}{" "}
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => comprovanteRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+                  >
+                    <FileText size={14} />{" "}
+                    {comprovanteExistente || files.comprovante
+                      ? "Substituir Arquivo"
+                      : "Selecionar arquivo"}
+                  </button>
+
+                  <input
+                    ref={comprovanteRef}
+                    type="file"
+                    accept="application/pdf,image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </section>
+
+          {error && (
+            <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>{error}</p>
             </div>
           )}
 
-          {error && <p className="text-sm font-medium text-red-500 bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}
-          
-          <div className="flex justify-end gap-3 pt-6 border-t border-border">
-            <button type="button" onClick={() => router.back()} className="px-5 py-2.5 text-sm font-semibold border rounded-lg transition hover:bg-muted text-foreground">
+          <div className="flex flex-col-reverse gap-3 border-t border-border/70 pt-6 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+            >
               Cancelar
             </button>
-            <button type="submit" disabled={saving} className="px-5 py-2.5 text-sm font-bold text-white bg-primary rounded-lg transition hover:bg-primary/90 disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50"
+            >
               {saving ? "Salvando..." : "Salvar Alterações"}
             </button>
           </div>
         </form>
 
-        {/* ZONA DE PERIGO */}
         {modo === "editar" && (
-          <div className="mt-12 rounded-xl border border-red-500 p-6">
-            <h3 className="text-xl font-bold text-red-600 mb-2">Zona de Perigo</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              Ao excluir este serviço, todos os dados, imagens e informações serão permanentemente removidos. Esta ação não pode ser desfeita.
+          <div className="mx-6 mb-6 mt-2 rounded-xl border border-red-500 p-6 md:mx-8">
+            <h3 className="mb-2 text-xl font-bold text-red-600">
+              Zona de Perigo
+            </h3>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Ao excluir este serviço, todos os dados, imagens e informações
+              serão permanentemente removidos. Esta ação não pode ser desfeita.
             </p>
+
             <div className="flex justify-center">
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(true)}
-                className="px-6 py-2.5 text-sm font-semibold text-red-600 bg-background border border-red-500 rounded-md transition hover:bg-red-600 hover:text-white"
+                className="rounded-md border border-red-500 bg-background px-6 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
               >
                 Excluir Serviço
               </button>
@@ -324,25 +485,28 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
         )}
       </div>
 
-      {/* MODAL DE CONFIRMAÇÃO */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-background rounded-2xl shadow-xl max-w-sm w-full p-6 border border-border animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-background p-6 shadow-xl animate-in zoom-in-95 duration-200">
             <div className="flex flex-col items-center text-center">
-              <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-foreground">Você tem certeza?</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                Esta ação é irreversível. O serviço <strong>{form.nome || "selecionado"}</strong> será excluído permanentemente.
+              <h3 className="mb-2 text-xl font-bold text-foreground">
+                Você tem certeza?
+              </h3>
+              <p className="mb-6 text-sm text-muted-foreground">
+                Esta ação é irreversível. O serviço{" "}
+                <strong>{form.nome || "selecionado"}</strong> será excluído
+                permanentemente.
               </p>
-              
-              <div className="flex gap-3 w-full">
+
+              <div className="flex w-full gap-3">
                 <button
                   type="button"
                   onClick={() => setShowDeleteModal(false)}
                   disabled={isDeleting}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold border border-border rounded-xl transition hover:bg-muted disabled:opacity-50 text-foreground"
+                  className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
                 >
                   Cancelar
                 </button>
@@ -350,7 +514,7 @@ export function FormularioServico({ modo, estabelecimentoId, dadosIniciais }: Fo
                   type="button"
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl transition hover:bg-red-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
                 >
                   {isDeleting ? "Excluindo..." : "Sim, Excluir"}
                 </button>
