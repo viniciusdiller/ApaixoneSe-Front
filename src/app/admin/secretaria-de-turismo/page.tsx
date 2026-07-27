@@ -14,20 +14,23 @@ import {
 import {
   secretariaTurismoApi,
   turistandoApi,
-  projetoApi,
+  // projetoApi,
 } from "@/lib/api/secretaria-turismo";
-import type { SecretariaTurismo, Turistando, Projeto } from "@/lib/api/types";
+import type {
+  SecretariaTurismo,
+  Turistando /*, Projeto */,
+} from "@/lib/api/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const img = (url?: string | null) =>
   url ? (url.startsWith("http") ? url : `${API_URL}${url}`) : null;
 
-type Tab = "institucional" | "turistando" | "projetos";
+type Tab = "institucional" | /*"turistando"  */ "projetos";
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "institucional", label: "Institucional", emoji: "🏛️" },
-  { key: "turistando", label: "Turistando", emoji: "🌄" },
   { key: "projetos", label: "Projetos", emoji: "📌" },
+  // { key: "turistando", label: "Turistando", emoji: "🌄" },
 ];
 
 export default function SecretariaTurismoAdminPage() {
@@ -50,10 +53,12 @@ export default function SecretariaTurismoAdminPage() {
   });
   const [turistandoImagens, setTuristandoImagens] = useState<File[]>([]);
 
+  /* 
   const [modalProjetoOpen, setModalProjetoOpen] = useState(false);
   const [editingProjetoId, setEditingProjetoId] = useState<string | null>(null);
   const [projetoForm, setProjetoForm] = useState({ titulo: "", descricao: "" });
   const [projetoImagem, setProjetoImagem] = useState<File | null>(null);
+  */
 
   const [instTexto, setInstTexto] = useState("");
   const [instVideo, setInstVideo] = useState<File | null>(null);
@@ -61,7 +66,7 @@ export default function SecretariaTurismoAdminPage() {
 
   const videoInputRef = useRef<HTMLInputElement>(null);
   const imagensInputRef = useRef<HTMLInputElement>(null);
-  const imagemProjetoRef = useRef<HTMLInputElement>(null);
+  // const imagemProjetoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     load();
@@ -171,6 +176,7 @@ export default function SecretariaTurismoAdminPage() {
   }
 
   // ── PROJETOS ───────────────────────────────────────────────────────────────
+  /*
   function openAddProjeto() {
     setEditingProjetoId(null);
     setProjetoForm({ titulo: "", descricao: "" });
@@ -221,6 +227,7 @@ export default function SecretariaTurismoAdminPage() {
       toast("error", "Erro ao remover Projeto.");
     }
   }
+  */
 
   if (loading) {
     return (
@@ -266,7 +273,7 @@ export default function SecretariaTurismoAdminPage() {
         {TABS.map(({ key, label, emoji }) => (
           <button
             key={key}
-            onClick={() => setActiveTab(key)}
+            onClick={() => setActiveTab(key as Tab)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === key
                 ? "bg-white shadow-sm text-foreground"
@@ -347,7 +354,7 @@ export default function SecretariaTurismoAdminPage() {
       )}
 
       {/* ── TURISTANDO ── */}
-      {activeTab === "turistando" && (
+      {activeTab === "projetos" && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
@@ -358,7 +365,7 @@ export default function SecretariaTurismoAdminPage() {
               className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" />
-              Adicionar Turistando
+              Adicionar Projeto
             </button>
           </div>
 
@@ -421,6 +428,7 @@ export default function SecretariaTurismoAdminPage() {
       )}
 
       {/* ── PROJETOS ── */}
+      {/* 
       {activeTab === "projetos" && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -490,6 +498,7 @@ export default function SecretariaTurismoAdminPage() {
           )}
         </div>
       )}
+      */}
 
       {/* ── MODAL TURISTANDO ── */}
       {modalTuristandoOpen && (
@@ -497,7 +506,7 @@ export default function SecretariaTurismoAdminPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
             <div className="flex justify-between items-center px-6 py-4 border-b border-border">
               <h2 className="text-base font-semibold">
-                {editingTuristandoId ? "Editar Turistando" : "Novo Turistando"}
+                {editingTuristandoId ? "Editar Projeto" : "Novo Projeto"}
               </h2>
               <button
                 onClick={() => setModalTuristandoOpen(false)}
@@ -586,6 +595,7 @@ export default function SecretariaTurismoAdminPage() {
       )}
 
       {/* ── MODAL PROJETO ── */}
+      {/*
       {modalProjetoOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
@@ -671,6 +681,7 @@ export default function SecretariaTurismoAdminPage() {
           </div>
         </div>
       )}
+      */}
     </div>
   );
 }
