@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   usersApi,
   gastronomiaApi,
@@ -32,6 +32,7 @@ import {
   UserPlus,
   CheckCircle2,
   XCircle,
+  Search,
 } from "lucide-react";
 import { maskPersonName } from "@/lib/masks";
 
@@ -42,7 +43,7 @@ interface EditForm {
   email: string;
   perfil: Perfil;
   senha: string;
-  active: boolean; // ← adicionado
+  active: boolean;
 }
 
 interface CreateForm {
@@ -95,7 +96,6 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-/** Badge/botão de Email Verificado — alterna active via PATCH */
 function EmailVerificadoBadge({
   userId,
   active,
@@ -128,6 +128,7 @@ function EmailVerificadoBadge({
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   // modal criar
   const [createOpen, setCreateOpen] = useState(false);
@@ -162,12 +163,24 @@ export default function AdminUsuariosPage() {
   };
   useEffect(load, []);
 
-  // ── toggle active (Email Verificado) ──
+  // ── filtro client-side ──
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter(
+      (u) =>
+        u.nome.toLowerCase().includes(q) ||
+        u.usuario.toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q),
+    );
+  }, [users, search]);
+
+  // ── toggle active ──
   const handleToggleActive = async (id: string, next: boolean) => {
     try {
       const updated = await usersApi.setActive(id, next);
       setUsers((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, active: updated.active } : u))
+        prev.map((u) => (u.id === id ? { ...u, active: updated.active } : u)),
       );
     } catch (err) {
       console.error("Erro ao atualizar status do usuário:", err);
@@ -212,7 +225,7 @@ export default function AdminUsuariosPage() {
       email: user.email,
       perfil: user.perfil,
       senha: "",
-      active: user.active ?? false, // ← carrega o valor atual
+      active: user.active ?? false,
     });
     setEditError("");
   };
@@ -228,7 +241,7 @@ export default function AdminUsuariosPage() {
         usuario: editForm.usuario,
         email: editForm.email,
         perfil: editForm.perfil,
-        active: editForm.active, // ← envia o active junto
+        active: editForm.active,
       };
       if (editForm.senha.trim()) payload.senha = editForm.senha.trim();
       await usersApi.update(editUser.id, payload);
@@ -291,7 +304,9 @@ export default function AdminUsuariosPage() {
             Usuários
           </h1>
           <p className="text-sm text-muted-foreground">
-            {users.length} registros
+            {filteredUsers.length === users.length
+              ? `${users.length} registros`
+              : `${filteredUsers.length} de ${users.length} registros`}
           </p>
         </div>
         <button
@@ -307,12 +322,37 @@ export default function AdminUsuariosPage() {
         </button>
       </div>
 
+      {/* barra de pesquisa */}
+      <div className="relative mb-4">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
+        <input
+          type="search"
+          placeholder="Pesquisar por nome, usuário ou e-mail…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            aria-label="Limpar pesquisa"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {/* tabela */}
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
         <AdminTable<User>
-          data={users}
+          data={filteredUsers}
           columns={[
             { key: "usuario", label: "Login" },
             { key: "nome", label: "Nome" },
@@ -407,23 +447,16 @@ export default function AdminUsuariosPage() {
             required
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">
-              Perfil
-            </label>
+            <label className="text-sm font-medium text-foreground">Perfil</label>
             <select
               value={createForm.perfil}
               onChange={(e) =>
-                setCreateForm((f) => ({
-                  ...f,
-                  perfil: e.target.value as Perfil,
-                }))
+                setCreateForm((f) => ({ ...f, perfil: e.target.value as Perfil }))
               }
               className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {PERFIS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
@@ -472,9 +505,7 @@ export default function AdminUsuariosPage() {
             required
           />
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-foreground">
-              Perfil
-            </label>
+            <label className="text-sm font-medium text-foreground">Perfil</label>
             <select
               value={editForm.perfil}
               onChange={(e) =>
@@ -483,9 +514,7 @@ export default function AdminUsuariosPage() {
               className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {PERFIS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
+                <option key={p} value={p}>{p}</option>
               ))}
             </select>
           </div>
@@ -495,7 +524,9 @@ export default function AdminUsuariosPage() {
             <div className="flex flex-col">
               <span className="text-sm font-medium text-foreground">Email verificado</span>
               <span className="text-xs text-muted-foreground">
-                {editForm.active ? "Conta ativa — e-mail confirmado" : "Conta inativa — e-mail não confirmado"}
+                {editForm.active
+                  ? "Conta ativa — e-mail confirmado"
+                  : "Conta inativa — e-mail não confirmado"}
               </span>
             </div>
             <button
@@ -534,7 +565,6 @@ export default function AdminUsuariosPage() {
               border: "1px solid hsl(var(--border))",
             }}
           >
-            {/* header */}
             <div
               className="flex items-center gap-3 px-6 py-4"
               style={{ borderBottom: "1px solid hsl(var(--border))" }}
@@ -561,97 +591,38 @@ export default function AdminUsuariosPage() {
               </button>
             </div>
 
-            {/* body scrollável */}
             <div className="flex-1 space-y-6 overflow-y-auto px-6 py-4">
               {detailsLoading ? (
                 <p className="text-sm text-muted-foreground">Carregando…</p>
               ) : (
                 <>
-                  <Section
-                    icon={<UtensilsCrossed size={16} />}
-                    title="Gastronomia"
-                    count={details.gastronomias.length}
-                  >
-                    {details.gastronomias.length === 0 ? (
-                      <Empty />
-                    ) : (
-                      details.gastronomias.map((g) => (
-                        <EstabelecimentoCard
-                          key={g.id}
-                          nome={g.nome}
-                          sub={g.endereco}
-                          status={g.status}
-                          logo={g.logoUrl}
-                        />
-                      ))
-                    )}
+                  <Section icon={<UtensilsCrossed size={16} />} title="Gastronomia" count={details.gastronomias.length}>
+                    {details.gastronomias.length === 0 ? <Empty /> : details.gastronomias.map((g) => (
+                      <EstabelecimentoCard key={g.id} nome={g.nome} sub={g.endereco} status={g.status} logo={g.logoUrl} />
+                    ))}
                   </Section>
-
-                  <Section
-                    icon={<BedDouble size={16} />}
-                    title="Hospedagem"
-                    count={details.hospedagens.length}
-                  >
-                    {details.hospedagens.length === 0 ? (
-                      <Empty />
-                    ) : (
-                      details.hospedagens.map((h) => (
-                        <EstabelecimentoCard
-                          key={h.id}
-                          nome={h.nome}
-                          sub={h.endereco}
-                          status={h.status}
-                          logo={h.logoUrl}
-                        />
-                      ))
-                    )}
+                  <Section icon={<BedDouble size={16} />} title="Hospedagem" count={details.hospedagens.length}>
+                    {details.hospedagens.length === 0 ? <Empty /> : details.hospedagens.map((h) => (
+                      <EstabelecimentoCard key={h.id} nome={h.nome} sub={h.endereco} status={h.status} logo={h.logoUrl} />
+                    ))}
                   </Section>
-
-                  <Section
-                    icon={<Briefcase size={16} />}
-                    title="Serviços Turísticos"
-                    count={details.servicos.length}
-                  >
-                    {details.servicos.length === 0 ? (
-                      <Empty />
-                    ) : (
-                      details.servicos.map((s) => (
-                        <EstabelecimentoCard
-                          key={s.id}
-                          nome={s.nome}
-                          sub={s.tipo}
-                          status={s.status}
-                          logo={s.logoUrl ?? undefined}
-                        />
-                      ))
-                    )}
+                  <Section icon={<Briefcase size={16} />} title="Serviços Turísticos" count={details.servicos.length}>
+                    {details.servicos.length === 0 ? <Empty /> : details.servicos.map((s) => (
+                      <EstabelecimentoCard key={s.id} nome={s.nome} sub={s.tipo} status={s.status} logo={s.logoUrl ?? undefined} />
+                    ))}
                   </Section>
-
-                  <Section
-                    icon={<Map size={16} />}
-                    title="Planos de Viagem"
-                    count={details.planos.length}
-                  >
-                    {details.planos.length === 0 ? (
-                      <Empty />
-                    ) : (
+                  <Section icon={<Map size={16} />} title="Planos de Viagem" count={details.planos.length}>
+                    {details.planos.length === 0 ? <Empty /> : (
                       <div className="space-y-2">
                         {details.planos.map((p) => (
                           <div
                             key={p.id}
                             className="flex items-center justify-between rounded-lg px-3 py-2 text-sm"
-                            style={{
-                              backgroundColor: "hsl(var(--muted))",
-                              border: "1px solid hsl(var(--border))",
-                            }}
+                            style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
                           >
-                            <span className="font-medium text-foreground">
-                              {p.titulo}
-                            </span>
+                            <span className="font-medium text-foreground">{p.titulo}</span>
                             <span className="text-xs text-muted-foreground">
-                              {new Date(p.dataInicio).toLocaleDateString(
-                                "pt-BR",
-                              )}
+                              {new Date(p.dataInicio).toLocaleDateString("pt-BR")}
                               {" → "}
                               {new Date(p.dataFim).toLocaleDateString("pt-BR")}
                             </span>
@@ -664,7 +635,6 @@ export default function AdminUsuariosPage() {
               )}
             </div>
 
-            {/* footer */}
             <div
               className="px-6 py-3 text-right"
               style={{ borderTop: "1px solid hsl(var(--border))" }}
@@ -684,62 +654,29 @@ export default function AdminUsuariosPage() {
 }
 
 // ── sub-componentes ────────────────────────────────────────────────────────
-function Section({
-  icon,
-  title,
-  count,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  count: number;
-  children: React.ReactNode;
-}) {
+function Section({ icon, title, count, children }: { icon: React.ReactNode; title: string; count: number; children: React.ReactNode }) {
   return (
     <div>
       <div className="mb-2 flex items-center gap-2">
         <span className="text-primary">{icon}</span>
-        <h3 className="font-display text-sm font-bold uppercase tracking-widest text-foreground">
-          {title}
-        </h3>
-        <span
-          className="ml-auto rounded-full px-2 py-0.5 text-xs text-muted-foreground"
-          style={{ backgroundColor: "hsl(var(--muted))" }}
-        >
-          {count}
-        </span>
+        <h3 className="font-display text-sm font-bold uppercase tracking-widest text-foreground">{title}</h3>
+        <span className="ml-auto rounded-full px-2 py-0.5 text-xs text-muted-foreground" style={{ backgroundColor: "hsl(var(--muted))" }}>{count}</span>
       </div>
       {children}
     </div>
   );
 }
 
-function EstabelecimentoCard({
-  nome,
-  sub,
-  status,
-  logo,
-}: {
-  nome: string;
-  sub: string;
-  status: string;
-  logo?: string;
-}) {
+function EstabelecimentoCard({ nome, sub, status, logo }: { nome: string; sub: string; status: string; logo?: string }) {
   return (
     <div
       className="flex items-center gap-3 rounded-lg px-3 py-2"
-      style={{
-        backgroundColor: "hsl(var(--muted))",
-        border: "1px solid hsl(var(--border))",
-      }}
+      style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}
     >
       {logo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={logo}
-          alt={nome}
-          width={32}
-          height={32}
+          src={logo} alt={nome} width={32} height={32}
           className="h-8 w-8 flex-shrink-0 rounded object-cover"
           onError={(e) => {
             const target = e.currentTarget;
@@ -753,9 +690,7 @@ function EstabelecimentoCard({
         className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded bg-muted text-muted-foreground"
         style={logo ? { display: "none" } : {}}
       >
-        <span className="text-xs font-bold">
-          {nome.charAt(0).toUpperCase()}
-        </span>
+        <span className="text-xs font-bold">{nome.charAt(0).toUpperCase()}</span>
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">{nome}</p>
@@ -767,9 +702,5 @@ function EstabelecimentoCard({
 }
 
 function Empty() {
-  return (
-    <p className="text-sm italic text-muted-foreground">
-      Nenhum registro encontrado.
-    </p>
-  );
+  return <p className="text-sm italic text-muted-foreground">Nenhum registro encontrado.</p>;
 }
