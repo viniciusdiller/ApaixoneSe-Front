@@ -8,25 +8,29 @@ export interface LoginPayload {
 
 export const usersApi = {
   register: (data: RegisterUserDto) =>
-    apiFetch<User>("/users/register", { method: "POST", body: JSON.stringify(data) }),
+    apiFetch<User>("/users/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   login: (data: LoginPayload) =>
-    apiFetch<LoginResponse>("/users/login", { method: "POST", body: JSON.stringify(data) }),
+    apiFetch<LoginResponse>("/users/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
 
   getAll: () => apiFetch<User[]>("/users"),
   getById: (id: string) => apiFetch<User>(`/users/${id}`),
   update: (id: string, data: Partial<RegisterUserDto>) =>
-    apiFetch<User>(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+    apiFetch<User>(`/users/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
   delete: (id: string) => apiFetch<void>(`/users/${id}`, { method: "DELETE" }),
 
-  /**
-   * Alterna o campo `active` do usuário no backend.
-   * Chama PATCH /users/:id/active com { active: boolean }.
-   *
-   * ⚠️  SE o backend ainda não tiver esta rota, ela precisará ser criada.
-   *     Endpoint esperado: PATCH /users/:id  com body { active: boolean }
-   *     (ou PATCH /users/:id/active, conforme convenção do projeto).
-   */
   setActive: (id: string, active: boolean) =>
-    apiFetch<User>(`/users/${id}`, { method: "PATCH", body: JSON.stringify({ active }) }),
+    apiFetch<User>(`/users/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ active }),
+    }),
 };
