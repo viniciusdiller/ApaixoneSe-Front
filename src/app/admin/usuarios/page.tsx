@@ -30,6 +30,8 @@ import {
   Map,
   X,
   UserPlus,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 import { maskPersonName } from "@/lib/masks";
 
@@ -92,6 +94,35 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+/** Badge/botão de Email Verificado — alterna active via PATCH */
+function EmailVerificadoBadge({
+  userId,
+  active,
+  onToggle,
+}: {
+  userId: string;
+  active: boolean;
+  onToggle: (id: string, next: boolean) => void;
+}) {
+  return (
+    <button
+      onClick={() => onToggle(userId, !active)}
+      title={active ? "Verificado — clique para revogar" : "Não verificado — clique para ativar"}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition hover:opacity-80 ${
+        active
+          ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+          : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+      }`}
+    >
+      {active ? (
+        <><CheckCircle2 size={12} /> Sim</>
+      ) : (
+        <><XCircle size={12} /> Não</>
+      )}
+    </button>
+  );
+}
+
 // ── componente principal ───────────────────────────────────────────────────
 export default function AdminUsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -128,6 +159,18 @@ export default function AdminUsuariosPage() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  // ── toggle active (Email Verificado) ──
+  const handleToggleActive = async (id: string, next: boolean) => {
+    try {
+      const updated = await usersApi.setActive(id, next);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, active: updated.active } : u))
+      );
+    } catch (err) {
+      console.error("Erro ao atualizar status do usuário:", err);
+    }
+  };
 
   // ── criar usuário ──
   const handleCreate = async () => {
@@ -281,6 +324,17 @@ export default function AdminUsuariosPage() {
                 >
                   {row.perfil}
                 </span>
+              ),
+            },
+            {
+              key: "active",
+              label: "Email verificado",
+              render: (_, row) => (
+                <EmailVerificadoBadge
+                  userId={row.id}
+                  active={row.active ?? false}
+                  onToggle={handleToggleActive}
+                />
               ),
             },
             {
