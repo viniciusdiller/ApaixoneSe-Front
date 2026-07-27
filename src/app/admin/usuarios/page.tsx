@@ -42,6 +42,7 @@ interface EditForm {
   email: string;
   perfil: Perfil;
   senha: string;
+  active: boolean; // ← adicionado
 }
 
 interface CreateForm {
@@ -142,6 +143,7 @@ export default function AdminUsuariosPage() {
     email: "",
     perfil: "USUARIO",
     senha: "",
+    active: false,
   });
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState("");
@@ -210,6 +212,7 @@ export default function AdminUsuariosPage() {
       email: user.email,
       perfil: user.perfil,
       senha: "",
+      active: user.active ?? false, // ← carrega o valor atual
     });
     setEditError("");
   };
@@ -220,11 +223,12 @@ export default function AdminUsuariosPage() {
     setSaving(true);
     setEditError("");
     try {
-      const payload: Record<string, string> = {
+      const payload: Record<string, unknown> = {
         nome: editForm.nome,
         usuario: editForm.usuario,
         email: editForm.email,
         perfil: editForm.perfil,
+        active: editForm.active, // ← envia o active junto
       };
       if (editForm.senha.trim()) payload.senha = editForm.senha.trim();
       await usersApi.update(editUser.id, payload);
@@ -485,6 +489,32 @@ export default function AdminUsuariosPage() {
               ))}
             </select>
           </div>
+
+          {/* ── Email Verificado (toggle) ── */}
+          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-foreground">Email verificado</span>
+              <span className="text-xs text-muted-foreground">
+                {editForm.active ? "Conta ativa — e-mail confirmado" : "Conta inativa — e-mail não confirmado"}
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={editForm.active}
+              onClick={() => setEditForm((f) => ({ ...f, active: !f.active }))}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                editForm.active ? "bg-green-500" : "bg-muted-foreground/30"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  editForm.active ? "translate-x-5" : "translate-x-0"
+                }`}
+              />
+            </button>
+          </div>
+
           <AdminFormField
             label="Nova senha (deixe vazio para não alterar)"
             type="password"
