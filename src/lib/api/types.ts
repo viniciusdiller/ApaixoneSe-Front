@@ -39,6 +39,8 @@ export interface User {
   usuario: string;
   email: string;
   perfil: Perfil;
+  /** Coluna `active` do banco — exibida no admin como "Email verificado" */
+  active?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

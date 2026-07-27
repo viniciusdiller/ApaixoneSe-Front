@@ -5,7 +5,11 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading } = useAuth();
@@ -14,9 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (isLoading) return;
-    // Permite a página de redirect do /admin/login
     if (isLoginPage) return;
-    // Redireciona para /login se não autenticado ou não for ADMIN
     if (!user || user.perfil !== "ADMIN") {
       router.replace("/login");
     }
