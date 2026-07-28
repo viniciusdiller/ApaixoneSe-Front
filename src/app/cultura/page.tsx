@@ -13,6 +13,7 @@ export default function CulturaPage() {
   const [locais, setLocais] = useState<LocalCultural[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
+  const [clickedCard, setClickedCard] = useState<string | null>(null);
   const [localSelecionado, setLocalSelecionado] =
     useState<LocalCultural | null>(null);
 
@@ -26,13 +27,13 @@ export default function CulturaPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative flex h-[55vh] items-center justify-center overflow-hidden pt-20">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/images/igreja-nazare.jpg)" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/30 to-black/30" />
-        <div className="relative z-10 px-4 text-center text-primary-foreground">
+      <section className="bg-primary px-4 pb-12 pt-32">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="container mx-auto text-center"
+        >
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -40,13 +41,13 @@ export default function CulturaPage() {
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <p className="mb-3 text-sm uppercase tracking-[0.3em]">
-            Tradição e Identidade
-          </p>
-          <h1 className="font-display text-5xl font-bold uppercase md:text-7xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Cultura
           </h1>
-        </div>
+          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+            Conheça um pouco mais da tradição saquaremense.
+          </p>
+        </motion.div>
       </section>
 
       <section className="container mx-auto px-4 py-16">

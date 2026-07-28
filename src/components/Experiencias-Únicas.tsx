@@ -11,7 +11,7 @@ const roteiros = [
     label: "A Pé",
     descricao:
       "Trilhas e percursos para explorar Saquarema com contato direto com a natureza",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/itauna-surf.jpg",
     span: "",
   },
   {
@@ -19,42 +19,42 @@ const roteiros = [
     label: "Esporte e Aventura",
     descricao:
       "Surf, kitesurf, vôlei e adrenalina no destino esportivo mais famoso do Brasil",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/esporte.jpeg",
     span: "md:col-span-2",
   },
   {
     slug: "de-praias",
     label: "De Praias",
     descricao: "As praias de Saquarema, cada uma com uma personalidade única",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/praia.jpeg",
     span: "",
   },
   {
     slug: "cultural",
     label: "Cultural",
     descricao: "História, arte e fé que moldaram a identidade de Saquarema",
-    imagem: "/images/igreja-nazare.jpg",
+    imagem: "/images/roteiros/igreja-nazare.jpg",
     span: "",
   },
   {
     slug: "religioso",
     label: "Religioso",
     descricao: "Lugares sagrados de grande beleza e tradição devocional",
-    imagem: "/images/igreja-nazare.jpg",
+    imagem: "/images/roteiros/religioso.jpeg",
     span: "",
   },
   {
     slug: "rural",
     label: "Rural",
     descricao: "Fazendas, gastronomia do campo e tradições do interior",
-    imagem: "/images/gastronomia.jpg",
+    imagem: "/images/roteiros/rural.jpeg",
     span: "",
   },
   {
     slug: "ecologico",
     label: "Ecológico",
     descricao: "Lagoas, restingas e fauna local para os amantes do ecoturismo",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/ecologico.jpeg",
     span: "",
   },
 ];

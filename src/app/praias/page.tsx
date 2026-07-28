@@ -3,7 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft, Filter, MapPin, Waves, AlertCircle } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Filter,
+  MapPin,
+  Waves,
+  AlertCircle,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { pontosAguaApi } from "@/lib/api";
 import type { PontoAgua } from "@/lib/api";
@@ -15,11 +22,13 @@ const FILTER_OPTIONS = [
   { label: "Todas", value: "todas" },
   { label: "Para Surf", value: "surf" },
   { label: "Para Família", value: "família" },
-  { label: "Acessível", value: "acessivel" },
   { label: "Bandeira Azul", value: "bandeira azul" },
 ];
 function WaveBadge({ lat, lng }: { lat?: number | null; lng?: number | null }) {
-  const { data } = useWaveData({ lat: lat ?? undefined, lng: lng ?? undefined });
+  const { data } = useWaveData({
+    lat: lat ?? undefined,
+    lng: lng ?? undefined,
+  });
   if (!data) return null;
   return (
     <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-xs font-medium text-primary-foreground shadow-sm">
@@ -43,8 +52,14 @@ export default function PraiasPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const praias = useMemo(() => pontos.filter((p) => p.tipo === "PRAIA"), [pontos]);
-  const lagoas = useMemo(() => pontos.filter((p) => p.tipo === "LAGOA"), [pontos]);
+  const praias = useMemo(
+    () => pontos.filter((p) => p.tipo === "PRAIA"),
+    [pontos],
+  );
+  const lagoas = useMemo(
+    () => pontos.filter((p) => p.tipo === "LAGOA"),
+    [pontos],
+  );
 
   const filtered = useMemo(
     () =>
@@ -99,7 +114,9 @@ export default function PraiasPage() {
       <section className="px-4 py-16">
         <div className="container mx-auto max-w-6xl">
           {loading ? (
-            <p className="text-center text-muted-foreground">Carregando praias...</p>
+            <p className="text-center text-muted-foreground">
+              Carregando praias...
+            </p>
           ) : erro ? (
             <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
               <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
