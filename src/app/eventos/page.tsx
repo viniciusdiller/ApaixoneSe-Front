@@ -1,77 +1,90 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { eventosApi } from "@/lib/api/eventos";
 
 export default function EventosPage() {
   const router = useRouter();
   const [clickedCard, setClickedCard] = useState<string | null>(null);
 
+  // Novos estados para armazenar as descrições dinâmicas e o status de carregamento
+  const [descricoesDynamic, setDescricoesDynamic] = useState<
+    Record<string, string>
+  >({});
+  const [loading, setLoading] = useState(true);
+
+  // Mantemos apenas o Nome e o Slug. A descrição mockada foi removida.
   const meses = [
-    [
-      "Janeiro",
-      "Abertura do Festival de Verão, shows na Praça do Coração e grandes competições esportivas.",
-      "janeiro",
-    ],
-    [
-      "Fevereiro",
-      "Mês do Carnaval de Saquarema e encerramento do Festival de Verão.",
-      "fevereiro",
-    ],
-    [
-      "Março",
-      "Aloha Spirit, Saquarema Beer Fest e o início dos grandes torneios de esportes aquáticos e lutas.",
-      "marco",
-    ],
-    [
-      "Abril",
-      "A capital nacional do Vôlei de Praia entra em cena, junto com a Tríplice Coroa de Surf.",
-      "abril",
-    ],
-    [
-      "Maio",
-      "Mês do Saquarema Country Fest, do Saquá MotoRock e de muita adrenalina.",
-      "maio",
-    ],
-    [
-      "Junho",
-      "O mês mais aguardado do ano com o WSL Vivo Rio Pro, reunindo a elite mundial do surf em Itaúna.",
-      "junho",
-    ],
-    [
-      "Julho",
-      "Clima de festa julina com o Arraiá da Vila e mais campeonatos de surf e futebol.",
-      "julho",
-    ],
-    [
-      "Agosto",
-      "Festival Gastronômico, Saquá Blues Rock Festival e o tradicional Círio de Nazareth se aproximando.",
-      "agosto",
-    ],
-    [
-      "Setembro",
-      "Tradição e fé com o Círio de Nazareth, acompanhados de eventos de surf e gastronomia.",
-      "setembro",
-    ],
-    [
-      "Outubro",
-      "Mês de conscientização com a Corrida Outubro Rosa e mais Tríplice Coroa de Surf.",
-      "outubro",
-    ],
-    [
-      "Novembro",
-      "Cultura e esporte em alta com a Feira Literária (FLIS) e a Abertura do Natal Luz.",
-      "novembro",
-    ],
-    [
-      "Dezembro",
-      "O encanto do Natal Luz ilumina a cidade enquanto encerramos o ano com esportes de base.",
-      "dezembro",
-    ],
+    ["Janeiro", "janeiro"],
+    ["Fevereiro", "fevereiro"],
+    ["Março", "marco"],
+    ["Abril", "abril"],
+    ["Maio", "maio"],
+    ["Junho", "junho"],
+    ["Julho", "julho"],
+    ["Agosto", "agosto"],
+    ["Setembro", "setembro"],
+    ["Outubro", "outubro"],
+    ["Novembro", "novembro"],
+    ["Dezembro", "dezembro"],
   ];
+
+  // Busca e processamento dos eventos
+  useEffect(() => {
+    async function fetchEventos() {
+      try {
+        // ATENÇÃO: Verifique se o método de busca da sua API chama-se .getAll() ou .list()
+        const eventos = await eventosApi.getAll();
+
+        const agrupados: Record<string, string[]> = {};
+
+        eventos.forEach((evento: any) => {
+          // ATENÇÃO: Substitua 'evento.data' e 'evento.titulo' pelas chaves reais do seu banco
+          if (evento.data && evento.titulo) {
+            const dataEvento = new Date(evento.data);
+            const mesIndex = dataEvento.getMonth(); // Retorna 0 para Janeiro, 1 para Fevereiro...
+
+            const slugs = [
+              "janeiro",
+              "fevereiro",
+              "marco",
+              "abril",
+              "maio",
+              "junho",
+              "julho",
+              "agosto",
+              "setembro",
+              "outubro",
+              "novembro",
+              "dezembro",
+            ];
+            const slugMes = slugs[mesIndex];
+
+            if (!agrupados[slugMes]) agrupados[slugMes] = [];
+            agrupados[slugMes].push(evento.titulo);
+          }
+        });
+
+        // Converte o array de títulos em uma única string separada por vírgulas
+        const novasDescricoes: Record<string, string> = {};
+        Object.keys(agrupados).forEach((slug) => {
+          novasDescricoes[slug] = agrupados[slug].join(", ") + ".";
+        });
+
+        setDescricoesDynamic(novasDescricoes);
+      } catch (error) {
+        console.error("Erro ao carregar eventos:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchEventos();
+  }, []);
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -125,7 +138,7 @@ export default function EventosPage() {
           animate="show"
           className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
         >
-          {meses.map(([titulo, desc, slug]) => (
+          {meses.map(([titulo, slug]) => (
             <motion.div
               key={slug}
               variants={itemVariants}
@@ -149,8 +162,11 @@ export default function EventosPage() {
                 <h2 className="font-display text-2xl uppercase text-primary transition-colors group-hover:text-accent">
                   {titulo}
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground relative z-10">
-                  {desc}
+                <p className="mt-2 text-sm text-muted-foreground relative z-10 line-clamp-3">
+                  {loading
+                    ? "Carregando eventos..."
+                    : descricoesDynamic[slug] ||
+                      "Fique ligado! Novidades em breve."}
                 </p>
               </article>
             </motion.div>

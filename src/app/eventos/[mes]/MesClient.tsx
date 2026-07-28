@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import {
-  ArrowLeft,
-  CalendarDays,
-  MapPin,
-  AlertCircle,
-  X,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays, MapPin, AlertCircle, X } from "lucide-react";
 import type { MesData } from "@/lib/eventos";
 import type { Evento } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -153,8 +147,17 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
                       )}
                     </div>
 
-                    <div className="flex w-full flex-col items-center justify-center rounded-xl bg-primary/5 px-6 py-4 text-primary sm:w-auto sm:min-w-[140px]">
-                      <CalendarDays className="mb-2 h-6 w-6 text-accent" />
+                    {/* LADO DIREITO DO CARD (Imagem + Data) */}
+                    <div className="flex w-full shrink-0 flex-col items-center justify-center rounded-xl bg-primary/5 p-4 text-primary sm:w-auto sm:min-w-[140px]">
+                      {safeMediaUrl(evento.fotoUrl) ? (
+                        <img
+                          src={safeMediaUrl(evento.fotoUrl) as string}
+                          alt={evento.titulo}
+                          className="mb-3 h-24 w-24 rounded-lg object-cover shadow-sm"
+                        />
+                      ) : (
+                        <CalendarDays className="mb-3 h-10 w-10 text-accent/50" />
+                      )}
                       <span className="font-display font-semibold text-center leading-tight">
                         {formatarData(evento.data)}
                       </span>
@@ -177,58 +180,72 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
 
       {selectedEvento && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity"
           onClick={(event) => {
             if (event.target === event.currentTarget) setSelectedEvento(null);
           }}
         >
-          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-white/20 bg-card shadow-2xl">
-            <div
-              className="relative min-h-[420px] p-6 sm:p-8"
-              style={{
-                backgroundImage: safeMediaUrl(selectedEvento.fotoUrl)
-                  ? `url(${safeMediaUrl(selectedEvento.fotoUrl)})`
-                  : undefined,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
+          <div className="relative flex w-full max-w-3xl max-h-[90vh] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl">
+            <button
+              type="button"
+              onClick={() => setSelectedEvento(null)}
+              className="absolute right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all hover:bg-destructive hover:text-white"
+              aria-label="Fechar detalhes do evento"
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
-              <button
-                type="button"
-                onClick={() => setSelectedEvento(null)}
-                className="absolute right-4 top-4 z-20 rounded-full bg-black/40 p-2 text-white transition hover:bg-black/60"
-                aria-label="Fechar detalhes do evento"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <X className="h-5 w-5" />
+            </button>
 
-              <div className="relative z-10 flex h-full min-h-[360px] flex-col justify-end">
-                <p className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wider text-white/90">
-                  <CalendarDays className="h-3.5 w-3.5" />
+            {/* Header com Imagem */}
+            <div className="relative h-56 w-full shrink-0 bg-muted sm:h-72">
+              {safeMediaUrl(selectedEvento.fotoUrl) ? (
+                <>
+                  <img
+                    src={safeMediaUrl(selectedEvento.fotoUrl) as string}
+                    alt={selectedEvento.titulo}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                </>
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-primary/5">
+                  <CalendarDays className="h-20 w-20 text-primary/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                </div>
+              )}
+            </div>
+
+            <div className="relative -mt-8 flex-1 overflow-y-auto px-6 pb-8 sm:-mt-12 sm:px-10 sm:pb-10">
+              <div className="mb-5 flex">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary shadow-sm">
+                  <CalendarDays className="h-4 w-4" />
                   {formatarData(selectedEvento.data)}
+                </div>
+              </div>
+
+              {/* Título */}
+              <h3 className="font-display text-3xl font-bold uppercase text-foreground sm:text-5xl leading-tight">
+                {selectedEvento.titulo}
+              </h3>
+
+              {/* Localização */}
+              {selectedEvento.local && (
+                <div className="mt-5 inline-flex items-center gap-3 rounded-xl bg-muted/50 px-4 py-2.5 text-muted-foreground border border-border/50">
+                  <MapPin className="h-5 w-5 text-accent" />
+                  <span className="text-sm font-medium sm:text-base">
+                    {selectedEvento.local}
+                  </span>
+                </div>
+              )}
+
+              {/* Descrição */}
+              <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-6">
+                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Sobre o Evento
+                </h4>
+                <p className="text-sm leading-relaxed text-foreground/90 sm:text-base whitespace-pre-wrap">
+                  {selectedEvento.descricao ||
+                    "Nenhuma descrição detalhada disponível para este evento."}
                 </p>
-                <h3 className="font-display text-3xl font-bold uppercase text-white sm:text-4xl">
-                  {selectedEvento.titulo}
-                </h3>
-                {selectedEvento.local && (
-                  <div className="mt-3 flex items-center gap-2 text-white/90">
-                    <MapPin className="h-4 w-4" />
-                    <span className="text-sm font-medium sm:text-base">
-                      {selectedEvento.local}
-                    </span>
-                  </div>
-                )}
-                {selectedEvento.descricao && (
-                  <p className="mt-5 max-w-2xl rounded-xl border border-white/15 bg-black/35 p-4 text-sm leading-relaxed text-white/95 sm:text-base">
-                    {selectedEvento.descricao}
-                  </p>
-                )}
-                {!safeMediaUrl(selectedEvento.fotoUrl) && (
-                  <p className="mt-5 max-w-2xl rounded-xl border border-white/15 bg-black/35 p-4 text-sm leading-relaxed text-white/95 sm:text-base">
-                    {selectedEvento.descricao || "Evento sem foto cadastrada."}
-                  </p>
-                )}
               </div>
             </div>
           </div>
