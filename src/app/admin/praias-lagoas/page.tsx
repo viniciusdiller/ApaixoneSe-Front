@@ -12,6 +12,7 @@ import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil } from "lucide-react";
 
 type Tab = Extract<TipoPontoAgua, "PRAIA" | "LAGOA">;
+
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "PRAIA", label: "Praias", emoji: "🏖️" },
   { key: "LAGOA", label: "Lagoas", emoji: "🌊" },
@@ -23,12 +24,14 @@ const DIFICULDADES_SURF = [
   { value: "avançado", label: "Avançado" },
 ];
 
+const FILTROS_PRAIA = ["Surf", "Família", "Bandeira Azul"];
+
 interface FormState {
   tipo: TipoPontoAgua;
   nome: string;
   descricaoCurta: string;
   descricao: string;
-  filtros: string;
+  filtros: string[];
   dificuldade: string;
   acessivel: boolean;
   estacionamento: boolean;
@@ -44,7 +47,7 @@ const emptyForm = (tipo: TipoPontoAgua): FormState => ({
   nome: "",
   descricaoCurta: "",
   descricao: "",
-  filtros: "",
+  filtros: [],
   dificuldade: "",
   acessivel: false,
   estacionamento: false,
@@ -59,7 +62,10 @@ export default function AdminPraiasLagoasPage() {
   const [activeTab, setActiveTab] = useState<Tab>("PRAIA");
   const [items, setItems] = useState<PontoAgua[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; editing: PontoAgua | null }>({
+  const [modal, setModal] = useState<{
+    open: boolean;
+    editing: PontoAgua | null;
+  }>({
     open: false,
     editing: null,
   });
@@ -93,7 +99,7 @@ export default function AdminPraiasLagoasPage() {
       nome: item.nome,
       descricaoCurta: item.descricaoCurta,
       descricao: item.descricao,
-      filtros: (item.filtros ?? []).join(", "),
+      filtros: item.filtros ?? [],
       dificuldade: item.dificuldade ?? "",
       acessivel: item.acessivel,
       estacionamento: item.estacionamento,
@@ -115,24 +121,25 @@ export default function AdminPraiasLagoasPage() {
     setError("");
     setSaving(true);
     try {
-      const filtros = form.filtros
-        .split(",")
-        .map((f) => f.trim())
-        .filter(Boolean);
-
       const formData = new FormData();
       formData.append("tipo", form.tipo);
       formData.append("nome", form.nome);
       formData.append("descricaoCurta", form.descricaoCurta);
       formData.append("descricao", form.descricao);
-      formData.append("filtros", JSON.stringify(filtros));
+
+      // Os filtros agora são um array garantido, basta stringificar
+      formData.append("filtros", JSON.stringify(form.filtros));
+
       formData.append("acessivel", String(form.acessivel));
       formData.append("estacionamento", String(form.estacionamento));
       formData.append("quiosques", String(form.quiosques));
+
       if (form.dificuldade) formData.append("dificuldade", form.dificuldade);
       if (form.endereco) formData.append("endereco", form.endereco);
-      if (form.latitude) formData.append("latitude", form.latitude.replace(",", "."));
-      if (form.longitude) formData.append("longitude", form.longitude.replace(",", "."));
+      if (form.latitude)
+        formData.append("latitude", form.latitude.replace(",", "."));
+      if (form.longitude)
+        formData.append("longitude", form.longitude.replace(",", "."));
       if (files.imagem) formData.append("imagem", files.imagem);
 
       modal.editing
@@ -167,7 +174,9 @@ export default function AdminPraiasLagoasPage() {
     (k: keyof FormState) =>
     (
       e:
-        | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+        | React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
         | string,
     ) => {
       const value = typeof e === "string" ? e : e.target.value;
@@ -180,12 +189,29 @@ export default function AdminPraiasLagoasPage() {
   const toggle = (k: "acessivel" | "estacionamento" | "quiosques") =>
     setForm((prev) => ({ ...prev, [k]: !prev[k] }));
 
+  // Função para controlar os checkboxes de filtro
+  const toggleFiltro = (filtro: string) => {
+    setForm((prev) => {
+      const isSelected = prev.filtros.includes(filtro);
+      return {
+        ...prev,
+        filtros: isSelected
+          ? prev.filtros.filter((f) => f !== filtro)
+          : [...prev.filtros, filtro],
+      };
+    });
+  };
+
   const handlePasteLatLng = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedData = e.clipboardData.getData("text");
     if (pastedData.includes(",")) {
       e.preventDefault();
       const [lat, lng] = pastedData.split(",").map((c) => c.trim());
-      setForm((prev) => ({ ...prev, latitude: lat ?? prev.latitude, longitude: lng ?? prev.longitude }));
+      setForm((prev) => ({
+        ...prev,
+        latitude: lat ?? prev.latitude,
+        longitude: lng ?? prev.longitude,
+      }));
     }
   };
 
@@ -204,7 +230,8 @@ export default function AdminPraiasLagoasPage() {
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          <Plus className="h-4 w-4" /> {activeTab === "PRAIA" ? "Nova Praia" : "Nova Lagoa"}
+          <Plus className="h-4 w-4" />{" "}
+          {activeTab === "PRAIA" ? "Nova Praia" : "Nova Lagoa"}
         </button>
       </div>
 
@@ -274,7 +301,9 @@ export default function AdminPraiasLagoasPage() {
 
       {/* Modal Visualização */}
       <AdminModal
-        title={viewing?.tipo === "LAGOA" ? "Detalhes da Lagoa" : "Detalhes da Praia"}
+        title={
+          viewing?.tipo === "LAGOA" ? "Detalhes da Lagoa" : "Detalhes da Praia"
+        }
         open={!!viewing}
         onClose={() => setViewing(null)}
       >
@@ -289,7 +318,11 @@ export default function AdminPraiasLagoasPage() {
             </div>
             <ViewRow label="Descrição curta" value={viewing.descricaoCurta} />
             <ViewRow label="Descrição" value={viewing.descricao} />
-            <ViewRow label="Filtros" value={viewing.filtros?.join(", ")} />
+            {viewing.tipo === "PRAIA" &&
+              viewing.filtros &&
+              viewing.filtros.length > 0 && (
+                <ViewRow label="Filtros" value={viewing.filtros.join(", ")} />
+              )}
             <ViewRow label="Dificuldade de Surf" value={viewing.dificuldade} />
             <ViewRow label="Endereço" value={viewing.endereco} />
             {viewing.latitude != null && (
@@ -311,28 +344,33 @@ export default function AdminPraiasLagoasPage() {
       <AdminModal
         title={
           modal.editing
-            ? form.tipo === "LAGOA" ? "Editar Lagoa" : "Editar Praia"
-            : form.tipo === "LAGOA" ? "Nova Lagoa" : "Nova Praia"
+            ? form.tipo === "LAGOA"
+              ? "Editar Lagoa"
+              : "Editar Praia"
+            : form.tipo === "LAGOA"
+              ? "Nova Lagoa"
+              : "Nova Praia"
         }
         open={modal.open}
         onClose={closeModal}
       >
         <form onSubmit={handleSave} className="space-y-4">
-          <div className="space-y-1">
+          {/* O campo "Tipo" agora é apenas leitura para evitar falha na UI */}
+          <div className="space-y-1 mb-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tipo *
+              Tipo
             </label>
-            <select
-              value={form.tipo}
-              onChange={set("tipo")}
-              required
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="PRAIA">Praia</option>
-              <option value="LAGOA">Lagoa</option>
-            </select>
+            <div className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground cursor-not-allowed font-medium">
+              {form.tipo === "PRAIA" ? "Praia" : "Lagoa"}
+            </div>
           </div>
-          <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
+
+          <AdminFormField
+            label="Nome"
+            value={form.nome}
+            onChange={set("nome")}
+            required
+          />
           <AdminFormField
             label="Descrição curta (exibida no card)"
             value={form.descricaoCurta}
@@ -346,12 +384,26 @@ export default function AdminPraiasLagoasPage() {
             multiline
             required
           />
-          <AdminFormField
-            label="Filtros (separados por vírgula)"
-            value={form.filtros}
-            onChange={set("filtros")}
-            placeholder="surf, bandeira azul, família"
-          />
+
+          {/* Filtros em formato de Checkbox (Aparece apenas para PRAIAS) */}
+          {form.tipo === "PRAIA" && (
+            <div className="space-y-2 py-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Filtros da Praia
+              </label>
+              <div className="flex flex-wrap gap-4 rounded-md border border-border p-4 bg-muted/20">
+                {FILTROS_PRAIA.map((filtro) => (
+                  <Checkbox
+                    key={filtro}
+                    label={filtro}
+                    checked={form.filtros.includes(filtro)}
+                    onChange={() => toggleFiltro(filtro)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Dificuldade de Surf (opcional)
@@ -369,6 +421,7 @@ export default function AdminPraiasLagoasPage() {
               ))}
             </select>
           </div>
+
           <AdminFormField
             label="Endereço"
             value={form.endereco}
@@ -391,13 +444,21 @@ export default function AdminPraiasLagoasPage() {
             />
           </div>
           <div className="flex flex-wrap gap-4 pt-1">
-            <Checkbox label="Acessível" checked={form.acessivel} onChange={() => toggle("acessivel")} />
+            <Checkbox
+              label="Acessível"
+              checked={form.acessivel}
+              onChange={() => toggle("acessivel")}
+            />
             <Checkbox
               label="Estacionamento"
               checked={form.estacionamento}
               onChange={() => toggle("estacionamento")}
             />
-            <Checkbox label="Quiosques" checked={form.quiosques} onChange={() => toggle("quiosques")} />
+            <Checkbox
+              label="Quiosques"
+              checked={form.quiosques}
+              onChange={() => toggle("quiosques")}
+            />
           </div>
           <FileUploadField
             label="Imagem"
@@ -458,7 +519,9 @@ function Badge({ active, label }: { active: boolean; label: string }) {
   return (
     <span
       className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        active ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"
+        active
+          ? "bg-green-100 text-green-700"
+          : "bg-muted text-muted-foreground"
       }`}
     >
       {label}
@@ -476,12 +539,12 @@ function Checkbox({
   onChange: () => void;
 }) {
   return (
-    <label className="flex items-center gap-2 text-sm text-foreground">
+    <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer select-none">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 rounded border-border accent-primary"
+        className="h-4 w-4 rounded border-border accent-primary cursor-pointer"
       />
       {label}
     </label>

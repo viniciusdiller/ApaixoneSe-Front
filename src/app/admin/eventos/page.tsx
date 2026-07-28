@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { eventosApi } from "@/lib/api";
 import type { Evento, CreateEventoDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -8,8 +8,11 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil } from "lucide-react";
+import { Plus, Eye, Pencil, Search, X } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 const empty: CreateEventoDto = {
   titulo: "",
@@ -23,6 +26,8 @@ const empty: CreateEventoDto = {
 export default function AdminEventosPage() {
   const [items, setItems] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{ open: boolean; editing: Evento | null }>(
     { open: false, editing: null },
   );
@@ -40,6 +45,31 @@ export default function AdminEventosPage() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  // ── filtro + paginação ──
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (i) =>
+        i.titulo.toLowerCase().includes(q) ||
+        i.local.toLowerCase().includes(q) ||
+        (i.endereco ?? "").toLowerCase().includes(q) ||
+        (i.descricao ?? "").toLowerCase().includes(q),
+    );
+  }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   const openCreate = () => {
     setForm(empty);
@@ -122,7 +152,10 @@ export default function AdminEventosPage() {
             Eventos
           </h1>
           <p className="text-sm text-muted-foreground">
-            {items.length} registros
+            {filtered.length === items.length
+              ? `${items.length} registros`
+              : `${filtered.length} de ${items.length} registros`}
+            {totalPages > 1 && ` — página ${page} de ${totalPages}`}
           </p>
         </div>
         <button
@@ -133,48 +166,81 @@ export default function AdminEventosPage() {
         </button>
       </div>
 
+      {/* barra de pesquisa */}
+      <div className="relative mb-4">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
+        <input
+          type="search"
+          placeholder="Pesquisar por título, local, endereço ou descrição…"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => handleSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            aria-label="Limpar pesquisa"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
-        <AdminTable
-          data={items}
-          columns={[
-            {
-              key: "fotoUrl",
-              label: "Foto",
-              render: (_val, row) => (
-                <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
-              ),
-            },
-            { key: "titulo", label: "Título" },
-            { key: "local", label: "Local" },
-            {
-              key: "data",
-              label: "Data",
-              render: (_val, row) =>
-                new Date(row.data).toLocaleDateString("pt-BR"),
-            },
-          ]}
-          extraActions={(row) => (
-            <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Pencil size={16} />
-              </button>
-            </>
-          )}
-          onDelete={handleDelete}
-        />
+        <>
+          <AdminTable
+            data={paged}
+            columns={[
+              {
+                key: "fotoUrl",
+                label: "Foto",
+                render: (_val, row) => (
+                  <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
+                ),
+              },
+              { key: "titulo", label: "Título" },
+              { key: "local", label: "Local" },
+              {
+                key: "data",
+                label: "Data",
+                render: (_val, row) =>
+                  new Date(row.data).toLocaleDateString("pt-BR"),
+              },
+            ]}
+            extraActions={(row) => (
+              <>
+                <button
+                  onClick={() => setViewing(row)}
+                  title="Ver detalhes"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Eye size={16} />
+                </button>
+                <button
+                  onClick={() => openEdit(row)}
+                  title="Editar"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Pencil size={16} />
+                </button>
+              </>
+            )}
+            onDelete={handleDelete}
+          />
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
       )}
 
       {/* Modal Visualização */}

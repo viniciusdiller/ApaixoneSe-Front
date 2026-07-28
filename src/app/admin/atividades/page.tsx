@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { atividadesApi } from "@/lib/api";
 import type { Atividade, CreateAtividadeDto, TipoRoteiro } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -8,8 +8,11 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil } from "lucide-react";
+import { Plus, Eye, Pencil, Search, X } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
@@ -32,6 +35,8 @@ const empty: CreateAtividadeDto = {
 export default function AdminAtividadesPage() {
   const [items, setItems] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{
     open: boolean;
     editing: Atividade | null;
@@ -50,6 +55,33 @@ export default function AdminAtividadesPage() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  // ── filtro + paginação ──
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (i) =>
+        i.titulo.toLowerCase().includes(q) ||
+        i.local.toLowerCase().includes(q) ||
+        (i.descricao ?? "").toLowerCase().includes(q) ||
+        ROTEIROS.find((r) => r.value === i.roteiro)
+          ?.label.toLowerCase()
+          .includes(q),
+    );
+  }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   const openCreate = () => {
     setForm(empty);
@@ -91,7 +123,8 @@ export default function AdminAtividadesPage() {
       formData.append("local", form.local);
       formData.append("roteiro", form.roteiro);
       if (latitude !== undefined) formData.append("latitude", String(latitude));
-      if (longitude !== undefined) formData.append("longitude", String(longitude));
+      if (longitude !== undefined)
+        formData.append("longitude", String(longitude));
       if (files.logo) formData.append("logo", files.logo);
 
       modal.editing
@@ -135,21 +168,11 @@ export default function AdminAtividadesPage() {
 
   const handlePasteLatitude = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const pastedData = e.clipboardData.getData("text");
-
     if (pastedData.includes(",")) {
-      e.preventDefault(); // Impede o comportamento padrão
-
-      const [latStr, lngStr] = pastedData
-        .split(",")
-        .map((coord) => coord.trim());
-
-      const parsedLat = latStr
-        ? parseFloat(latStr.replace(",", "."))
-        : undefined;
-      const parsedLng = lngStr
-        ? parseFloat(lngStr.replace(",", "."))
-        : undefined;
-
+      e.preventDefault();
+      const [latStr, lngStr] = pastedData.split(",").map((c) => c.trim());
+      const parsedLat = latStr ? parseFloat(latStr.replace(",", ".")) : undefined;
+      const parsedLng = lngStr ? parseFloat(lngStr.replace(",", ".")) : undefined;
       setForm((prev) => ({
         ...prev,
         latitude: parsedLat && !isNaN(parsedLat) ? parsedLat : undefined,
@@ -169,7 +192,10 @@ export default function AdminAtividadesPage() {
             Atividades
           </h1>
           <p className="text-sm text-muted-foreground">
-            {items.length} registros
+            {filtered.length === items.length
+              ? `${items.length} registros`
+              : `${filtered.length} de ${items.length} registros`}
+            {totalPages > 1 && ` — página ${page} de ${totalPages}`}
           </p>
         </div>
         <button
@@ -180,47 +206,80 @@ export default function AdminAtividadesPage() {
         </button>
       </div>
 
+      {/* barra de pesquisa */}
+      <div className="relative mb-4">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
+        <input
+          type="search"
+          placeholder="Pesquisar por título, local, roteiro ou descrição…"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => handleSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            aria-label="Limpar pesquisa"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
-        <AdminTable
-          data={items}
-          columns={[
-            {
-              key: "logoUrl",
-              label: "Logo",
-              render: (_val, row) => (
-                <MediaPreview url={row.logoUrl ?? ""} label={row.titulo} />
-              ),
-            },
-            { key: "titulo", label: "Título" },
-            { key: "local", label: "Local" },
-            {
-              key: "roteiro",
-              label: "Roteiro",
-              render: (_val, row) => roteiroLabel(row.roteiro),
-            },
-          ]}
-          extraActions={(row) => (
-            <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Pencil size={16} />
-              </button>
-            </>
-          )}
-          onDelete={handleDelete}
-        />
+        <>
+          <AdminTable
+            data={paged}
+            columns={[
+              {
+                key: "logoUrl",
+                label: "Logo",
+                render: (_val, row) => (
+                  <MediaPreview url={row.logoUrl ?? ""} label={row.titulo} />
+                ),
+              },
+              { key: "titulo", label: "Título" },
+              { key: "local", label: "Local" },
+              {
+                key: "roteiro",
+                label: "Roteiro",
+                render: (_val, row) => roteiroLabel(row.roteiro),
+              },
+            ]}
+            extraActions={(row) => (
+              <>
+                <button
+                  onClick={() => setViewing(row)}
+                  title="Ver detalhes"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Eye size={16} />
+                </button>
+                <button
+                  onClick={() => openEdit(row)}
+                  title="Editar"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Pencil size={16} />
+                </button>
+              </>
+            )}
+            onDelete={handleDelete}
+          />
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
       )}
 
       {/* Modal Visualização */}

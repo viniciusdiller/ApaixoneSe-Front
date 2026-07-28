@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Facebook, Instagram, Send, Waves, Youtube, Globe } from "lucide-react";
 import { useState } from "react";
 import { ondasNewsletterApi } from "@/lib/api/ondas-newsletter";
+import CarrosselLogo from "./CarroselLogo";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -55,6 +56,8 @@ export function Footer() {
                 Capital Nacional do Esporte — Região dos Lagos, RJ
               </span>
             </p>
+
+            <CarrosselLogo />
           </div>
 
           <div>
