@@ -56,24 +56,42 @@ export function AdminSidebar() {
     <aside
       className="sticky top-0 flex h-screen w-64 flex-shrink-0 flex-col border-r border-border"
       style={{
-        // gradiente vertical suave do primary escuro para o fundo do card
         background:
-          "linear-gradient(175deg, hsl(var(--primary) / 0.12) 0%, hsl(var(--card)) 28%)",
+          "linear-gradient(175deg, hsl(var(--primary) / 0.14) 0%, hsl(var(--card)) 30%)",
       }}
     >
-      {/* reflexo de luz no topo da sidebar */}
+      {/* reflexo de luz no topo */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 right-0 top-0 h-40 opacity-60"
+        className="pointer-events-none absolute left-0 right-0 top-0 h-48 opacity-50"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.18) 0%, transparent 100%)",
+            "radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--primary) / 0.22) 0%, transparent 100%)",
+        }}
+      />
+
+      {/* linha decorativa lateral direita (borda interna) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-0 inset-y-0 w-px"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, hsl(var(--primary) / 0.4) 40%, hsl(var(--accent) / 0.3) 70%, transparent 100%)",
         }}
       />
 
       {/* Brand */}
-      <div className="relative flex items-center gap-2 border-b border-border px-5 py-5">
-        <Waves className="h-7 w-7 text-primary" />
+      <div className="relative flex items-center gap-3 border-b border-border px-5 py-5">
+        {/* ícone com halo */}
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-xl"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.08) 100%)",
+            boxShadow: "0 0 0 1px hsl(var(--primary) / 0.25), 0 2px 8px hsl(var(--primary) / 0.15)",
+          }}
+        >
+          <Waves className="h-5 w-5 text-primary" />
+        </div>
         <div>
           <span className="font-display block text-sm font-bold uppercase tracking-widest text-primary">
             Apaixone-se
@@ -96,7 +114,7 @@ export function AdminSidebar() {
               <li key={href}>
                 <Link
                   href={href}
-                  className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                  className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                     isActive
                       ? "text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
@@ -112,6 +130,14 @@ export function AdminSidebar() {
                       : undefined
                   }
                 >
+                  {/* bolinha indicadora no item ativo */}
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -left-3 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full"
+                      style={{ background: "hsl(var(--primary-foreground) / 0.5)" }}
+                    />
+                  )}
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   <span className="flex-1">{label}</span>
                   {isActive && <ChevronRight className="h-3 w-3 opacity-70" />}
@@ -125,12 +151,12 @@ export function AdminSidebar() {
       {/* Cronômetro de sessão */}
       <SessionTimer />
 
-      <div className="relative mt-auto pt-4">
+      <div className="relative mt-auto pt-2">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
+          className="group flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-950/30"
         >
-          <LogOut size={20} />
+          <LogOut size={16} className="transition-transform group-hover:-translate-x-0.5" />
           Sair
         </button>
       </div>
