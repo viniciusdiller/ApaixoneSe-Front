@@ -30,9 +30,30 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen bg-background">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="container mx-auto max-w-7xl px-6 py-8">{children}</div>
-      </main>
+      {/* faixa decorativa no topo da área de conteúdo */}
+      <div className="relative flex flex-1 flex-col overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.6) 40%, hsl(var(--accent) / 0.5) 70%, transparent 100%)",
+          }}
+        />
+        {/* grid de pontos sutis como textura de fundo */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "radial-gradient(hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+        <main className="relative flex-1 overflow-auto">
+          <div className="container mx-auto max-w-7xl px-6 py-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
