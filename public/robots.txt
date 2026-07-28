@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://apaixonese.com.br/sitemap.xml
+Sitemap: https://apaixonese.saquarema.rj.gov.br/sitemap.xml

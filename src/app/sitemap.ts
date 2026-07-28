@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://apaixonese.com.br";
+  const baseUrl = "https://apaixonese.saquarema.rj.gov.br";
 
   return [
     {

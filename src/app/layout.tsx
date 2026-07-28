@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | Apaixone-se por Saquarema",
   },
   description:
-    "Descubra as belezas, praias, eventos, gastronomia e atrações turísticas de Saquarema, RJ. Planeje seu roteiro e apaixone-se pela cidade.",
+    "Descubra as belezas, praias, eventos, gastronomia e atrações turísticas de Saquarema-RJ. Planeje seu roteiro e apaixone-se pela cidade.",
   keywords: [
     "apaixonese",
     "apaixone-se",
@@ -30,21 +30,21 @@ export const metadata: Metadata = {
   authors: [{ name: "ApaixoneSe" }],
   creator: "ApaixoneSe",
   publisher: "ApaixoneSe",
-  metadataBase: new URL("https://apaixonese.com.br"),
+  metadataBase: new URL("https://apaixonese.saquarema.rj.gov.br/"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://apaixonese.com.br",
+    url: "https://apaixonese.saquarema.rj.gov.br/",
     siteName: "Apaixone-se por Saquarema",
     title: "Apaixone-se por Saquarema | Turismo em Saquarema/RJ",
     description:
       "Descubra as belezas, praias, eventos, gastronomia e atrações turísticas de Saquarema, RJ.",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/apaixone-se.png",
         width: 1200,
         height: 630,
         alt: "Apaixone-se por Saquarema",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     title: "Apaixone-se por Saquarema | Turismo em Saquarema/RJ",
     description:
       "Descubra as belezas, praias, eventos e atrações de Saquarema/RJ.",
-    images: ["/og-image.jpg"],
+    images: ["/apaixone-se.png"],
   },
   robots: {
     index: true,
@@ -70,15 +70,19 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // google: "SEU_CÓDIGO_AQUI", // Descomente e preencha após verificar no Google Search Console
+    google: "HExQUr9hxreboilTa8K5g8titFvZV5WyTZ0zDejOaz4",
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="pt-BR">
       <head>
-        <link rel="canonical" href="https://apaixonese.com.br" />
+        <link rel="canonical" href="https://apaixonese.saquarema.rj.gov.br/" />
       </head>
       <body>
         <AuthProvider>
