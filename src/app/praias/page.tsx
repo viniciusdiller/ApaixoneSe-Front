@@ -20,9 +20,9 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 const FILTER_OPTIONS = [
   { label: "Todas", value: "todas" },
-  { label: "Para Surf", value: "surf" },
-  { label: "Para Família", value: "família" },
-  { label: "Bandeira Azul", value: "bandeira azul" },
+  { label: "Para Surf", value: "Surf" },
+  { label: "Para Família", value: "Família" },
+  { label: "Bandeira Azul", value: "Bandeira Azul" },
 ];
 function WaveBadge({ lat, lng }: { lat?: number | null; lng?: number | null }) {
   const { data } = useWaveData({
