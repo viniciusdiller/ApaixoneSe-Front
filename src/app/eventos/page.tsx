@@ -50,7 +50,7 @@ export default function EventosPage() {
   function formatarTitulos(titulos: string[]): string {
     if (titulos.length === 0) return "";
     if (titulos.length <= 2) return titulos.join(", ") + ".";
-    return `${titulos[0]}, ${titulos[1]} e entre outros.`;
+    return `${titulos[0]}, ${titulos[1]}, entre outros.`;
   }
 
   useEffect(() => {
