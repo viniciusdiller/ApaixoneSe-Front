@@ -25,6 +25,7 @@ export function GastronomiaListPage() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
   const [selecionado, setSelecionado] = useState<Gastronomia | null>(null);
+  const [clickedCard, setClickedCard] = useState<string | null>(null);
 
   const { gastronomiasVisitadas, isLogado, toggleGastronomia } = useVisitas();
 
@@ -55,14 +56,13 @@ export function GastronomiaListPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
-        <span
-          aria-hidden
-          className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
+      <section className="bg-primary px-4 pb-12 pt-32">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="container mx-auto text-center"
         >
-          🍽️
-        </span>
-        <div className="container relative z-10 mx-auto">
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -70,17 +70,14 @@ export function GastronomiaListPage() {
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
-            Sabores de Saquarema
-          </p>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Gastronomia
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
             Descubra os melhores restaurantes e os sabores autênticos de
             Saquarema.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* Lista de restaurantes */}

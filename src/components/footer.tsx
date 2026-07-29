@@ -130,28 +130,28 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/transparencia"
                   className="transition-colors hover:text-primary-foreground"
                 >
                   Transparência
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/politica-de-privacidade"
                   className="transition-colors hover:text-primary-foreground"
                 >
                   Política de Privacidade
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/termos-de-uso"
                   className="transition-colors hover:text-primary-foreground"
                 >
                   Termos de Uso
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
