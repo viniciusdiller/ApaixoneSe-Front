@@ -83,7 +83,8 @@ export default function AdminEventosPage() {
     setForm({
       titulo: item.titulo,
       descricao: item.descricao,
-      data: item.data?.slice(0, 16) ?? "",
+      // slice(0, 10) pega apenas "YYYY-MM-DD", compatível com type="date"
+      data: item.data?.slice(0, 10) ?? "",
       local: item.local,
       endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
@@ -266,7 +267,7 @@ export default function AdminEventosPage() {
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow
               label="Data"
-              value={new Date(viewing.data).toLocaleString("pt-BR")}
+              value={new Date(viewing.data).toLocaleDateString("pt-BR")}
             />
             <ViewRow label="Descrição" value={viewing.descricao} />
           </dl>
@@ -299,10 +300,10 @@ export default function AdminEventosPage() {
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <AdminFormField
-            label="Data e Hora"
+            label="Data"
             value={form.data}
             onChange={set("data")}
-            type="datetime-local"
+            type="date"
             required
           />
           <AdminFormField
