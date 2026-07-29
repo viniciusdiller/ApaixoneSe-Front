@@ -12,7 +12,7 @@ const sections = [
   {
     title: "1. Aceitação dos termos",
     content:
-      "Ao acessar ou utilizar o portal \"Apaixone-se por Saquarema\", você concorda com os presentes Termos de Uso. Caso não concorde com alguma condição, recomendamos que não utilize a plataforma. Estes termos são regidos pela legislação brasileira.",
+      'Ao acessar ou utilizar o portal "Apaixone-se por Saquarema", você concorda com os presentes Termos de Uso. Caso não concorde com alguma condição, recomendamos que não utilize a plataforma. Estes termos são regidos pela legislação brasileira.',
   },
   {
     title: "2. Sobre o portal",
@@ -89,10 +89,6 @@ export default function TermosDeUsoPage() {
             Leia com atenção as condições de uso do portal antes de criar sua
             conta ou utilizar os nossos serviços.
           </p>
-
-          <p className="mt-4 text-sm text-primary-foreground/50">
-            Última atualização: julho de 2025
-          </p>
         </div>
       </section>
 
@@ -100,7 +96,10 @@ export default function TermosDeUsoPage() {
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto space-y-8">
           {sections.map((section) => (
-            <div key={section.title} className="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <div
+              key={section.title}
+              className="rounded-2xl border border-border bg-card p-6 md:p-8"
+            >
               <h2 className="font-display text-lg font-bold text-foreground mb-3">
                 {section.title}
               </h2>
@@ -109,18 +108,6 @@ export default function TermosDeUsoPage() {
               </p>
             </div>
           ))}
-
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Dúvidas sobre os Termos?{" "}
-              <a
-                href="mailto:ouvidoria@saquarema.rj.gov.br"
-                className="font-semibold text-primary hover:underline"
-              >
-                ouvidoria@saquarema.rj.gov.br
-              </a>
-            </p>
-          </div>
         </div>
       </section>
     </div>

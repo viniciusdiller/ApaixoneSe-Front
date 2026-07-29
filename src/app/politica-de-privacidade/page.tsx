@@ -12,7 +12,7 @@ const sections = [
   {
     title: "1. Quem somos",
     content:
-      "O portal \"Apaixone-se por Saquarema\" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria de Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 28.636.579/0001-00, com sede na Rua Coronel Serrado, s/n, Centro, Saquarema — RJ.",
+      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria de Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 28.636.579/0001-00, com sede na Rua Coronel Serrado, s/n, Centro, Saquarema — RJ.',
   },
   {
     title: "2. Dados que coletamos",
@@ -32,7 +32,7 @@ const sections = [
   {
     title: "5. Seus direitos (LGPD)",
     content:
-      "Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito a:\n\n• Confirmar se tratamos seus dados pessoais.\n• Acessar, corrigir ou atualizar seus dados.\n• Solicitar a exclusão de seus dados (\"direito ao esquecimento\").\n• Revogar o consentimento para envio de comunicações a qualquer momento.\n• Opor-se ao tratamento em caso de descumprimento desta política.\n\nPara exercer seus direitos, envie um e-mail para: privacidade@saquarema.rj.gov.br",
+      'Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito a:\n\n• Confirmar se tratamos seus dados pessoais.\n• Acessar, corrigir ou atualizar seus dados.\n• Solicitar a exclusão de seus dados ("direito ao esquecimento").\n• Revogar o consentimento para envio de comunicações a qualquer momento.\n• Opor-se ao tratamento em caso de descumprimento desta política.\n\nPara exercer seus direitos, envie um e-mail para: privacidade@saquarema.rj.gov.br',
   },
   {
     title: "6. Cookies",
@@ -81,12 +81,8 @@ export default function PoliticaDePrivacidadePage() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
-            Saiba como tratamos seus dados pessoais em conformidade com a
-            Lei Geral de Proteção de Dados (LGPD).
-          </p>
-
-          <p className="mt-4 text-sm text-primary-foreground/50">
-            Última atualização: julho de 2025
+            Saiba como tratamos seus dados pessoais em conformidade com a Lei
+            Geral de Proteção de Dados (LGPD).
           </p>
         </div>
       </section>
@@ -95,7 +91,10 @@ export default function PoliticaDePrivacidadePage() {
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto space-y-8">
           {sections.map((section) => (
-            <div key={section.title} className="rounded-2xl border border-border bg-card p-6 md:p-8">
+            <div
+              key={section.title}
+              className="rounded-2xl border border-border bg-card p-6 md:p-8"
+            >
               <h2 className="font-display text-lg font-bold text-foreground mb-3">
                 {section.title}
               </h2>
@@ -104,18 +103,6 @@ export default function PoliticaDePrivacidadePage() {
               </p>
             </div>
           ))}
-
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Dúvidas?{" "}
-              <a
-                href="mailto:privacidade@saquarema.rj.gov.br"
-                className="font-semibold text-primary hover:underline"
-              >
-                privacidade@saquarema.rj.gov.br
-              </a>
-            </p>
-          </div>
         </div>
       </section>
     </div>

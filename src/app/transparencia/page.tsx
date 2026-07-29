@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { ArrowLeft, Building2, ExternalLink, FileText, Scale } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  ExternalLink,
+  FileText,
+  Scale,
+} from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,21 +19,21 @@ const portalLinks = [
     title: "Portal da Transparência",
     description:
       "Acesse receitas, despesas, contratos, convênios e dados orçamentários do município.",
-    href: "https://www.saquarema.rj.gov.br/transparencia",
+    href: "https://transparencia.saquarema.rj.gov.br/",
     icon: Building2,
   },
   {
     title: "Diário Oficial",
     description:
       "Publicações oficiais de atos administrativos, licitações, portarias e decretos.",
-    href: "https://www.saquarema.rj.gov.br/diario-oficial",
+    href: "https://dos.saquarema.rj.gov.br/",
     icon: FileText,
   },
   {
     title: "Lei de Acesso à Informação (LAI)",
     description:
       "Solicite informações públicas com base na Lei nº 12.527/2011. Respostas em até 20 dias úteis.",
-    href: "https://www.saquarema.rj.gov.br/lai",
+    href: "https://transparencia.saquarema.rj.gov.br/",
     icon: Scale,
   },
 ];
@@ -131,30 +137,6 @@ export default function TransparenciaPage() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* LAI */}
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-8">
-            <h2 className="font-display text-xl font-bold text-foreground mb-3">
-              Pedido de Acesso à Informação
-            </h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Com base na{" "}
-              <strong className="text-foreground">Lei nº 12.527/2011</strong>{" "}
-              (Lei de Acesso à Informação), qualquer cidadão pode solicitar
-              informações detidas pelo poder público municipal. O prazo de
-              resposta é de até <strong className="text-foreground">20 dias úteis</strong>,
-              prorrogáveis por mais 10.
-            </p>
-            <a
-              href="https://www.saquarema.rj.gov.br/lai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Fazer um Pedido
-              <ExternalLink className="h-4 w-4" />
-            </a>
           </div>
         </div>
       </section>
