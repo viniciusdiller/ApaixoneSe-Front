@@ -11,13 +11,11 @@ export default function EventosPage() {
   const router = useRouter();
   const [clickedCard, setClickedCard] = useState<string | null>(null);
 
-  // Novos estados para armazenar as descrições dinâmicas e o status de carregamento
   const [descricoesDynamic, setDescricoesDynamic] = useState<
     Record<string, string>
   >({});
   const [loading, setLoading] = useState(true);
 
-  // Mantemos apenas o Nome e o Slug. A descrição mockada foi removida.
   const meses = [
     ["Janeiro", "janeiro"],
     ["Fevereiro", "fevereiro"],
@@ -33,35 +31,39 @@ export default function EventosPage() {
     ["Dezembro", "dezembro"],
   ];
 
-  // Busca e processamento dos eventos
+  const slugs = [
+    "janeiro",
+    "fevereiro",
+    "marco",
+    "abril",
+    "maio",
+    "junho",
+    "julho",
+    "agosto",
+    "setembro",
+    "outubro",
+    "novembro",
+    "dezembro",
+  ];
+
+  /** Formata a lista de títulos: mostra até 2 e acrescenta "entre outros" se houver mais */
+  function formatarTitulos(titulos: string[]): string {
+    if (titulos.length === 0) return "";
+    if (titulos.length <= 2) return titulos.join(", ") + ".";
+    return `${titulos[0]}, ${titulos[1]}, entre outros.`;
+  }
+
   useEffect(() => {
     async function fetchEventos() {
       try {
-        // ATENÇÃO: Verifique se o método de busca da sua API chama-se .getAll() ou .list()
         const eventos = await eventosApi.getAll();
 
         const agrupados: Record<string, string[]> = {};
 
         eventos.forEach((evento: any) => {
-          // ATENÇÃO: Substitua 'evento.data' e 'evento.titulo' pelas chaves reais do seu banco
           if (evento.data && evento.titulo) {
             const dataEvento = new Date(evento.data);
-            const mesIndex = dataEvento.getMonth(); // Retorna 0 para Janeiro, 1 para Fevereiro...
-
-            const slugs = [
-              "janeiro",
-              "fevereiro",
-              "marco",
-              "abril",
-              "maio",
-              "junho",
-              "julho",
-              "agosto",
-              "setembro",
-              "outubro",
-              "novembro",
-              "dezembro",
-            ];
+            const mesIndex = dataEvento.getMonth();
             const slugMes = slugs[mesIndex];
 
             if (!agrupados[slugMes]) agrupados[slugMes] = [];
@@ -69,10 +71,9 @@ export default function EventosPage() {
           }
         });
 
-        // Converte o array de títulos em uma única string separada por vírgulas
         const novasDescricoes: Record<string, string> = {};
         Object.keys(agrupados).forEach((slug) => {
-          novasDescricoes[slug] = agrupados[slug].join(", ") + ".";
+          novasDescricoes[slug] = formatarTitulos(agrupados[slug]);
         });
 
         setDescricoesDynamic(novasDescricoes);

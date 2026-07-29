@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmAction, notify } from "@/lib/feedback";
+import { confirmAction } from "@/lib/feedback";
 
 import { useEffect, useState, useMemo } from "react";
 import { eventosApi } from "@/lib/api";
@@ -25,6 +25,34 @@ const empty: CreateEventoDto = {
   fotoUrl: "",
 };
 
+/**
+ * Máscara visual: transforma input bruto em DD/MM/AAAA
+ * - Aceita apenas dígitos, insere "/" automaticamente
+ * - Limita o ano a 4 dígitos (máx 10 chars no total)
+ */
+function maskDate(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8); // máx 8 dígitos
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+/** Converte DD/MM/AAAA → YYYY-MM-DD para enviar à API */
+function toISO(display: string): string {
+  const [d, m, y] = display.split("/");
+  if (!d || !m || !y || y.length !== 4) return display;
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+/** Converte YYYY-MM-DD (ou ISO string) → DD/MM/AAAA para exibir no campo */
+function toDisplay(iso: string): string {
+  if (!iso) return "";
+  const clean = iso.slice(0, 10); // descarta hora se vier junto
+  const [y, m, d] = clean.split("-");
+  if (!y || !m || !d) return "";
+  return `${d}/${m}/${y}`;
+}
+
 export default function AdminEventosPage() {
   const [items, setItems] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +62,7 @@ export default function AdminEventosPage() {
     { open: false, editing: null },
   );
   const [viewing, setViewing] = useState<Evento | null>(null);
+  // form.data armazena DD/MM/AAAA (valor do campo visual)
   const [form, setForm] = useState<CreateEventoDto>(empty);
   const [files, setFiles] = useState<{ foto?: File }>({});
   const [saving, setSaving] = useState(false);
@@ -79,11 +108,13 @@ export default function AdminEventosPage() {
     setError("");
     setModal({ open: true, editing: null });
   };
+
   const openEdit = (item: Evento) => {
     setForm({
       titulo: item.titulo,
       descricao: item.descricao,
-      data: item.data?.slice(0, 16) ?? "",
+      // Converte YYYY-MM-DD para DD/MM/AAAA para exibir no campo com máscara
+      data: toDisplay(item.data ?? ""),
       local: item.local,
       endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
@@ -92,6 +123,7 @@ export default function AdminEventosPage() {
     setError("");
     setModal({ open: true, editing: item });
   };
+
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -102,7 +134,8 @@ export default function AdminEventosPage() {
       const formData = new FormData();
       formData.append("titulo", form.titulo);
       formData.append("descricao", form.descricao);
-      formData.append("data", form.data);
+      // Converte DD/MM/AAAA → YYYY-MM-DD antes de enviar à API
+      formData.append("data", toISO(form.data));
       formData.append("local", form.local);
       if (form.endereco) formData.append("endereco", form.endereco);
       if (files.foto) formData.append("foto", files.foto);
@@ -266,7 +299,7 @@ export default function AdminEventosPage() {
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow
               label="Data"
-              value={new Date(viewing.data).toLocaleString("pt-BR")}
+              value={new Date(viewing.data).toLocaleDateString("pt-BR")}
             />
             <ViewRow label="Descrição" value={viewing.descricao} />
           </dl>
@@ -299,10 +332,14 @@ export default function AdminEventosPage() {
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <AdminFormField
-            label="Data e Hora"
+            label="Data"
             value={form.data}
             onChange={set("data")}
-            type="datetime-local"
+            type="text"
+            inputMode="numeric"
+            placeholder="DD/MM/AAAA"
+            maxLength={10}
+            mask={maskDate}
             required
           />
           <AdminFormField

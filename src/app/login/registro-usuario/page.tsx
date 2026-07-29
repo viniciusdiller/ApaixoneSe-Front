@@ -8,14 +8,13 @@ import {
   EyeOff,
   AlertCircle,
   Loader2,
-  CheckCircle2,
-  Mail,
   Waves,
 } from "lucide-react";
 import Image from "next/image";
 import { usersApi } from "@/lib/api/users";
 import type { RegisterUserDto } from "@/lib/api/types";
 import { maskPersonName } from "@/lib/masks";
+import { toast } from "react-hot-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,7 +29,6 @@ export default function RegisterPage() {
 
   const [showSenha, setShowSenha] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +46,9 @@ export default function RegisterPage() {
 
     try {
       await usersApi.register(formData);
-      setSuccess(true);
+      toast.success("Conta criada! Verifique seu e-mail para ativar a conta.");
+      // Redireciona direto para a página de digitar o código OTP
+      router.push(`/verificar-email?email=${encodeURIComponent(formData.email)}`);
     } catch (err: unknown) {
       let msg = "Erro ao criar conta. Tente novamente.";
       try {
@@ -114,7 +114,7 @@ export default function RegisterPage() {
               style={{ color: "hsl(179.5 60% 85%)" }}
             >
               Descubra experiências únicas, roteiros inesquecíveis e a beleza
-              das praias e lagoas de Saquerema.
+              das praias e lagoas de Saquarema.
             </p>
           </div>
 
@@ -164,13 +164,11 @@ export default function RegisterPage() {
           {/* Cabeçalho do formulário */}
           <div className="mb-8">
             <h1 className="text-2xl font-display font-bold uppercase tracking-wide text-foreground">
-              {success ? "Conta criada!" : "Crie sua conta"}
+              Crie sua conta
             </h1>
-            {!success && (
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                Preencha os dados abaixo para se juntar à comunidade.
-              </p>
-            )}
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Preencha os dados abaixo para se juntar à comunidade.
+            </p>
             {/* Linha decorativa com a cor primary */}
             <div
               className="mt-4 h-0.5 w-12 rounded-full"
@@ -183,168 +181,143 @@ export default function RegisterPage() {
             onSubmit={handleSubmit}
             className="space-y-5 rounded-2xl border border-border bg-card p-8 shadow-sm"
           >
-            {success ? (
-              <div className="flex flex-col items-center justify-center py-6 text-center space-y-4">
-                <Mail className="h-16 w-16 text-primary" />
-                <p className="text-lg font-semibold text-foreground">
-                  Verifique seu e-mail!
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Enviamos um link de confirmação para o seu e-mail. Por favor,
-                  acesse-o para ativar sua conta.
-                </p>
-                <Link
-                  href="/login"
-                  className="mt-4 text-primary font-semibold hover:underline"
+            {/* Campo Nome */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="nome"
+                className="text-sm font-semibold text-foreground"
+              >
+                Nome Completo
+              </label>
+              <input
+                id="nome"
+                name="nome"
+                type="text"
+                required
+                value={formData.nome}
+                onChange={handleChange}
+                placeholder="Seu nome"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            {/* Campo E-mail */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="email"
+                className="text-sm font-semibold text-foreground"
+              >
+                E-mail
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="exemplo@email.com"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            {/* Campo Usuário */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="usuario"
+                className="text-sm font-semibold text-foreground"
+              >
+                Nome de Usuário
+              </label>
+              <input
+                id="usuario"
+                name="usuario"
+                type="text"
+                required
+                value={formData.usuario}
+                onChange={handleChange}
+                placeholder="ex: joaosilva123"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            {/* Campo Senha */}
+            <div className="space-y-1.5">
+              <label
+                htmlFor="senha"
+                className="text-sm font-semibold text-foreground"
+              >
+                Senha
+              </label>
+              <div className="relative">
+                <input
+                  id="senha"
+                  name="senha"
+                  type={showSenha ? "text" : "password"}
+                  required
+                  value={formData.senha}
+                  onChange={handleChange}
+                  placeholder="Crie uma senha forte"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSenha((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
                 >
-                  Voltar para o Login
-                </Link>
+                  {showSenha ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
-            ) : (
-              <>
-                {/* Campo Nome */}
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="nome"
-                    className="text-sm font-semibold text-foreground"
-                  >
-                    Nome Completo
-                  </label>
-                  <input
-                    id="nome"
-                    name="nome"
-                    type="text"
-                    required
-                    value={formData.nome}
-                    onChange={handleChange}
-                    placeholder="Seu nome"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
+            </div>
 
-                {/* Campo E-mail */}
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="email"
-                    className="text-sm font-semibold text-foreground"
-                  >
-                    E-mail
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="exemplo@email.com"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                {/* Campo Usuário */}
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="usuario"
-                    className="text-sm font-semibold text-foreground"
-                  >
-                    Nome de Usuário
-                  </label>
-                  <input
-                    id="usuario"
-                    name="usuario"
-                    type="text"
-                    required
-                    value={formData.usuario}
-                    onChange={handleChange}
-                    placeholder="ex: joaosilva123"
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-
-                {/* Campo Senha */}
-                <div className="space-y-1.5">
-                  <label
-                    htmlFor="senha"
-                    className="text-sm font-semibold text-foreground"
-                  >
-                    Senha
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="senha"
-                      name="senha"
-                      type={showSenha ? "text" : "password"}
-                      required
-                      value={formData.senha}
-                      onChange={handleChange}
-                      placeholder="Crie uma senha forte"
-                      className="w-full rounded-xl border border-border bg-background px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowSenha((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
-                    >
-                      {showSenha ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3">
-                    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                    <p className="text-sm text-destructive">{error}</p>
-                  </div>
-                )}
-
-                <div className="pt-1">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60 active:scale-[0.98]"
-                  >
-                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {loading ? "A criar conta..." : "Criar Conta"}
-                  </button>
-                </div>
-              </>
+            {error && (
+              <div className="flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
             )}
+
+            <div className="pt-1">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-60 active:scale-[0.98]"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? "A criar conta..." : "Criar Conta"}
+              </button>
+            </div>
           </form>
 
-          {!success && (
-            <>
-              {/* Separador */}
-              <div className="relative my-6 flex items-center">
-                <div className="flex-1 border-t border-border" />
-                <span className="mx-4 text-xs text-muted-foreground">ou</span>
-                <div className="flex-1 border-t border-border" />
-              </div>
+          {/* Separador */}
+          <div className="relative my-6 flex items-center">
+            <div className="flex-1 border-t border-border" />
+            <span className="mx-4 text-xs text-muted-foreground">ou</span>
+            <div className="flex-1 border-t border-border" />
+          </div>
 
-              <p className="text-center text-sm text-muted-foreground">
-                Já tem uma conta?{" "}
-                <Link
-                  href="/login"
-                  className="font-semibold text-primary underline-offset-4 transition hover:underline"
-                >
-                  Faça login aqui
-                </Link>
-              </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-primary underline-offset-4 transition hover:underline"
+            >
+              Faça login aqui
+            </Link>
+          </p>
 
-              <p className="mt-4 text-center">
-                <Link
-                  href="/"
-                  className="text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
-                >
-                  ← Voltar ao site
-                </Link>
-              </p>
-            </>
-          )}
+          <p className="mt-4 text-center">
+            <Link
+              href="/"
+              className="text-xs text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
+            >
+              ← Voltar ao site
+            </Link>
+          </p>
         </div>
       </div>
     </div>
