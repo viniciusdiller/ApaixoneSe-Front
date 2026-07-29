@@ -13,27 +13,26 @@ import {
   X,
   Save,
   GripVertical,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   secretariaTurismoApi,
   turistandoApi,
-  // projetoApi,
 } from "@/lib/api/secretaria-turismo";
-import type {
-  SecretariaTurismo,
-  Turistando /*, Projeto */,
-} from "@/lib/api/types";
+import type { SecretariaTurismo, Turistando } from "@/lib/api/types";
+
+const ITEMS_PER_PAGE = 4; // deve ser igual ao da página pública
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const img = (url?: string | null) =>
   url ? (url.startsWith("http") ? url : `${API_URL}${url}`) : null;
 
-type Tab = "institucional" | /*"turistando"  */ "projetos";
+type Tab = "institucional" | "projetos";
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "institucional", label: "Institucional", emoji: "🏛️" },
   { key: "projetos", label: "Projetos", emoji: "📌" },
-  // { key: "turistando", label: "Turistando", emoji: "🌄" },
 ];
 
 export default function SecretariaTurismoAdminPage() {
@@ -49,8 +48,15 @@ export default function SecretariaTurismoAdminPage() {
   // ── Turistando list (local copy for optimistic drag-and-drop) ───────────────
   const [turistandoList, setTuristandoList] = useState<Turistando[]>([]);
   const [reordering, setReordering] = useState(false);
-  // drag state
   const dragIndexRef = useRef<number | null>(null);
+
+  // ── Paginação do admin (mesma constante da página pública) ──────────────────
+  const [adminPage, setAdminPage] = useState(1);
+  const totalAdminPages = Math.ceil(turistandoList.length / ITEMS_PER_PAGE);
+  // Itens exibidos na página atual — drag-and-drop opera sobre esses índices
+  const pageStart = (adminPage - 1) * ITEMS_PER_PAGE;
+  const pageEnd = pageStart + ITEMS_PER_PAGE;
+  const visibleItems = turistandoList.slice(pageStart, pageEnd);
 
   const [modalTuristandoOpen, setModalTuristandoOpen] = useState(false);
   const [editingTuristandoId, setEditingTuristandoId] = useState<string | null>(
@@ -62,20 +68,12 @@ export default function SecretariaTurismoAdminPage() {
   });
   const [turistandoImagens, setTuristandoImagens] = useState<File[]>([]);
 
-  /* 
-  const [modalProjetoOpen, setModalProjetoOpen] = useState(false);
-  const [editingProjetoId, setEditingProjetoId] = useState<string | null>(null);
-  const [projetoForm, setProjetoForm] = useState({ titulo: "", descricao: "" });
-  const [projetoImagem, setProjetoImagem] = useState<File | null>(null);
-  */
-
   const [instTexto, setInstTexto] = useState("");
   const [instVideo, setInstVideo] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
 
   const videoInputRef = useRef<HTMLInputElement>(null);
   const imagensInputRef = useRef<HTMLInputElement>(null);
-  // const imagemProjetoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     load();
@@ -84,13 +82,18 @@ export default function SecretariaTurismoAdminPage() {
   // Sync local list whenever secretaria changes
   useEffect(() => {
     if (secretaria?.turistandos) {
-      // Preserve existing ordem or fall back to array index
       const sorted = [...secretaria.turistandos].sort(
-        (a, b) => ((a as any).ordem ?? 0) - ((b as any).ordem ?? 0)
+        (a, b) => ((a as any).ordem ?? 0) - ((b as any).ordem ?? 0),
       );
       setTuristandoList(sorted);
+      // Se a página atual ficou além do total, volta para a última
+      setAdminPage((p) => {
+        const maxPage = Math.max(1, Math.ceil(sorted.length / ITEMS_PER_PAGE));
+        return Math.min(p, maxPage);
+      });
     } else {
       setTuristandoList([]);
+      setAdminPage(1);
     }
   }, [secretaria]);
 
@@ -197,21 +200,21 @@ export default function SecretariaTurismoAdminPage() {
     }
   }
 
-  // ── DRAG-AND-DROP (HTML5 nativo) ────────────────────────────────────────────
-  function handleDragStart(index: number) {
-    dragIndexRef.current = index;
+  // ── DRAG-AND-DROP (opera nos índices globais da lista, não nos locais da página) ──
+  function handleDragStart(globalIndex: number) {
+    dragIndexRef.current = globalIndex;
   }
 
-  function handleDragOver(e: React.DragEvent, index: number) {
+  function handleDragOver(e: React.DragEvent, globalIndex: number) {
     e.preventDefault();
     const from = dragIndexRef.current;
-    if (from === null || from === index) return;
+    if (from === null || from === globalIndex) return;
 
     setTuristandoList((prev) => {
       const next = [...prev];
       const [moved] = next.splice(from, 1);
-      next.splice(index, 0, moved);
-      dragIndexRef.current = index;
+      next.splice(globalIndex, 0, moved);
+      dragIndexRef.current = globalIndex;
       return next;
     });
   }
@@ -235,65 +238,11 @@ export default function SecretariaTurismoAdminPage() {
     }
   }
 
-  // ── PROJETOS ───────────────────────────────────────────────────────────────
-  /*
-  function openAddProjeto() {
-    setEditingProjetoId(null);
-    setProjetoForm({ titulo: "", descricao: "" });
-    setProjetoImagem(null);
-    setModalProjetoOpen(true);
-  }
-
-  function openEditProjeto(p: Projeto) {
-    setEditingProjetoId(p.id);
-    setProjetoForm({ titulo: p.titulo, descricao: p.descricao });
-    setProjetoImagem(null);
-    setModalProjetoOpen(true);
-  }
-
-  async function handleSaveProjeto(e: React.FormEvent) {
-    e.preventDefault();
-    if (!secretaria)
-      return toast("error", "Crie primeiro o bloco institucional.");
-    setSaving(true);
-    try {
-      const fd = new FormData();
-      fd.append("titulo", projetoForm.titulo);
-      fd.append("descricao", projetoForm.descricao);
-      if (projetoImagem) fd.append("imagem", projetoImagem);
-      if (editingProjetoId) {
-        await projetoApi.update(editingProjetoId, fd);
-        toast("success", "Projeto atualizado!");
-      } else {
-        await projetoApi.add(secretaria.id, fd);
-        toast("success", "Projeto adicionado!");
-      }
-      setModalProjetoOpen(false);
-      await load();
-    } catch {
-      toast("error", "Erro ao salvar Projeto.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDeleteProjeto(id: string) {
-    if (!(await confirmAction("Remover este Projeto?"))) return;
-    try {
-      await projetoApi.remove(id);
-      toast("success", "Projeto removido.");
-      await load();
-    } catch {
-      toast("error", "Erro ao remover Projeto.");
-    }
-  }
-  */
-
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground">Carregando...</p>
         </div>
       </div>
@@ -301,10 +250,10 @@ export default function SecretariaTurismoAdminPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-primary/10 rounded-xl">
-          <Landmark className="w-6 h-6 text-primary" />
+        <div className="rounded-xl bg-primary/10 p-2">
+          <Landmark className="h-6 w-6 text-primary" />
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
@@ -318,10 +267,10 @@ export default function SecretariaTurismoAdminPage() {
 
       {feedback && (
         <div
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border ${
+          className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium ${
             feedback.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-red-50 text-red-800 border-red-200"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-red-200 bg-red-50 text-red-800"
           }`}
         >
           <span>{feedback.type === "success" ? "✓" : "✕"}</span>
@@ -329,14 +278,14 @@ export default function SecretariaTurismoAdminPage() {
         </div>
       )}
 
-      <div className="flex gap-1 p-1 bg-muted rounded-xl w-fit">
+      <div className="flex w-fit gap-1 rounded-xl bg-muted p-1">
         {TABS.map(({ key, label, emoji }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key as Tab)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
               activeTab === key
-                ? "bg-white shadow-sm text-foreground"
+                ? "bg-white text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -349,8 +298,8 @@ export default function SecretariaTurismoAdminPage() {
       {/* ── INSTITUCIONAL ── */}
       {activeTab === "institucional" && (
         <form onSubmit={handleSaveInstitucional} className="space-y-6">
-          <div className="bg-white border border-border rounded-2xl p-6 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="space-y-3 rounded-2xl border border-border bg-white p-6 shadow-sm">
+            <div className="mb-1 flex items-center gap-2">
               <span className="text-base">📝</span>
               <h2 className="text-sm font-semibold">
                 Texto Sobre a Secretaria
@@ -361,14 +310,14 @@ export default function SecretariaTurismoAdminPage() {
               onChange={(e) => setInstTexto(e.target.value)}
               rows={7}
               required
-              className="w-full border border-input rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
+              className="w-full resize-none rounded-xl border border-input px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
               placeholder="Descreva a Secretaria de Turismo..."
             />
           </div>
 
-          <div className="bg-white border border-border rounded-2xl p-6 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <Video className="w-4 h-4 text-muted-foreground" />
+          <div className="space-y-3 rounded-2xl border border-border bg-white p-6 shadow-sm">
+            <div className="mb-1 flex items-center gap-2">
+              <Video className="h-4 w-4 text-muted-foreground" />
               <h2 className="text-sm font-semibold">Vídeo institucional</h2>
               <span className="ml-auto text-xs text-muted-foreground">
                 MP4, MOV
@@ -377,13 +326,13 @@ export default function SecretariaTurismoAdminPage() {
             {(videoPreview ?? img(secretaria?.videoUrl)) && (
               <video
                 src={videoPreview ?? img(secretaria?.videoUrl) ?? ""}
-                className="w-full max-h-52 rounded-xl object-cover border border-border"
+                className="max-h-52 w-full rounded-xl border border-border object-cover"
                 controls
               />
             )}
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground group-hover:border-primary group-hover:text-primary transition-colors">
-                <ImagePlus className="w-4 h-4" />
+            <label className="flex cursor-pointer items-center gap-3 group">
+              <div className="flex items-center gap-2 rounded-xl border-2 border-dashed border-border px-4 py-2 text-sm text-muted-foreground transition-colors group-hover:border-primary group-hover:text-primary">
+                <ImagePlus className="h-4 w-4" />
                 {instVideo ? instVideo.name : "Selecionar vídeo"}
               </div>
               <input
@@ -400,9 +349,9 @@ export default function SecretariaTurismoAdminPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
-              <Save className="w-4 h-4" />
+              <Save className="h-4 w-4" />
               {saving
                 ? "Salvando..."
                 : secretaria
@@ -416,189 +365,158 @@ export default function SecretariaTurismoAdminPage() {
       {/* ── TURISTANDO (Projetos) ── */}
       {activeTab === "projetos" && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {turistandoList.length} bloco(s) cadastrado(s)
               {reordering && (
-                <span className="ml-2 text-xs text-primary animate-pulse">
+                <span className="ml-2 animate-pulse text-xs text-primary">
                   Salvando ordem…
                 </span>
               )}
             </p>
             <button
               onClick={openAddTuristando}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
               Adicionar Projeto
             </button>
           </div>
 
           {turistandoList.length === 0 ? (
-            <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl text-muted-foreground">
-              <p className="text-4xl mb-3">🌄</p>
+            <div className="rounded-2xl border-2 border-dashed border-border py-20 text-center text-muted-foreground">
+              <p className="mb-3 text-4xl">🌄</p>
               <p className="text-sm font-medium">
                 Nenhum bloco Turistando ainda.
               </p>
-              <p className="text-xs mt-1">
+              <p className="mt-1 text-xs">
                 Clique em &ldquo;Adicionar&rdquo; para começar.
               </p>
             </div>
           ) : (
             <div className="grid gap-3">
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <GripVertical className="w-3 h-3" />
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <GripVertical className="h-3 w-3" />
                 Arraste os blocos para reordenar. A ordem é salva automaticamente.
               </p>
-              {turistandoList.map((t, index) => (
-                <div
-                  key={t.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className="bg-white border border-border rounded-2xl p-4 shadow-sm flex gap-4 items-start cursor-grab active:cursor-grabbing active:opacity-50 active:scale-[0.98] transition-all select-none"
-                >
-                  {/* Drag handle */}
-                  <div className="flex items-center self-stretch pr-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0">
-                    <GripVertical className="w-4 h-4" />
-                  </div>
 
-                  {t.imagensUrl?.[0] && (
-                    <img
-                      src={img(t.imagensUrl[0]) ?? ""}
-                      alt=""
-                      className="w-16 h-16 object-cover rounded-xl border border-border shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm mb-0.5">{t.titulo}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {t.texto}
-                    </p>
-                    {t.imagensUrl?.length > 1 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t.imagensUrl.length} imagens
-                      </p>
+              {/* Lista paginada */}
+              {visibleItems.map((t, localIndex) => {
+                const globalIndex = pageStart + localIndex;
+                return (
+                  <div
+                    key={t.id}
+                    draggable
+                    onDragStart={() => handleDragStart(globalIndex)}
+                    onDragOver={(e) => handleDragOver(e, globalIndex)}
+                    onDragEnd={handleDragEnd}
+                    className="flex cursor-grab select-none items-start gap-4 rounded-2xl border border-border bg-white p-4 shadow-sm transition-all active:cursor-grabbing active:scale-[0.98] active:opacity-50"
+                  >
+                    {/* Indicador de posição global */}
+                    <div className="flex shrink-0 flex-col items-center gap-1 self-stretch pr-1 text-muted-foreground/40 transition-colors hover:text-muted-foreground">
+                      <span className="text-[10px] font-semibold tabular-nums">
+                        {globalIndex + 1}
+                      </span>
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+
+                    {t.imagensUrl?.[0] && (
+                      <img
+                        src={img(t.imagensUrl[0]) ?? ""}
+                        alt=""
+                        className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover"
+                      />
                     )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="mb-0.5 text-sm font-semibold">
+                        {t.titulo}
+                      </h3>
+                      <p className="line-clamp-2 text-xs text-muted-foreground">
+                        {t.texto}
+                      </p>
+                      {t.imagensUrl?.length > 1 && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t.imagensUrl.length} imagens
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 gap-1">
+                      <button
+                        onClick={() => openEditTuristando(t)}
+                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTuristando(t.id)}
+                        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-500"
+                        title="Remover"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-1 shrink-0">
-                    <button
-                      onClick={() => openEditTuristando(t)}
-                      className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                      title="Editar"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTuristando(t.id)}
-                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-muted-foreground hover:text-red-500"
-                      title="Remover"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                );
+              })}
+
+              {/* Controles de paginação do admin */}
+              {totalAdminPages > 1 && (
+                <div className="mt-2 flex items-center justify-between border-t border-border pt-4">
+                  <button
+                    onClick={() => setAdminPage((p) => Math.max(1, p - 1))}
+                    disabled={adminPage === 1}
+                    className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                    Anterior
+                  </button>
+
+                  <span className="text-xs text-muted-foreground">
+                    Página {adminPage} de {totalAdminPages}
+                    <span className="ml-1 text-muted-foreground/60">
+                      ({turistandoList.length} projetos)
+                    </span>
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      setAdminPage((p) => Math.min(totalAdminPages, p + 1))
+                    }
+                    disabled={adminPage === totalAdminPages}
+                    className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-40"
+                  >
+                    Próxima
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
       )}
-
-      {/* ── PROJETOS ── */}
-      {/* 
-      {activeTab === "projetos" && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              {secretaria?.projetos?.length ?? 0} projeto(s) cadastrado(s)
-            </p>
-            <button
-              onClick={openAddProjeto}
-              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Adicionar Projeto
-            </button>
-          </div>
-
-          {!secretaria?.projetos?.length ? (
-            <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl text-muted-foreground">
-              <p className="text-4xl mb-3">📌</p>
-              <p className="text-sm font-medium">
-                Nenhum projeto cadastrado ainda.
-              </p>
-              <p className="text-xs mt-1">
-                Clique em "Adicionar" para começar.
-              </p>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-4">
-              {secretaria.projetos.map((p) => (
-                <div
-                  key={p.id}
-                  className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm group"
-                >
-                  {p.imagemUrl ? (
-                    <img
-                      src={img(p.imagemUrl) ?? ""}
-                      alt={p.titulo}
-                      className="w-full h-36 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-36 bg-muted flex items-center justify-center text-muted-foreground">
-                      <ImagePlus className="w-6 h-6" />
-                    </div>
-                  )}
-                  <div className="p-4">
-                    <h3 className="font-semibold text-sm mb-1">{p.titulo}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {p.descricao}
-                    </p>
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => openEditProjeto(p)}
-                        className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                      >
-                        <Pencil className="w-3 h-3" /> Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProjeto(p.id)}
-                        className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:underline"
-                      >
-                        <Trash2 className="w-3 h-3" /> Remover
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      */}
 
       {/* ── MODAL TURISTANDO ── */}
       {modalTuristandoOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-4 sm:items-center sm:pb-0">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <h2 className="text-base font-semibold">
                 {editingTuristandoId ? "Editar Projeto" : "Novo Projeto"}
               </h2>
               <button
                 onClick={() => setModalTuristandoOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
             <form
               onSubmit={handleSaveTuristando}
-              className="px-6 py-5 space-y-4"
+              className="space-y-4 px-6 py-5"
             >
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Título
                 </label>
                 <input
@@ -607,12 +525,12 @@ export default function SecretariaTurismoAdminPage() {
                     setTuristandoForm((f) => ({ ...f, titulo: e.target.value }))
                   }
                   required
-                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                  className="w-full rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Título do bloco"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Texto
                 </label>
                 <textarea
@@ -622,18 +540,18 @@ export default function SecretariaTurismoAdminPage() {
                   }
                   required
                   rows={4}
-                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
+                  className="w-full resize-none rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Descrição do bloco"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Imagens{" "}
                   <span className="normal-case font-normal">(até 10)</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-                    <ImagePlus className="w-4 h-4" />
+                <label className="flex cursor-pointer items-center gap-2">
+                  <div className="flex items-center gap-2 rounded-xl border-2 border-dashed border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+                    <ImagePlus className="h-4 w-4" />
                     {turistandoImagens.length > 0
                       ? `${turistandoImagens.length} arquivo(s) selecionado(s)`
                       : "Selecionar imagens"}
@@ -650,20 +568,20 @@ export default function SecretariaTurismoAdminPage() {
                   />
                 </label>
               </div>
-              <div className="flex gap-3 justify-end pt-1">
+              <div className="flex justify-end gap-3 pt-1">
                 <button
                   type="button"
                   onClick={() => setModalTuristandoOpen(false)}
-                  className="text-sm text-muted-foreground hover:text-foreground px-4 py-2 rounded-xl hover:bg-muted transition-colors"
+                  className="rounded-xl px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
+                  className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-60"
                 >
-                  <Save className="w-4 h-4" />
+                  <Save className="h-4 w-4" />
                   {saving ? "Salvando..." : "Salvar"}
                 </button>
               </div>
@@ -671,95 +589,6 @@ export default function SecretariaTurismoAdminPage() {
           </div>
         </div>
       )}
-
-      {/* ── MODAL PROJETO ── */}
-      {/*
-      {modalProjetoOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex justify-between items-center px-6 py-4 border-b border-border">
-              <h2 className="text-base font-semibold">
-                {editingProjetoId ? "Editar Projeto" : "Novo Projeto"}
-              </h2>
-              <button
-                onClick={() => setModalProjetoOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <form onSubmit={handleSaveProjeto} className="px-6 py-5 space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Título
-                </label>
-                <input
-                  value={projetoForm.titulo}
-                  onChange={(e) =>
-                    setProjetoForm((f) => ({ ...f, titulo: e.target.value }))
-                  }
-                  required
-                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-                  placeholder="Nome do projeto"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Descrição
-                </label>
-                <textarea
-                  value={projetoForm.descricao}
-                  onChange={(e) =>
-                    setProjetoForm((f) => ({ ...f, descricao: e.target.value }))
-                  }
-                  required
-                  rows={4}
-                  className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition"
-                  placeholder="Descrição do projeto"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
-                  Imagem de capa
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <div className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-                    <ImagePlus className="w-4 h-4" />
-                    {projetoImagem ? projetoImagem.name : "Selecionar imagem"}
-                  </div>
-                  <input
-                    ref={imagemProjetoRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setProjetoImagem(e.target.files?.[0] ?? null)
-                    }
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              <div className="flex gap-3 justify-end pt-1">
-                <button
-                  type="button"
-                  onClick={() => setModalProjetoOpen(false)}
-                  className="text-sm text-muted-foreground hover:text-foreground px-4 py-2 rounded-xl hover:bg-muted transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving ? "Salvando..." : "Salvar"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      */}
     </div>
   );
 }
