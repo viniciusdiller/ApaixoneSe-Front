@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { gastronomiaApi } from "@/lib/api";
@@ -140,10 +142,10 @@ export function FormularioGastronomia({
 
       if (modo === "editar" && estabelecimentoId) {
         await gastronomiaApi.update(estabelecimentoId, fd);
-        alert("Atualizado com sucesso!");
+        notify.success("Atualizado com sucesso!");
       } else {
         await gastronomiaApi.create(fd);
-        alert("Enviado para análise com sucesso!");
+        notify.success("Enviado para análise com sucesso!");
       }
 
       router.push("/perfil");
@@ -167,7 +169,7 @@ export function FormularioGastronomia({
       setShowDeleteModal(false);
       router.push("/perfil");
     } catch (err) {
-      alert("Erro ao excluir o estabelecimento.");
+      notify.error("Erro ao excluir o estabelecimento.");
       setIsDeleting(false);
       setShowDeleteModal(false);
     }

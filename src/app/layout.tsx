@@ -86,7 +86,21 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4500,
+              style: {
+                borderRadius: "12px",
+                padding: "14px 16px",
+                color: "#0f172a",
+                background: "#ffffff",
+                boxShadow: "0 12px 28px rgba(15, 23, 42, .16)",
+              },
+              success: { iconTheme: { primary: "#16a34a", secondary: "#ffffff" } },
+              error: { iconTheme: { primary: "#dc2626", secondary: "#ffffff" } },
+            }}
+          />
           <SiteShell>{children}</SiteShell>
         </AuthProvider>
       </body>

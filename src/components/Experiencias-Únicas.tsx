@@ -11,7 +11,7 @@ const roteiros = [
     label: "A Pé",
     descricao:
       "Trilhas e percursos para explorar Saquarema com contato direto com a natureza",
-    imagem: "/images/roteiros/itauna-surf.jpg",
+    imagem: "/images/roteiros/a_pe.jpeg",
     span: "",
   },
   {
@@ -33,7 +33,7 @@ const roteiros = [
     slug: "cultural",
     label: "Cultural",
     descricao: "História, arte e fé que moldaram a identidade de Saquarema",
-    imagem: "/images/roteiros/igreja-nazare.jpg",
+    imagem: "/images/roteiros/cultural.jpeg",
     span: "",
   },
   {

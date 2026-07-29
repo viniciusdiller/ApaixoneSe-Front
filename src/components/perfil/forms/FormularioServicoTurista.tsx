@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { servicoTuristaApi } from "@/lib/api";
@@ -198,10 +200,10 @@ export function FormularioServico({
 
       if (modo === "editar" && estabelecimentoId) {
         await servicoTuristaApi.update(estabelecimentoId, fd);
-        alert("Atualizado com sucesso!");
+        notify.success("Atualizado com sucesso!");
       } else {
         await servicoTuristaApi.create(fd);
-        alert("Enviado para análise com sucesso!");
+        notify.success("Enviado para análise com sucesso!");
       }
 
       router.push("/perfil");
@@ -225,7 +227,7 @@ export function FormularioServico({
       setShowDeleteModal(false);
       router.push("/perfil");
     } catch (err) {
-      alert("Erro ao excluir o serviço.");
+      notify.error("Erro ao excluir o serviço.");
       setIsDeleting(false);
       setShowDeleteModal(false);
     }

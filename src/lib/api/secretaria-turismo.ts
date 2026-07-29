@@ -60,6 +60,16 @@ export const turistandoApi = {
       method: "DELETE",
       body: JSON.stringify({ ids }),
     }),
+
+  /**
+   * PATCH /secretaria-turismo/turistando/reorder
+   * Body: { items: [{ id: string; ordem: number }] }
+   */
+  reorder: (items: { id: string; ordem: number }[]) =>
+    apiFetch<void>(`/secretaria-turismo/turistando/reorder`, {
+      method: "PATCH",
+      body: JSON.stringify({ items }),
+    }),
 };
 
 // ─── Projetos ─────────────────────────────────────────────────────────────────

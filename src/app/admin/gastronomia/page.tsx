@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState, useMemo } from "react";
 import { gastronomiaApi, usersApi } from "@/lib/api";
 import type { Gastronomia, CreateGastronomiaDto, User } from "@/lib/api";
@@ -246,7 +248,7 @@ export default function AdminGastronomiaPage() {
   };
 
   const handleDelete = async (item: Gastronomia) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await gastronomiaApi.delete(item.id);
     load();
   };

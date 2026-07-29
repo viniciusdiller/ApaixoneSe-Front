@@ -78,7 +78,11 @@ function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
             <button
               key={i}
               onClick={() => setIdx(i)}
-              className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${i === idx ? "border-primary opacity-100" : "border-transparent opacity-60 hover:opacity-100"}`}
+              className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                i === idx
+                  ? "border-primary opacity-100"
+                  : "border-transparent opacity-60 hover:opacity-100"
+              }`}
             >
               <Image
                 src={s}
@@ -160,7 +164,11 @@ export default function SecretariaTurismoPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const turistandos = secretaria?.turistandos || [];
+  // Ordena pelo campo `ordem` para refletir a ordem definida no admin
+  const turistandos = [...(secretaria?.turistandos ?? [])].sort(
+    (a, b) => ((a as any).ordem ?? 0) - ((b as any).ordem ?? 0),
+  );
+
   const totalPages = Math.ceil(turistandos.length / ITEMS_PER_PAGE);
 
   const currentTuristandos = turistandos.slice(
@@ -280,28 +288,29 @@ export default function SecretariaTurismoPage() {
               {/* Turistando / Projetos */}
               {turistandos.length > 0 && (
                 <div className="space-y-10">
-                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">
+                  <h2 className="border-b border-border pb-3 text-2xl font-bold text-foreground">
                     Projetos
                   </h2>
 
-                  {/* 3. Renderizamos apenas os itens da página atual */}
                   <div className="space-y-12">
                     {currentTuristandos.map((t, i) => (
                       <div
                         key={t.id}
-                        className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start"
+                        className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2"
                       >
                         <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-                          <h3 className="text-lg font-semibold text-foreground mb-3">
+                          <h3 className="mb-3 text-lg font-semibold text-foreground">
                             {t.titulo}
                           </h3>
-                          <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
+                          <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                             {t.texto}
                           </p>
                         </div>
                         {t.imagensUrl?.length > 0 && (
                           <div
-                            className={`relative w-full aspect-video rounded-xl overflow-hidden shadow-sm ${i % 2 === 1 ? "lg:order-1" : ""}`}
+                            className={`relative aspect-video w-full overflow-hidden rounded-xl shadow-sm ${
+                              i % 2 === 1 ? "lg:order-1" : ""
+                            }`}
                           >
                             <Carousel urls={t.imagensUrl} alt={t.titulo} />
                           </div>
@@ -310,7 +319,7 @@ export default function SecretariaTurismoPage() {
                     ))}
                   </div>
 
-                  {/* 4. Controles de Paginação (só aparecem se tiver mais de 1 página) */}
+                  {/* Controles de paginação */}
                   {totalPages > 1 && (
                     <div className="mt-8 flex items-center justify-center gap-4 border-t border-border pt-8">
                       <button

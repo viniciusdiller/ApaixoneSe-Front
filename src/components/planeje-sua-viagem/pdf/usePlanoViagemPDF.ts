@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useState } from "react";
 import { createElement } from "react";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
@@ -56,7 +58,7 @@ export function usePlanoViagemPDF(plano: PlanoViagem) {
       URL.revokeObjectURL(url);
     } catch (err) {
       console.error("[usePlanoViagemPDF] Erro ao gerar PDF:", err);
-      alert(
+      notify.error(
         `N\u00e3o foi poss\u00edvel gerar o PDF.\n\nDetalhe: ${
           err instanceof Error ? err.message : String(err)
         }`,

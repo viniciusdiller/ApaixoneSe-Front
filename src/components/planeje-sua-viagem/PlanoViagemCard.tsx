@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useState } from "react";
 import {
   CalendarDays,
@@ -40,13 +42,13 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
   const { exportando, exportarPDF } = usePlanoViagemPDF(plano);
 
   async function handleDelete() {
-    if (!confirm(`Excluir o plano "${plano.titulo}"?`)) return;
+    if (!(await confirmAction(`Excluir o plano "${plano.titulo}"?`))) return;
     setDeletando(true);
     try {
       await planoViagemApi.remove(plano.id);
       onDeleted(plano.id);
     } catch {
-      alert("Erro ao excluir. Tente novamente.");
+      notify.error("Erro ao excluir. Tente novamente.");
     } finally {
       setDeletando(false);
     }

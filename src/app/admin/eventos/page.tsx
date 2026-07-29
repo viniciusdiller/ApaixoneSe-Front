@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState, useMemo } from "react";
 import { eventosApi } from "@/lib/api";
 import type { Evento, CreateEventoDto } from "@/lib/api";
@@ -123,7 +125,7 @@ export default function AdminEventosPage() {
   };
 
   const handleDelete = async (item: Evento) => {
-    if (!confirm(`Excluir "${item.titulo}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.titulo}"?`))) return;
     await eventosApi.remove(item.id);
     load();
   };

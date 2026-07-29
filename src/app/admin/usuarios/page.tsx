@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState, useMemo } from "react";
 import {
   usersApi,
@@ -238,7 +240,7 @@ export default function AdminUsuariosPage() {
 
   // ── excluir ──
   const handleDelete = async (user: User) => {
-    if (!confirm(`Excluir usuário "${user.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir usuário "${user.nome}"?`))) return;
     await usersApi.delete(user.id);
     load();
   };

@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -169,7 +171,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         .catch((error) => {
           console.error("Erro ao reproduzir o áudio:", error);
           setIsPlaying(false);
-          alert(
+          notify.error(
             "Não foi possível tocar o áudio. Verifique se o arquivo está na pasta 'public/sounds/ondas.mp3'.",
           );
         });

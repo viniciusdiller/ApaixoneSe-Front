@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState } from "react";
 import { catApi } from "@/lib/api";
 import { catMovelApi } from "@/lib/api/cat-movel";
@@ -267,7 +269,7 @@ export default function AdminCatPage() {
   };
 
   const handleDelete = async (item: Cat) => {
-    if (!confirm("Excluir este registro CAT?")) return;
+    if (!(await confirmAction("Excluir este registro CAT?"))) return;
     await catApi.remove(item.id); loadCat();
   };
 
