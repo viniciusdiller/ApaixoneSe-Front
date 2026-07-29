@@ -12,6 +12,7 @@ import {
   Trash2,
   X,
   Save,
+  GripVertical,
 } from "lucide-react";
 import {
   secretariaTurismoApi,
@@ -45,6 +46,12 @@ export default function SecretariaTurismoAdminPage() {
     msg: string;
   } | null>(null);
 
+  // ── Turistando list (local copy for optimistic drag-and-drop) ───────────────
+  const [turistandoList, setTuristandoList] = useState<Turistando[]>([]);
+  const [reordering, setReordering] = useState(false);
+  // drag state
+  const dragIndexRef = useRef<number | null>(null);
+
   const [modalTuristandoOpen, setModalTuristandoOpen] = useState(false);
   const [editingTuristandoId, setEditingTuristandoId] = useState<string | null>(
     null,
@@ -73,6 +80,19 @@ export default function SecretariaTurismoAdminPage() {
   useEffect(() => {
     load();
   }, []);
+
+  // Sync local list whenever secretaria changes
+  useEffect(() => {
+    if (secretaria?.turistandos) {
+      // Preserve existing ordem or fall back to array index
+      const sorted = [...secretaria.turistandos].sort(
+        (a, b) => ((a as any).ordem ?? 0) - ((b as any).ordem ?? 0)
+      );
+      setTuristandoList(sorted);
+    } else {
+      setTuristandoList([]);
+    }
+  }, [secretaria]);
 
   async function load() {
     setLoading(true);
@@ -174,6 +194,44 @@ export default function SecretariaTurismoAdminPage() {
       await load();
     } catch {
       toast("error", "Erro ao remover Turistando.");
+    }
+  }
+
+  // ── DRAG-AND-DROP (HTML5 nativo) ────────────────────────────────────────────
+  function handleDragStart(index: number) {
+    dragIndexRef.current = index;
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    const from = dragIndexRef.current;
+    if (from === null || from === index) return;
+
+    setTuristandoList((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(index, 0, moved);
+      dragIndexRef.current = index;
+      return next;
+    });
+  }
+
+  function handleDragEnd() {
+    dragIndexRef.current = null;
+    persistReorder();
+  }
+
+  async function persistReorder() {
+    setReordering(true);
+    try {
+      const items = turistandoList.map((t, i) => ({ id: t.id, ordem: i + 1 }));
+      await turistandoApi.reorder(items);
+      toast("success", "Ordem salva com sucesso!");
+    } catch {
+      toast("error", "Erro ao salvar a ordem. Recarregando...");
+      await load();
+    } finally {
+      setReordering(false);
     }
   }
 
@@ -355,12 +413,17 @@ export default function SecretariaTurismoAdminPage() {
         </form>
       )}
 
-      {/* ── TURISTANDO ── */}
+      {/* ── TURISTANDO (Projetos) ── */}
       {activeTab === "projetos" && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-muted-foreground">
-              {secretaria?.turistandos?.length ?? 0} bloco(s) cadastrado(s)
+              {turistandoList.length} bloco(s) cadastrado(s)
+              {reordering && (
+                <span className="ml-2 text-xs text-primary animate-pulse">
+                  Salvando ordem…
+                </span>
+              )}
             </p>
             <button
               onClick={openAddTuristando}
@@ -371,23 +434,36 @@ export default function SecretariaTurismoAdminPage() {
             </button>
           </div>
 
-          {!secretaria?.turistandos?.length ? (
+          {turistandoList.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed border-border rounded-2xl text-muted-foreground">
               <p className="text-4xl mb-3">🌄</p>
               <p className="text-sm font-medium">
                 Nenhum bloco Turistando ainda.
               </p>
               <p className="text-xs mt-1">
-                Clique em "Adicionar" para começar.
+                Clique em &ldquo;Adicionar&rdquo; para começar.
               </p>
             </div>
           ) : (
             <div className="grid gap-3">
-              {secretaria.turistandos.map((t) => (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <GripVertical className="w-3 h-3" />
+                Arraste os blocos para reordenar. A ordem é salva automaticamente.
+              </p>
+              {turistandoList.map((t, index) => (
                 <div
                   key={t.id}
-                  className="bg-white border border-border rounded-2xl p-4 shadow-sm flex gap-4 items-start"
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className="bg-white border border-border rounded-2xl p-4 shadow-sm flex gap-4 items-start cursor-grab active:cursor-grabbing active:opacity-50 active:scale-[0.98] transition-all select-none"
                 >
+                  {/* Drag handle */}
+                  <div className="flex items-center self-stretch pr-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors shrink-0">
+                    <GripVertical className="w-4 h-4" />
+                  </div>
+
                   {t.imagensUrl?.[0] && (
                     <img
                       src={img(t.imagensUrl[0]) ?? ""}
