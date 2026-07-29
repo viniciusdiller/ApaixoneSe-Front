@@ -30,7 +30,7 @@ export const ROTEIROS: RoteiroMeta[] = [
     label: "A Pé",
     descricao:
       "Percursos e trilhas para explorar Saquarema a pé, com contato direto com a natureza e a cultura local.",
-    imagem: "/images/roteiros/ecologico.jpeg",
+    imagem: "/images/roteiros/a_pe.jpeg",
     span: "",
   },
   {
@@ -46,8 +46,7 @@ export const ROTEIROS: RoteiroMeta[] = [
     enum: "DE_PRAIAS",
     slug: "de-praias",
     label: "De Praias",
-    descricao:
-      "As praias de Saquarema — cada uma com uma personalidade única.",
+    descricao: "As praias de Saquarema — cada uma com uma personalidade única.",
     imagem: "/images/roteiros/praia.jpeg",
     span: "",
   },
@@ -57,7 +56,7 @@ export const ROTEIROS: RoteiroMeta[] = [
     label: "Cultural",
     descricao:
       "Mergulhe na história, na fé e na arte que moldaram a identidade de Saquarema.",
-    imagem: "/images/roteiros/religioso.jpeg",
+    imagem: "/images/roteiros/cultural.jpeg",
     span: "md:col-span-2 md:row-span-2",
   },
   {
