@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useState, useEffect, useRef } from "react";
 import {
   Landmark,
@@ -165,7 +167,7 @@ export default function SecretariaTurismoAdminPage() {
   }
 
   async function handleDeleteTuristando(id: string) {
-    if (!confirm("Remover este Turistando?")) return;
+    if (!(await confirmAction("Remover este Turistando?"))) return;
     try {
       await turistandoApi.remove(id);
       toast("success", "Turistando removido.");
@@ -218,7 +220,7 @@ export default function SecretariaTurismoAdminPage() {
   }
 
   async function handleDeleteProjeto(id: string) {
-    if (!confirm("Remover este Projeto?")) return;
+    if (!(await confirmAction("Remover este Projeto?"))) return;
     try {
       await projetoApi.remove(id);
       toast("success", "Projeto removido.");

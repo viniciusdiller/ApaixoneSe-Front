@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -167,7 +169,7 @@ export default function AdminFiquePorDentroPage() {
   }
 
   async function handleDelete(item: FiquePorDentro) {
-    if (!confirm(`Excluir a imagem da posição ${item.ordem}?`)) return;
+    if (!(await confirmAction(`Excluir a imagem da posição ${item.ordem}?`))) return;
     try {
       await fiquePorDentroApi.remove(item.id);
       toast("success", "Imagem removida.");

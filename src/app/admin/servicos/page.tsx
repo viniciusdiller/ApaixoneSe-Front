@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState, useMemo } from "react";
 import { servicoTuristaApi, usersApi } from "@/lib/api";
 import type {
@@ -282,7 +284,7 @@ export default function AdminServicosPage() {
   };
 
   const handleDelete = async (item: ServicoTurista) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await servicoTuristaApi.delete(item.id);
     load();
   };

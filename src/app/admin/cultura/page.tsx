@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { culturaApi } from "@/lib/api";
 import type { LocalCultural } from "@/lib/api";
@@ -95,7 +97,7 @@ export default function AdminCulturaPage() {
   };
 
   const handleDelete = async (item: LocalCultural) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await culturaApi.remove(item.id);
     load();
   };

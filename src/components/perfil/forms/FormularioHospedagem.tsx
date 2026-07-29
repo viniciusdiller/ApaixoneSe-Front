@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { hospedagemApi } from "@/lib/api";
@@ -177,10 +179,10 @@ export function FormularioHospedagem({
 
       if (modo === "editar" && estabelecimentoId) {
         await hospedagemApi.update(estabelecimentoId, fd);
-        alert("Atualizado com sucesso!");
+        notify.success("Atualizado com sucesso!");
       } else {
         await hospedagemApi.create(fd);
-        alert("Enviado para análise com sucesso!");
+        notify.success("Enviado para análise com sucesso!");
       }
 
       router.push("/perfil");
@@ -204,7 +206,7 @@ export function FormularioHospedagem({
       setShowDeleteModal(false);
       router.push("/perfil");
     } catch (err) {
-      alert("Erro ao excluir a hospedagem.");
+      notify.error("Erro ao excluir a hospedagem.");
       setIsDeleting(false);
       setShowDeleteModal(false);
     }

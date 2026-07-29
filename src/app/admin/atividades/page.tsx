@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState, useMemo } from "react";
 import { atividadesApi } from "@/lib/api";
 import type { Atividade, CreateAtividadeDto, TipoRoteiro } from "@/lib/api";
@@ -145,7 +147,7 @@ export default function AdminAtividadesPage() {
   };
 
   const handleDelete = async (item: Atividade) => {
-    if (!confirm(`Excluir "${item.titulo}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.titulo}"?`))) return;
     await atividadesApi.remove(item.id);
     load();
   };

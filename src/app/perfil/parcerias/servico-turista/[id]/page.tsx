@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { servicoTuristaApi } from "@/lib/api";
 import { FormularioServico } from "@/components/perfil/forms/FormularioServicoTurista"; 
@@ -21,7 +23,7 @@ export default function PaginaServico({ params }: { params: { id?: string } }) {
           setLoading(false);
         })
         .catch(() => {
-          alert("Erro ao buscar serviço. Verifique se o ID está correto.");
+          notify.error("Erro ao buscar serviço. Verifique se o ID está correto.");
           setLoading(false);
         });
     }

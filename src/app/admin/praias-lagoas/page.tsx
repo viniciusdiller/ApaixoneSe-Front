@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { pontosAguaApi } from "@/lib/api";
 import type { PontoAgua, TipoPontoAgua } from "@/lib/api";
@@ -165,7 +167,7 @@ export default function AdminPraiasLagoasPage() {
   };
 
   const handleDelete = async (item: PontoAgua) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await pontosAguaApi.remove(item.id);
     load();
   };

@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState, useMemo } from "react";
 import { hospedagemApi, usersApi } from "@/lib/api";
 import { HOSPEDAGEM_TAGS } from "@/lib/api/hospedagem";
@@ -280,7 +282,7 @@ export default function AdminHospedagemPage() {
   };
 
   const handleDelete = async (item: Hospedagem) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await hospedagemApi.delete(item.id);
     load();
   };

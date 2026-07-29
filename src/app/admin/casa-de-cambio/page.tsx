@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { casaDeCambioApi } from "@/lib/api";
@@ -110,7 +112,7 @@ export default function AdminCasaDeCambioPage() {
   };
 
   const handleDelete = async (item: CasaDeCambio) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await casaDeCambioApi.delete(item.id);
     load();
   };

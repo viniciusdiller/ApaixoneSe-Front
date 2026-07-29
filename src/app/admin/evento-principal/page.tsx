@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -119,7 +121,7 @@ export default function AdminEventoPrincipalPage() {
 
   const deletar = async () => {
     if (!evento) return;
-    if (!confirm(`Tem certeza que deseja remover "${evento.titulo}"?`)) return;
+    if (!(await confirmAction(`Tem certeza que deseja remover "${evento.titulo}"?`))) return;
     setDeletando(true);
     setErro(null);
     try {
