@@ -214,9 +214,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           >
             <Waves className="hidden h-10 w-10 md:block" />
             <div>
-              <span className="font-display text-xl font-bold tracking-wide notranslate">
-                APAIXONE-SE
-              </span>
+              <img
+                src="/images/apaixone-se-Branco.png"
+                alt=""
+                height={95}
+                width={95}
+              />
               <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
                 {" "}
                 Saquarema/rj - BR
