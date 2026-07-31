@@ -74,7 +74,7 @@ export default function PraiasPage() {
   return (
     <div className="min-h-screen bg-background">
       <section className="bg-primary px-4 pb-12 pt-32">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto">
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -85,7 +85,7 @@ export default function PraiasPage() {
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Praias & Lagoas
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-primary-foreground/80">
             Descubra as praias que fazem de Saquarema a Capital Nacional do
             Esporte e paz e tranquilidade de nossas lagoas
           </p>

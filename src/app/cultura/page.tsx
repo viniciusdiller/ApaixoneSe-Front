@@ -32,7 +32,7 @@ export default function CulturaPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container mx-auto"
         >
           <Link
             href="/"
@@ -44,7 +44,7 @@ export default function CulturaPage() {
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Cultura
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-primary-foreground/80">
             Conheça um pouco mais da tradição saquaremense.
           </p>
         </motion.div>

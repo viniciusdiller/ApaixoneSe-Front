@@ -61,7 +61,7 @@ export function GastronomiaListPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container mx-auto"
         >
           <Link
             href="/"
@@ -73,7 +73,7 @@ export function GastronomiaListPage() {
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Gastronomia
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-primary-foreground/80">
             Descubra os melhores restaurantes e os sabores autênticos de
             Saquarema.
           </p>

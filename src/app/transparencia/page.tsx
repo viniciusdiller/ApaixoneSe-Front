@@ -62,7 +62,7 @@ export default function TransparenciaPage() {
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Hero */}
       <section className="bg-primary px-4 pb-16 pt-32 relative overflow-hidden">
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
+        <div className="container mx-auto max-w-4xl relative z-10">
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -71,12 +71,12 @@ export default function TransparenciaPage() {
             Voltar para a página inicial
           </Link>
 
-          <h1 className="font-display text-4xl font-bold uppercase text-primary-foreground md:text-6xl flex flex-col md:flex-row items-center justify-center gap-4">
+          <h1 className="font-display text-4xl font-bold uppercase text-primary-foreground md:text-6xl flex flex-col md:flex-row items-center justify-start gap-4">
             <Scale className="h-10 w-10 md:h-14 md:w-14 text-accent" />
             Transparência
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
+          <p className="mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
             A Prefeitura Municipal de Saquarema e a Secretaria de Turismo
             comprometem-se com a transparência e o acesso à informação pública.
           </p>

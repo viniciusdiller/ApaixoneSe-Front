@@ -44,7 +44,7 @@ export default function FAQPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="container mx-auto max-w-4xl text-center relative z-10"
+          className="container mx-auto max-w-4xl relative z-10"
         >
           <Link
             href="/"
@@ -54,12 +54,12 @@ export default function FAQPage() {
             Voltar para a página inicial
           </Link>
 
-          <h1 className="font-display text-4xl font-bold uppercase text-primary-foreground md:text-6xl flex flex-col md:flex-row items-center justify-center gap-4">
+          <h1 className="font-display text-4xl font-bold uppercase text-primary-foreground md:text-6xl flex flex-col md:flex-row items-center justify-start gap-4">
             <HelpCircle className="h-10 w-10 md:h-14 md:w-14 text-accent" />
             Dúvidas Frequentes
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
+          <p className="mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
             Encontre as respostas para as perguntas mais comuns sobre o portal
             Apaixone-se por Saquarema.
           </p>
@@ -93,7 +93,6 @@ export default function FAQPage() {
                     {faq.question}
                   </span>
 
-                  {/* Ícone customizado que rotaciona e muda de cor quando aberto */}
                   <div
                     className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
                       isOpen
@@ -110,7 +109,6 @@ export default function FAQPage() {
                   </div>
                 </button>
 
-                {/* Área da Resposta Animada */}
                 <AnimatePresence>
                   {isOpen && (
                     <motion.div

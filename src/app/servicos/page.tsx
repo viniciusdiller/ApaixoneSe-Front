@@ -106,7 +106,7 @@ export default function ServicosPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container mx-auto"
         >
           <Link
             href="/"
@@ -118,7 +118,7 @@ export default function ServicosPage() {
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Serviços Turísticos
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-primary-foreground/80">
             Explore nossa cidade com os melhores profissionais. Encontre guias
             apaixonados, agências de confiança ou tire suas dúvidas no CAT.
           </p>

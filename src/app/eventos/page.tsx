@@ -114,7 +114,7 @@ export default function EventosPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container mx-auto"
         >
           <Link
             href="/"
@@ -126,7 +126,7 @@ export default function EventosPage() {
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Eventos
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-primary-foreground/80">
             Acompanhe os principais eventos esportivos e culturais de Saquarema.
           </p>
         </motion.div>
