@@ -27,24 +27,28 @@ export default function CulturaPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="bg-primary px-4 pb-12 pt-32">
+      <section
+        className="relative bg-cover bg-center px-4 pb-12 pt-32"
+        style={{ backgroundImage: "url('/images/hero-saquarema.jpeg')" }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto"
+          className="container relative z-10 mx-auto"
         >
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-white md:text-6xl">
             Cultura
           </h1>
-          <p className="mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-white/80">
             Conheça um pouco mais da tradição saquaremense.
           </p>
         </motion.div>
@@ -109,7 +113,7 @@ export default function CulturaPage() {
             <h2 className="font-display text-3xl uppercase text-primary">
               História de Saquarema
             </h2>
-            <p className="mt-5 text-muted-foreground ">
+            <p className="mt-5 text-muted-foreground">
               A história de Saquarema é escrita pelo constante encontro entre a
               terra e o oceano. Das raízes milenares preservadas nos sambaquis e
               a rica herança das pacatas vilas de pescadores, a cidade evoluiu
@@ -156,7 +160,6 @@ export default function CulturaPage() {
               onClick={() => setLocalSelecionado(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
             />
-
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -170,7 +173,6 @@ export default function CulturaPage() {
               >
                 <X className="h-5 w-5" />
               </button>
-
               {(() => {
                 const src = safeMediaUrl(localSelecionado.imagemUrl);
                 return src ? (
@@ -185,12 +187,10 @@ export default function CulturaPage() {
                   </div>
                 ) : null;
               })()}
-
               <div className="p-8">
                 <h3 className="font-display text-3xl font-bold uppercase text-foreground">
                   {localSelecionado.nome}
                 </h3>
-
                 <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                     {localSelecionado.texto || localSelecionado.descricao}
@@ -200,7 +200,4 @@ export default function CulturaPage() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
-    </div>
-  );
-}
+      </AnimateP
