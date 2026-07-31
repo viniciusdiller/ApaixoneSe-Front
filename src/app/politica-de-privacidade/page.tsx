@@ -12,7 +12,7 @@ const sections = [
   {
     title: "1. Quem somos",
     content:
-      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria de Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 28.636.579/0001-00, com sede na Rua Coronel Serrado, s/n, Centro, Saquarema — RJ.',
+      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria Municipal de Esporte, Lazer e Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 28.636.579/0001-00, com sede na Rua Coronel Serrado, s/n, Centro, Saquarema — RJ.',
   },
   {
     title: "2. Dados que coletamos",

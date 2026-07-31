@@ -15,15 +15,6 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-black/30" />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-4 font-sans text-sm uppercase tracking-[0.3em] text-primary-foreground/80"
-        >
-          Bem-vindo ao Maracanã do Surf
-        </motion.p>
-
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

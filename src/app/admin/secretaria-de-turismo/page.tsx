@@ -257,7 +257,7 @@ export default function SecretariaTurismoAdminPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Secretaria de Turismo
+            Secretaria Municipal de Esporte, Lazer e Turismo
           </h1>
           <p className="text-sm text-muted-foreground">
             Gerencie o conteúdo institucional, Turistando e Projetos.
@@ -397,7 +397,8 @@ export default function SecretariaTurismoAdminPage() {
             <div className="grid gap-3">
               <p className="flex items-center gap-1 text-xs text-muted-foreground">
                 <GripVertical className="h-3 w-3" />
-                Arraste os blocos para reordenar. A ordem é salva automaticamente.
+                Arraste os blocos para reordenar. A ordem é salva
+                automaticamente.
               </p>
 
               {/* Lista paginada */}
