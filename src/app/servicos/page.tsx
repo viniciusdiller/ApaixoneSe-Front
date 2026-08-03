@@ -163,46 +163,57 @@ export default function ServicosPage() {
           {/* Secretaria de Turismo — esquerda */}
           <div
             onClick={() => router.push("/servicos/secretaria-de-turismo")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+            className="group relative flex flex-col items-center justify-center p-8 rounded-2xl cursor-pointer overflow-hidden transition-all hover:shadow-xl border border-border/50"
           >
-            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
-              <House size={32} />
-            </div>
+            <div
+              className="absolute inset-0 bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+              style={{
+                backgroundImage: "url('/images/header/sec-turismo.jpg')",
+              }}
+            />
 
-            <h2 className="text-2xl font-bold mb-2 text-foreground">
-              Secretaria Municipal de Esporte, Lazer e Turismo
-            </h2>
+            <div className="absolute inset-0 bg-black/60 transition-colors duration-300 group-hover:bg-black/70" />
 
-            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
-              Saquarema · RJ
-            </span>
-
-            {secretariaLoading && (
-              <div className="w-full max-w-md space-y-2 animate-pulse">
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
+            <div className="relative z-10 flex flex-col items-center transition-transform duration-300 group-hover:-translate-y-1">
+              <div className="p-4 rounded-full bg-white/20 text-white mb-4 backdrop-blur-sm">
+                <House size={32} />
               </div>
-            )}
 
-            {!secretariaLoading && secretaria && (
-              <p className="text-muted-foreground text-sm max-w-xl">
-                {truncateWords(secretaria.textoExplicativo, 10)}
-              </p>
-            )}
+              <h2 className="text-2xl font-bold mb-2 text-white text-center">
+                Secretaria Municipal de Esporte, Lazer e Turismo
+              </h2>
 
-            {!secretariaLoading && !secretaria && (
-              <p className="text-muted-foreground text-sm">
-                Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
-                iniciativas da Secretaria Municipal.
-              </p>
-            )}
+              <span className="inline-block px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full mb-4 backdrop-blur-sm">
+                Saquarema · RJ
+              </span>
 
-            <div className="mt-4 flex items-center text-primary font-medium text-sm">
-              Saiba mais
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
+              {secretariaLoading && (
+                <div className="w-full max-w-md space-y-2 animate-pulse">
+                  <div className="h-3 w-full rounded bg-white/30" />
+                  <div className="h-3 w-5/6 rounded bg-white/30" />
+                </div>
+              )}
+
+              {!secretariaLoading && secretaria && (
+                <p className="text-white/80 text-sm max-w-xl text-center">
+                  {truncateWords(secretaria.textoExplicativo, 10)}
+                </p>
+              )}
+
+              {!secretariaLoading && !secretaria && (
+                <p className="text-white/80 text-sm text-center">
+                  Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
+                  iniciativas da Secretaria Municipal.
+                </p>
+              )}
+
+              <div className="mt-4 flex items-center text-secondary font-semibold text-sm">
+                Saiba mais
+                <ArrowRight
+                  size={16}
+                  className="ml-2 transition-transform group-hover:translate-x-1"
+                />
+              </div>
             </div>
           </div>
 
