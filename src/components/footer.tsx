@@ -110,7 +110,7 @@ export function Footer() {
                   href="/servicos"
                   className="transition-colors hover:text-primary-foreground"
                 >
-                  Serviço para o Turista
+                  Serviços para o Turista
                 </Link>
               </li>
               <li>

@@ -12,7 +12,7 @@ const sections = [
   {
     title: "1. Quem somos",
     content:
-      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria Municipal de Esporte, Lazer e Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 28.636.579/0001-00, com sede na Rua Coronel Serrado, s/n, Centro, Saquarema — RJ.',
+      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria Municipal de Esporte, Lazer e Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 32.147.670/0001-21, com sede na Rua Coronel Madureira, 77, Centro, Saquarema - RJ, CEP 28990-756.',
   },
   {
     title: "2. Dados que coletamos",
@@ -32,7 +32,7 @@ const sections = [
   {
     title: "5. Seus direitos (LGPD)",
     content:
-      'Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito a:\n\n• Confirmar se tratamos seus dados pessoais.\n• Acessar, corrigir ou atualizar seus dados.\n• Solicitar a exclusão de seus dados ("direito ao esquecimento").\n• Revogar o consentimento para envio de comunicações a qualquer momento.\n• Opor-se ao tratamento em caso de descumprimento desta política.\n\nPara exercer seus direitos, envie um e-mail para: privacidade@saquarema.rj.gov.br',
+      'Em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você tem direito a:\n\n• Confirmar se tratamos seus dados pessoais.\n• Acessar, corrigir ou atualizar seus dados.\n• Solicitar a exclusão de seus dados ("direito ao esquecimento").\n• Revogar o consentimento para envio de comunicações a qualquer momento.\n• Opor-se ao tratamento em caso de descumprimento desta política.\n\nPara exercer seus direitos, envie um e-mail para: pms@saquarema.rj.gov.br',
   },
   {
     title: "6. Cookies",
@@ -57,7 +57,7 @@ const sections = [
   {
     title: "10. Contato",
     content:
-      "Dúvidas, solicitações ou reclamações relacionadas à privacidade de dados podem ser direcionadas ao Encarregado de Dados (DPO) da Prefeitura de Saquarema:\n\nE-mail: privacidade@saquarema.rj.gov.br\nEndereço: Rua Coronel Serrado, s/n — Centro, Saquarema — RJ, 28990-000",
+      "Dúvidas, solicitações ou reclamações relacionadas à privacidade de dados podem ser direcionadas ao Encarregado de Dados (DPO) da Prefeitura de Saquarema:\n\nE-mail: pms@saquarema.rj.gov.br\nEndereço: Rua Coronel Madureira, 77, Centro, Saquarema - RJ, CEP 28990-756",
   },
 ];
 
@@ -66,7 +66,7 @@ export default function PoliticaDePrivacidadePage() {
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Hero */}
       <section className="bg-primary px-4 pb-16 pt-32 relative overflow-hidden">
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
+        <div className="container mx-auto max-w-4xl relative z-10">
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -75,12 +75,12 @@ export default function PoliticaDePrivacidadePage() {
             Voltar para a página inicial
           </Link>
 
-          <h1 className="font-display text-4xl font-bold uppercase text-primary-foreground md:text-6xl flex flex-col md:flex-row items-center justify-center gap-4">
+          <h1 className="font-display text-4xl font-bold uppercase text-primary-foreground md:text-6xl flex flex-col md:flex-row items-center justify-start gap-4">
             <ShieldCheck className="h-10 w-10 md:h-14 md:w-14 text-accent" />
             Política de Privacidade
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
+          <p className="mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
             Saiba como tratamos seus dados pessoais em conformidade com a Lei
             Geral de Proteção de Dados (LGPD).
           </p>

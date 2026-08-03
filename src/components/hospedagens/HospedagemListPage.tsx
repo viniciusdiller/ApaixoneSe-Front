@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertCircle,
@@ -28,14 +28,6 @@ function parseTags(raw: string[] | null | undefined): string[] {
   }
 }
 
-const TAG_COLORS = [
-  "bg-primary/10 text-primary border-primary/20",
-  "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
-  "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
-  "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
-  "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800",
-];
-
 function buildSiteHref(site?: string | null): string | null {
   if (!site) return null;
   return site.startsWith("http") ? site : `https://${site}`;
@@ -47,6 +39,8 @@ export function HospedagemListPage() {
   const [erro, setErro] = useState(false);
   const [selecionada, setSelecionada] = useState<Hospedagem | null>(null);
   const [clickedCard, setClickedCard] = useState<string | null>(null);
+  // Agora suporta múltiplas tags ativas simultaneamente
+  const [tagsAtivas, setTagsAtivas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     hospedagemApi
@@ -65,30 +59,66 @@ export function HospedagemListPage() {
     };
   }, [selecionada]);
 
+  const todasAsTags = useMemo(() => {
+    const set = new Set<string>();
+    hospedagens.forEach((h) => parseTags(h.tags).forEach((t) => set.add(t)));
+    return Array.from(set).sort();
+  }, [hospedagens]);
+
+  // Filtra hospedagens: mostra aquelas que possuem TODAS as tags ativas (interseção)
+  const hospedagensFiltradas = useMemo(() => {
+    if (tagsAtivas.size === 0) return hospedagens;
+    return hospedagens.filter((h) => {
+      const tags = parseTags(h.tags);
+      return Array.from(tagsAtivas).every((t) => tags.includes(t));
+    });
+  }, [hospedagens, tagsAtivas]);
+
+  function toggleTag(tag: string) {
+    setTagsAtivas((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) {
+        next.delete(tag);
+      } else {
+        next.add(tag);
+      }
+      return next;
+    });
+  }
+
+  function limparFiltros() {
+    setTagsAtivas(new Set());
+  }
+
   const imgUrl = (h: Hospedagem) =>
     safeMediaUrl(h.logoUrl) || "/images/hero-saquarema.jpeg";
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="bg-primary px-4 pb-12 pt-32">
+      {/* Hero Refatorado para ter Imagem de Fundo e Overlay Escuro */}
+      <section
+        className="relative bg-cover bg-[center_40%] px-4 pb-12 pt-32"
+        style={{ backgroundImage: "url('/images/header/hospedagens.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
+
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container relative z-10 mx-auto"
         >
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-white md:text-6xl">
             Hospedagens
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-white/80">
             Conheça os melhores locais para se hospedar em Saquarema e garanta
             uma estadia inesquecível.
           </p>
@@ -100,6 +130,53 @@ export function HospedagemListPage() {
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
           Hospedagens
         </h2>
+
+        {/* Filtro por Tags — múltipla seleção */}
+        {!loading && !erro && todasAsTags.length > 0 && (
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+              <Tag className="h-4 w-4" />
+              Filtrar por tag:
+            </span>
+
+            {/* Botão Todas — limpa seleção */}
+            <button
+              onClick={limparFiltros}
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                tagsAtivas.size === 0
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+              }`}
+            >
+              Todas
+            </button>
+
+            {todasAsTags.map((tag) => (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  tagsAtivas.has(tag)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+
+            {/* Contador + botão de limpar quando há tags ativas */}
+            {tagsAtivas.size > 0 && (
+              <button
+                onClick={limparFiltros}
+                className="inline-flex items-center gap-1 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+              >
+                <X className="h-3 w-3" />
+                Limpar ({tagsAtivas.size})
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {loading ? (
@@ -117,18 +194,22 @@ export function HospedagemListPage() {
                 tarde.
               </p>
             </div>
-          ) : hospedagens.length === 0 ? (
+          ) : hospedagensFiltradas.length === 0 ? (
             <div className="col-span-full py-10 text-center">
               <span className="mb-3 block text-5xl">🏨</span>
               <p className="font-display text-2xl text-foreground">
-                Nenhuma hospedagem disponível no momento.
+                {tagsAtivas.size > 0
+                  ? `Nenhuma hospedagem encontrada para as tags selecionadas.`
+                  : "Nenhuma hospedagem disponível no momento."}
               </p>
               <p className="mt-2 text-muted-foreground">
-                Em breve novos parceiros serão adicionados.
+                {tagsAtivas.size > 0
+                  ? "Tente remover alguma tag ou limpar o filtro."
+                  : "Em breve novos parceiros serão adicionados."}
               </p>
             </div>
           ) : (
-            hospedagens.map((h, i) => {
+            hospedagensFiltradas.map((h, i) => {
               const tags = parseTags(h.tags);
               const siteHref = buildSiteHref(h.site);
               return (
@@ -167,9 +248,7 @@ export function HospedagemListPage() {
                           className="text-sm text-primary hover:underline truncate"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {h
-                            .site!.replace(/^https?:\/\//, "")
-                            .replace(/\/$/, "")}
+                          {h.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                         </a>
                       </div>
                     )}
@@ -177,15 +256,18 @@ export function HospedagemListPage() {
                     {tags.length > 0 && (
                       <div className="mt-3 flex flex-wrap items-center gap-1.5">
                         <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                        {tags.map((tag, idx) => (
-                          <span
+                        {tags.map((tag) => (
+                          <button
                             key={tag}
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                              TAG_COLORS[idx % TAG_COLORS.length]
+                            onClick={() => toggleTag(tag)}
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
+                              tagsAtivas.has(tag)
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                             }`}
                           >
                             {tag}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -248,12 +330,10 @@ export function HospedagemListPage() {
                     {tags.length > 0 && (
                       <div className="mb-5 flex flex-wrap items-center gap-1.5">
                         <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                        {tags.map((tag, idx) => (
+                        {tags.map((tag) => (
                           <span
                             key={tag}
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                              TAG_COLORS[idx % TAG_COLORS.length]
-                            }`}
+                            className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
                           >
                             {tag}
                           </span>
@@ -300,9 +380,7 @@ export function HospedagemListPage() {
                             rel="noopener noreferrer"
                             className="transition-colors hover:text-primary hover:underline truncate"
                           >
-                            {selecionada
-                              .site!.replace(/^https?:\/\//, "")
-                              .replace(/\/$/, "")}
+                            {selecionada.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                           </a>
                         </div>
                       )}

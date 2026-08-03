@@ -46,7 +46,6 @@ export default function EventosPage() {
     "dezembro",
   ];
 
-  /** Formata a lista de títulos: mostra até 2 e acrescenta "entre outros" se houver mais */
   function formatarTitulos(titulos: string[]): string {
     if (titulos.length === 0) return "";
     if (titulos.length <= 2) return titulos.join(", ") + ".";
@@ -57,25 +56,20 @@ export default function EventosPage() {
     async function fetchEventos() {
       try {
         const eventos = await eventosApi.getAll();
-
         const agrupados: Record<string, string[]> = {};
-
         eventos.forEach((evento: any) => {
           if (evento.data && evento.titulo) {
             const dataEvento = new Date(evento.data);
             const mesIndex = dataEvento.getMonth();
             const slugMes = slugs[mesIndex];
-
             if (!agrupados[slugMes]) agrupados[slugMes] = [];
             agrupados[slugMes].push(evento.titulo);
           }
         });
-
         const novasDescricoes: Record<string, string> = {};
         Object.keys(agrupados).forEach((slug) => {
           novasDescricoes[slug] = formatarTitulos(agrupados[slug]);
         });
-
         setDescricoesDynamic(novasDescricoes);
       } catch (error) {
         console.error("Erro ao carregar eventos:", error);
@@ -83,16 +77,12 @@ export default function EventosPage() {
         setLoading(false);
       }
     }
-
     fetchEventos();
   }, []);
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
   const itemVariants: Variants = {
@@ -109,24 +99,28 @@ export default function EventosPage() {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
-      <section className="bg-primary px-4 pb-12 pt-32">
+      <section
+        className="relative bg-cover bg-center px-4 pb-12 pt-32"
+        style={{ backgroundImage: "url('/images/header/eventos.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container relative z-10 mx-auto"
         >
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-white md:text-6xl">
             Eventos
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-white/80">
             Acompanhe os principais eventos esportivos e culturais de Saquarema.
           </p>
         </motion.div>

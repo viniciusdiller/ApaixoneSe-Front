@@ -58,7 +58,7 @@ const IDIOMAS_DISPONIVEIS = [
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
   { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
-  { value: "DE_PRAIAS", label: "De Praias" },
+  { value: "DE_PRAIAS", label: "Praias e Lagoas" },
   { value: "CULTURAL", label: "Cultural" },
   { value: "RELIGIOSO", label: "Religioso" },
   { value: "RURAL", label: "Rural" },
@@ -163,21 +163,29 @@ export default function AdminServicosPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [modal, setModal] = useState<{ open: boolean; editing: ServicoTurista | null }>(
-    { open: false, editing: null }
-  );
+  const [modal, setModal] = useState<{
+    open: boolean;
+    editing: ServicoTurista | null;
+  }>({ open: false, editing: null });
   const [viewing, setViewing] = useState<ServicoTurista | null>(null);
   const [form, setForm] = useState<typeof empty>(empty);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [files, setFiles] = useState<{ logo?: File; foto?: File; comprovante?: File }>({});
+  const [files, setFiles] = useState<{
+    logo?: File;
+    foto?: File;
+    comprovante?: File;
+  }>({});
 
   const comprovanteInputRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
     setLoading(true);
     Promise.all([servicoTuristaApi.getAll(), usersApi.getAll()])
-      .then(([s, u]) => { setItems(s); setUsers(u); })
+      .then(([s, u]) => {
+        setItems(s);
+        setUsers(u);
+      })
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
@@ -191,7 +199,9 @@ export default function AdminServicosPage() {
         i.nome.toLowerCase().includes(q) ||
         (i.endereco ?? "").toLowerCase().includes(q) ||
         (i.descricao ?? "").toLowerCase().includes(q) ||
-        TIPOS_SERVICO.find((t) => t.value === i.tipo)?.label.toLowerCase().includes(q),
+        TIPOS_SERVICO.find((t) => t.value === i.tipo)
+          ?.label.toLowerCase()
+          .includes(q),
     );
   }, [items, search]);
 
@@ -242,9 +252,13 @@ export default function AdminServicosPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const requerComprovante = REQUER_COMPROVANTE.includes(form.tipo as TipoServicoTurista);
+    const requerComprovante = REQUER_COMPROVANTE.includes(
+      form.tipo as TipoServicoTurista,
+    );
     if (requerComprovante && !modal.editing && !files.comprovante) {
-      setError("O comprovante Cadastur é obrigatório para este tipo de serviço.");
+      setError(
+        "O comprovante Cadastur é obrigatório para este tipo de serviço.",
+      );
       return;
     }
     setSaving(true);
@@ -275,7 +289,9 @@ export default function AdminServicosPage() {
         try {
           const p = JSON.parse(err.message);
           msg = Array.isArray(p.message) ? p.message.join(", ") : p.message;
-        } catch { msg = err.message; }
+        } catch {
+          msg = err.message;
+        }
       }
       setError(msg);
     } finally {
@@ -291,7 +307,13 @@ export default function AdminServicosPage() {
 
   const set =
     (k: keyof typeof empty) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | string) => {
+    (
+      e:
+        | React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
+        | string,
+    ) => {
       const value = typeof e === "string" ? e : e.target.value;
       setForm((prev) => ({ ...prev, [k]: value }));
     };
@@ -308,7 +330,9 @@ export default function AdminServicosPage() {
     return u ? `${u.nome} (@${u.usuario})` : id;
   };
 
-  const requerComprovante = REQUER_COMPROVANTE.includes(form.tipo as TipoServicoTurista);
+  const requerComprovante = REQUER_COMPROVANTE.includes(
+    form.tipo as TipoServicoTurista,
+  );
   const comprovanteExistente = modal.editing?.comprovanteUrl ?? null;
   const comprovantePreviewUrl = files.comprovante
     ? URL.createObjectURL(files.comprovante)
@@ -338,7 +362,10 @@ export default function AdminServicosPage() {
 
       {/* barra de pesquisa */}
       <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
         <input
           type="search"
           placeholder="Pesquisar por nome, tipo, endereço ou descrição…"
@@ -368,15 +395,23 @@ export default function AdminServicosPage() {
               {
                 key: "logoUrl",
                 label: "Logo",
-                render: (_val, row) => <MediaPreview url={row.logoUrl ?? ""} label="Logo" />,
+                render: (_val, row) => (
+                  <MediaPreview url={row.logoUrl ?? ""} label="Logo" />
+                ),
               },
               { key: "nome", label: "Nome" },
-              { key: "tipo", label: "Tipo", render: (_val, row) => tipoLabel(row.tipo) },
+              {
+                key: "tipo",
+                label: "Tipo",
+                render: (_val, row) => tipoLabel(row.tipo),
+              },
               {
                 key: "status",
                 label: "Status",
                 render: (_val, row) => (
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
+                  >
                     {row.status}
                   </span>
                 ),
@@ -394,10 +429,18 @@ export default function AdminServicosPage() {
             ]}
             extraActions={(row) => (
               <>
-                <button onClick={() => setViewing(row)} title="Ver detalhes" className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <button
+                  onClick={() => setViewing(row)}
+                  title="Ver detalhes"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
                   <Eye size={16} />
                 </button>
-                <button onClick={() => openEdit(row)} title="Editar" className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary">
+                <button
+                  onClick={() => openEdit(row)}
+                  title="Editar"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
                   <Pencil size={16} />
                 </button>
               </>
@@ -405,22 +448,40 @@ export default function AdminServicosPage() {
             onDelete={handleDelete}
           />
 
-          <AdminPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       )}
 
       {/* ── Modal Visualização ── */}
-      <AdminModal title="Detalhes do Serviço" open={!!viewing} onClose={() => setViewing(null)}>
+      <AdminModal
+        title="Detalhes do Serviço"
+        open={!!viewing}
+        onClose={() => setViewing(null)}
+      >
         {viewing && (
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               {viewing.logoUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={viewing.logoUrl} alt={viewing.nome} className="h-14 w-14 rounded-lg object-cover border border-border" />
+                <img
+                  src={viewing.logoUrl}
+                  alt={viewing.nome}
+                  className="h-14 w-14 rounded-lg object-cover border border-border"
+                />
               )}
               <div>
-                <p className="font-display font-bold text-lg uppercase tracking-wide">{viewing.nome}</p>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}>{viewing.status}</span>
+                <p className="font-display font-bold text-lg uppercase tracking-wide">
+                  {viewing.nome}
+                </p>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(viewing.status)}`}
+                >
+                  {viewing.status}
+                </span>
               </div>
             </div>
             <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -436,8 +497,19 @@ export default function AdminServicosPage() {
                     <Globe className="h-3.5 w-3.5" /> Site
                   </dt>
                   <dd className="text-sm">
-                    <a href={(viewing as ServicoTurista & { site?: string }).site!.startsWith("http") ? (viewing as ServicoTurista & { site?: string }).site! : `https://${(viewing as ServicoTurista & { site?: string }).site}`}
-                      target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    <a
+                      href={
+                        (
+                          viewing as ServicoTurista & { site?: string }
+                        ).site!.startsWith("http")
+                          ? (viewing as ServicoTurista & { site?: string })
+                              .site!
+                          : `https://${(viewing as ServicoTurista & { site?: string }).site}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
                       {(viewing as ServicoTurista & { site?: string }).site}
                     </a>
                   </dd>
@@ -446,7 +518,10 @@ export default function AdminServicosPage() {
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Descrição" value={viewing.descricao} />
-            <ViewRow label="Usuário Prestador" value={ownerName(viewing.usuarioId)} />
+            <ViewRow
+              label="Usuário Prestador"
+              value={ownerName(viewing.usuarioId)}
+            />
             {REQUER_COMPROVANTE.includes(viewing.tipo) && (
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -460,7 +535,9 @@ export default function AdminServicosPage() {
             )}
             {viewing.fotoUrl && (
               <div className="flex flex-col gap-0.5">
-                <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Foto do Serviço</dt>
+                <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Foto do Serviço
+                </dt>
                 <MediaPreview url={viewing.fotoUrl} label="Foto" />
               </div>
             )}
@@ -469,62 +546,141 @@ export default function AdminServicosPage() {
       </AdminModal>
 
       {/* ── Modal Criar/Editar ── */}
-      <AdminModal title={modal.editing ? "Editar Serviço" : "Novo Serviço"} open={modal.open} onClose={closeModal}>
+      <AdminModal
+        title={modal.editing ? "Editar Serviço" : "Novo Serviço"}
+        open={modal.open}
+        onClose={closeModal}
+      >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tipo *</label>
-            <select value={form.tipo} onChange={set("tipo")} required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
-              {TIPOS_SERVICO.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Tipo *
+            </label>
+            <select
+              value={form.tipo}
+              onChange={set("tipo")}
+              required
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
+              {TIPOS_SERVICO.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
-            <AdminFormField label="Telefone" value={form.telefone} onChange={set("telefone")} mask={maskPhone} maxLength={15} {...numericInputProps} required />
+            <AdminFormField
+              label="Nome"
+              value={form.nome}
+              onChange={set("nome")}
+              required
+            />
+            <AdminFormField
+              label="Telefone"
+              value={form.telefone}
+              onChange={set("telefone")}
+              mask={maskPhone}
+              maxLength={15}
+              {...numericInputProps}
+              required
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
+            <AdminFormField
+              label="Instagram"
+              value={form.instagram ?? ""}
+              onChange={set("instagram")}
+            />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Idiomas</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Idiomas
+            </label>
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
               {IDIOMAS_DISPONIVEIS.map((idioma) => {
-                const idiomasArray = form.idiomas ? form.idiomas.split(", ") : [];
+                const idiomasArray = form.idiomas
+                  ? form.idiomas.split(", ")
+                  : [];
                 const isChecked = idiomasArray.includes(idioma);
                 return (
-                  <label key={idioma} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
-                    <input type="checkbox" className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+                  <label
+                    key={idioma}
+                    className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      className="rounded border-border text-primary focus:ring-primary h-4 w-4"
                       checked={isChecked}
                       onChange={(e) => {
-                        const current = form.idiomas ? form.idiomas.split(", ") : [];
-                        const updated = e.target.checked ? [...current, idioma] : current.filter((i) => i !== idioma);
+                        const current = form.idiomas
+                          ? form.idiomas.split(", ")
+                          : [];
+                        const updated = e.target.checked
+                          ? [...current, idioma]
+                          : current.filter((i) => i !== idioma);
                         setField("idiomas", updated.join(", "));
-                      }} />
+                      }}
+                    />
                     {idioma}
                   </label>
                 );
               })}
             </div>
           </div>
-          <AdminFormField label="Endereço" value={form.endereco ?? ""} onChange={set("endereco")} />
-          <AdminFormField label="CNPJ" value={form.cnpj ?? ""} onChange={set("cnpj")} mask={maskCnpj} maxLength={18} {...numericInputProps} />
-          <AdminFormField label="Site" value={form.site ?? ""} onChange={set("site")} />
-          <AdminFormField label="Descrição" value={form.descricao ?? ""} onChange={set("descricao")} multiline />
+          <AdminFormField
+            label="Endereço"
+            value={form.endereco ?? ""}
+            onChange={set("endereco")}
+          />
+          <AdminFormField
+            label="CNPJ"
+            value={form.cnpj ?? ""}
+            onChange={set("cnpj")}
+            mask={maskCnpj}
+            maxLength={18}
+            {...numericInputProps}
+          />
+          <AdminFormField
+            label="Site"
+            value={form.site ?? ""}
+            onChange={set("site")}
+          />
+          <AdminFormField
+            label="Descrição"
+            value={form.descricao ?? ""}
+            onChange={set("descricao")}
+            multiline
+          />
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Especialidade (opcional)</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Especialidade (opcional)
+            </label>
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
               {ROTEIROS.map((roteiro) => {
-                const roteirosArray = form.roteiro ? form.roteiro.split(", ") : [];
+                const roteirosArray = form.roteiro
+                  ? form.roteiro.split(", ")
+                  : [];
                 const isChecked = roteirosArray.includes(roteiro.value);
                 return (
-                  <label key={roteiro.value} className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors">
-                    <input type="checkbox" className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+                  <label
+                    key={roteiro.value}
+                    className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      className="rounded border-border text-primary focus:ring-primary h-4 w-4"
                       checked={isChecked}
                       onChange={(e) => {
-                        const current = form.roteiro ? form.roteiro.split(", ") : [];
-                        const updated = e.target.checked ? [...current, roteiro.value] : current.filter((i) => i !== roteiro.value);
+                        const current = form.roteiro
+                          ? form.roteiro.split(", ")
+                          : [];
+                        const updated = e.target.checked
+                          ? [...current, roteiro.value]
+                          : current.filter((i) => i !== roteiro.value);
                         setField("roteiro", updated.join(", "));
-                      }} />
+                      }}
+                    />
                     {roteiro.label}
                   </label>
                 );
@@ -532,12 +688,28 @@ export default function AdminServicosPage() {
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <FileUploadField label="Logo" accept="image" currentUrl={form.logoUrl ?? ""} hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => { setField("logoUrl", url); setFiles((p) => ({ ...p, logo: file })); }}
-              onClear={() => setField("logoUrl", "")} />
-            <FileUploadField label="Foto do Serviço" accept="image" currentUrl={form.fotoUrl ?? ""} hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => { setField("fotoUrl", url); setFiles((p) => ({ ...p, foto: file })); }}
-              onClear={() => setField("fotoUrl", "")} />
+            <FileUploadField
+              label="Logo"
+              accept="image"
+              currentUrl={form.logoUrl ?? ""}
+              hint="PNG, JPG ou WEBP"
+              onFileChange={(url, file) => {
+                setField("logoUrl", url);
+                setFiles((p) => ({ ...p, logo: file }));
+              }}
+              onClear={() => setField("logoUrl", "")}
+            />
+            <FileUploadField
+              label="Foto do Serviço"
+              accept="image"
+              currentUrl={form.fotoUrl ?? ""}
+              hint="PNG, JPG ou WEBP"
+              onFileChange={(url, file) => {
+                setField("fotoUrl", url);
+                setFiles((p) => ({ ...p, foto: file }));
+              }}
+              onClear={() => setField("fotoUrl", "")}
+            />
           </div>
           {requerComprovante && (
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
@@ -546,51 +718,112 @@ export default function AdminServicosPage() {
               </p>
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Arquivo <span className="text-red-500">*</span> — PDF ou imagem
+                  Arquivo <span className="text-red-500">*</span> — PDF ou
+                  imagem
                 </label>
                 {comprovantePreviewUrl && (
                   <div className="flex items-center gap-2">
-                    <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:text-primary">
+                    <a
+                      href={comprovantePreviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:text-primary"
+                    >
                       <FileText size={12} />
-                      {files.comprovante ? files.comprovante.name : "Comprovante atual"}
-                      <ExternalLink size={11} className="text-muted-foreground" />
+                      {files.comprovante
+                        ? files.comprovante.name
+                        : "Comprovante atual"}
+                      <ExternalLink
+                        size={11}
+                        className="text-muted-foreground"
+                      />
                     </a>
                     {comprovanteExistente && !files.comprovante && (
-                      <span className="text-xs text-muted-foreground">(existente)</span>
+                      <span className="text-xs text-muted-foreground">
+                        (existente)
+                      </span>
                     )}
                   </div>
                 )}
-                <button type="button" onClick={() => comprovanteInputRef.current?.click()}
-                  className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-primary">
+                <button
+                  type="button"
+                  onClick={() => comprovanteInputRef.current?.click()}
+                  className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+                >
                   <FileText size={14} />
-                  {files.comprovante ? "Trocar arquivo" : comprovanteExistente ? "Substituir comprovante" : "Selecionar comprovante (PDF ou imagem)"}
+                  {files.comprovante
+                    ? "Trocar arquivo"
+                    : comprovanteExistente
+                      ? "Substituir comprovante"
+                      : "Selecionar comprovante (PDF ou imagem)"}
                 </button>
-                <input ref={comprovanteInputRef} type="file" accept="application/pdf,image/*" className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setFiles((p) => ({ ...p, comprovante: f })); }} />
+                <input
+                  ref={comprovanteInputRef}
+                  type="file"
+                  accept="application/pdf,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                  }}
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <CalendarClock size={13} /> Data de validade do Cadastur
                 </label>
-                <input type="date" value={form.validade ?? ""} onChange={set("validade")}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary" />
-                {form.validade && <div className="pt-1"><ValidityBadge validade={form.validade} /></div>}
+                <input
+                  type="date"
+                  min="1900-01-01"
+                  max="3000-12-31"
+                  value={form.validade ?? ""}
+                  onChange={set("validade")}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                />
+                {form.validade && (
+                  <div className="pt-1">
+                    <ValidityBadge validade={form.validade} />
+                  </div>
+                )}
               </div>
             </div>
           )}
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Usuário Prestador *</label>
-            <select value={form.usuarioId} onChange={set("usuarioId")} required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Usuário Prestador *
+            </label>
+            <select
+              value={form.usuarioId}
+              onChange={set("usuarioId")}
+              required
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
               <option value="">Selecione um usuário</option>
-              {users.map((u) => <option key={u.id} value={u.id}>{u.nome} (@{u.usuario})</option>)}
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nome} (@{u.usuario})
+                </option>
+              ))}
             </select>
           </div>
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">{error}</p>}
+          {error && (
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
+              {error}
+            </p>
+          )}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={closeModal} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>
-            <button type="submit" disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+            <button
+              type="button"
+              onClick={closeModal}
+              className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
               {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
@@ -604,7 +837,9 @@ function ViewRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </dt>
       <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );
