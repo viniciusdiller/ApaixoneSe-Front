@@ -39,7 +39,8 @@ export function HospedagemListPage() {
   const [erro, setErro] = useState(false);
   const [selecionada, setSelecionada] = useState<Hospedagem | null>(null);
   const [clickedCard, setClickedCard] = useState<string | null>(null);
-  const [tagAtiva, setTagAtiva] = useState<string | null>(null);
+  // Agora suporta múltiplas tags ativas simultaneamente
+  const [tagsAtivas, setTagsAtivas] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     hospedagemApi
@@ -64,10 +65,30 @@ export function HospedagemListPage() {
     return Array.from(set).sort();
   }, [hospedagens]);
 
+  // Filtra hospedagens: mostra aquelas que possuem TODAS as tags ativas (interseção)
   const hospedagensFiltradas = useMemo(() => {
-    if (!tagAtiva) return hospedagens;
-    return hospedagens.filter((h) => parseTags(h.tags).includes(tagAtiva));
-  }, [hospedagens, tagAtiva]);
+    if (tagsAtivas.size === 0) return hospedagens;
+    return hospedagens.filter((h) => {
+      const tags = parseTags(h.tags);
+      return Array.from(tagsAtivas).every((t) => tags.includes(t));
+    });
+  }, [hospedagens, tagsAtivas]);
+
+  function toggleTag(tag: string) {
+    setTagsAtivas((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) {
+        next.delete(tag);
+      } else {
+        next.add(tag);
+      }
+      return next;
+    });
+  }
+
+  function limparFiltros() {
+    setTagsAtivas(new Set());
+  }
 
   const imgUrl = (h: Hospedagem) =>
     safeMediaUrl(h.logoUrl) || "/images/hero-saquarema.jpeg";
@@ -105,29 +126,32 @@ export function HospedagemListPage() {
           Hospedagens
         </h2>
 
-        {/* Filtro por Tags */}
+        {/* Filtro por Tags — múltipla seleção */}
         {!loading && !erro && todasAsTags.length > 0 && (
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
               <Tag className="h-4 w-4" />
               Filtrar por tag:
             </span>
+
+            {/* Botão Todas — limpa seleção */}
             <button
-              onClick={() => setTagAtiva(null)}
+              onClick={limparFiltros}
               className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                tagAtiva === null
+                tagsAtivas.size === 0
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
               }`}
             >
               Todas
             </button>
+
             {todasAsTags.map((tag) => (
               <button
                 key={tag}
-                onClick={() => setTagAtiva(tagAtiva === tag ? null : tag)}
+                onClick={() => toggleTag(tag)}
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                  tagAtiva === tag
+                  tagsAtivas.has(tag)
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                 }`}
@@ -135,6 +159,17 @@ export function HospedagemListPage() {
                 {tag}
               </button>
             ))}
+
+            {/* Contador + botão de limpar quando há tags ativas */}
+            {tagsAtivas.size > 0 && (
+              <button
+                onClick={limparFiltros}
+                className="inline-flex items-center gap-1 rounded-full bg-destructive/10 border border-destructive/20 px-3 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
+              >
+                <X className="h-3 w-3" />
+                Limpar ({tagsAtivas.size})
+              </button>
+            )}
           </div>
         )}
 
@@ -158,13 +193,13 @@ export function HospedagemListPage() {
             <div className="col-span-full py-10 text-center">
               <span className="mb-3 block text-5xl">🏨</span>
               <p className="font-display text-2xl text-foreground">
-                {tagAtiva
-                  ? `Nenhuma hospedagem encontrada com a tag "${tagAtiva}".`
+                {tagsAtivas.size > 0
+                  ? `Nenhuma hospedagem encontrada para as tags selecionadas.`
                   : "Nenhuma hospedagem disponível no momento."}
               </p>
               <p className="mt-2 text-muted-foreground">
-                {tagAtiva
-                  ? "Tente selecionar outra tag ou veja todas."
+                {tagsAtivas.size > 0
+                  ? "Tente remover alguma tag ou limpar o filtro."
                   : "Em breve novos parceiros serão adicionados."}
               </p>
             </div>
@@ -219,9 +254,9 @@ export function HospedagemListPage() {
                         {tags.map((tag) => (
                           <button
                             key={tag}
-                            onClick={() => setTagAtiva(tagAtiva === tag ? null : tag)}
+                            onClick={() => toggleTag(tag)}
                             className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                              tagAtiva === tag
+                              tagsAtivas.has(tag)
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                             }`}
