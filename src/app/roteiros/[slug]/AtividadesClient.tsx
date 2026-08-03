@@ -125,7 +125,7 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
                 Nenhuma atividade cadastrada ainda.
               </p>
               <p className="mt-1 text-sm">
-                Em breve novas experiências serã adicionadas.
+                Em breve novas experiências serão adicionadas.
               </p>
             </div>
           )}

@@ -24,7 +24,7 @@ const roteiros = [
   },
   {
     slug: "de-praias",
-    label: "De Praias",
+    label: "De Praias e Lagoas",
     descricao: "As praias de Saquarema, cada uma com uma personalidade única",
     imagem: "/images/roteiros/praia.jpeg",
     span: "",

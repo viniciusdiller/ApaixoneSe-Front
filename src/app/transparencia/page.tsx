@@ -41,19 +41,19 @@ const portalLinks = [
 const infoItems = [
   {
     label: "CNPJ",
-    value: "28.636.579/0001-00",
+    value: "32.147.670/0001-21",
   },
   {
     label: "Endereço",
-    value: "Rua Coronel Serrado, s/n — Centro, Saquarema — RJ, 28990-000",
+    value: "Rua Coronel Madureira, 77, Centro, Saquarema - RJ, CEP 28990-756",
   },
   {
     label: "Horário de Atendimento",
-    value: "Segunda a Sexta, das 08h às 17h",
+    value: "Segunda a Sexta, das 09h às 17h",
   },
   {
     label: "Ouvidoria",
-    value: "ouvidoria@saquarema.rj.gov.br",
+    value: "ouvidoria@saquarema.rj.gov.br.",
   },
 ];
 

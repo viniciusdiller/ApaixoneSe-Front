@@ -90,7 +90,7 @@ export default function ServicosPage() {
     },
     {
       icon: <FileText size={32} />,
-      title: "Taxa de Turismo",
+      title: "Taxas de Turismo",
       description:
         "Autorização de acesso de ônibus, micro-ônibus e vans ao município. Saiba as taxas e como emitir.",
       label: "Ver informações",
