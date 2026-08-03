@@ -52,13 +52,6 @@ export function HeroSection() {
           <PlanejeSuaViagemTrigger className="rounded-full bg-accent px-8 py-3 font-display text-lg font-semibold uppercase tracking-wide text-accent-foreground shadow-xl transition-transform hover:scale-105">
             Planeje sua Viagem
           </PlanejeSuaViagemTrigger>
-
-          <Link
-            href="/praias"
-            className="rounded-full border-2 border-primary-foreground/60 px-8 py-3 font-display text-lg uppercase tracking-wide text-primary-foreground transition-colors hover:bg-primary-foreground/10"
-          >
-            Conheça as Praias
-          </Link>
         </motion.div>
       </div>
 

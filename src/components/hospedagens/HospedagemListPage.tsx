@@ -95,25 +95,30 @@ export function HospedagemListPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="bg-primary px-4 pb-12 pt-32">
+      {/* Hero Refatorado para ter Imagem de Fundo e Overlay Escuro */}
+      <section
+        className="relative bg-cover bg-[center_40%] px-4 pb-12 pt-32"
+        style={{ backgroundImage: "url('/images/header/hospedagens.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
+
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="container mx-auto text-center"
+          className="container relative z-10 mx-auto"
         >
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/20 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-white md:text-6xl">
             Hospedagens
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+          <p className="mt-4 max-w-xl text-white/80">
             Conheça os melhores locais para se hospedar em Saquarema e garanta
             uma estadia inesquecível.
           </p>
