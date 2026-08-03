@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe } from "lucide-react";
+import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe, Filter } from "lucide-react";
 import { servicoTuristaApi } from "@/lib/api";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -39,6 +39,7 @@ export function ServicoTuristaListPage({
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
   const [selecionado, setSelecionado] = useState<ServicoTurista | null>(null);
+  const [roteiroAtivo, setRoteiroAtivo] = useState<string | null>(null);
 
   useEffect(() => {
     servicoTuristaApi
@@ -65,6 +66,18 @@ export function ServicoTuristaListPage({
 
   const getRoteiroSlug = (s: ServicoTurista) =>
     s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.slug ?? null : null;
+
+  // Coleta apenas os roteiros presentes nesta lista de serviços
+  const roteirosDisponiveis = useMemo(() => {
+    const enums = new Set(servicos.map((s) => s.roteiro).filter(Boolean));
+    return ROTEIROS.filter((r) => enums.has(r.enum));
+  }, [servicos]);
+
+  // Filtra serviços pelo roteiro ativo
+  const servicosFiltrados = useMemo(() => {
+    if (!roteiroAtivo) return servicos;
+    return servicos.filter((s) => s.roteiro === roteiroAtivo);
+  }, [servicos, roteiroAtivo]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,6 +115,44 @@ export function ServicoTuristaListPage({
           {titulo}
         </h2>
 
+        {/* Filtro por tipo de Roteiro */}
+        {!loading && !erro && roteirosDisponiveis.length > 0 && (
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+              <Filter className="h-4 w-4" />
+              Filtrar por roteiro:
+            </span>
+            <button
+              onClick={() => setRoteiroAtivo(null)}
+              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                roteiroAtivo === null
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
+              }`}
+            >
+              Todos
+            </button>
+            {roteirosDisponiveis.map((roteiro) => (
+              <button
+                key={roteiro.enum}
+                onClick={() =>
+                  setRoteiroAtivo(
+                    roteiroAtivo === roteiro.enum ? null : roteiro.enum
+                  )
+                }
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  roteiroAtivo === roteiro.enum
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-accent/20 text-accent-foreground border-accent/30 hover:bg-accent/40"
+                }`}
+              >
+                <Route className="h-3 w-3" />
+                {roteiro.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {loading ? (
             <p className="col-span-full text-center text-muted-foreground">
@@ -117,18 +168,22 @@ export function ServicoTuristaListPage({
                 Não conseguimos carregar os dados. Tente novamente mais tarde.
               </p>
             </div>
-          ) : servicos.length === 0 ? (
+          ) : servicosFiltrados.length === 0 ? (
             <div className="col-span-full py-10 text-center">
               <span className="mb-3 block text-5xl">{emoji}</span>
               <p className="font-display text-2xl text-foreground">
-                Nenhum {labelSingular} disponível no momento.
+                {roteiroAtivo
+                  ? `Nenhum ${labelSingular} encontrado para este roteiro.`
+                  : `Nenhum ${labelSingular} disponível no momento.`}
               </p>
               <p className="mt-2 text-muted-foreground">
-                Em breve novos parceiros serão adicionados.
+                {roteiroAtivo
+                  ? "Tente selecionar outro roteiro ou veja todos."
+                  : "Em breve novos parceiros serão adicionados."}
               </p>
             </div>
           ) : (
-            servicos.map((servico, i) => {
+            servicosFiltrados.map((servico, i) => {
               const siteHref = buildSiteHref(servico.site);
               return (
                 <motion.article
