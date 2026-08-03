@@ -27,6 +27,7 @@ import {
   Building2,
   Trash2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface FormularioServicoProps {
   modo: "criar" | "editar";
@@ -225,6 +226,7 @@ export function FormularioServico({
     try {
       await servicoTuristaApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
+      toast.success("Serviço excluido com sucesso!")
       router.push("/perfil");
     } catch (err) {
       notify.error("Erro ao excluir o serviço.");

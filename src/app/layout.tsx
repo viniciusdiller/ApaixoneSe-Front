@@ -103,6 +103,7 @@ export default function RootLayout({
           />
           <SiteShell>{children}</SiteShell>
         </AuthProvider>
+        <Toaster richColors position="bottom-left" />
       </body>
     </html>
   );

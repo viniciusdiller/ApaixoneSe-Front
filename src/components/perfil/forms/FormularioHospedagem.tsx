@@ -31,6 +31,7 @@ import {
   ArrowLeft,
   Trash2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface FormularioHospedagemProps {
   modo: "criar" | "editar";
@@ -204,6 +205,7 @@ export function FormularioHospedagem({
     try {
       await hospedagemApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
+      toast.success("Hospedagem excuida com Sucesso")
       router.push("/perfil");
     } catch (err) {
       notify.error("Erro ao excluir a hospedagem.");
