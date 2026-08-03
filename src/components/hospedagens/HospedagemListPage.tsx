@@ -28,14 +28,6 @@ function parseTags(raw: string[] | null | undefined): string[] {
   }
 }
 
-const TAG_COLORS = [
-  "bg-primary/10 text-primary border-primary/20",
-  "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
-  "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
-  "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
-  "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800",
-];
-
 function buildSiteHref(site?: string | null): string | null {
   if (!site) return null;
   return site.startsWith("http") ? site : `https://${site}`;
@@ -66,14 +58,12 @@ export function HospedagemListPage() {
     };
   }, [selecionada]);
 
-  // Coleta todas as tags únicas de todas as hospedagens
   const todasAsTags = useMemo(() => {
     const set = new Set<string>();
     hospedagens.forEach((h) => parseTags(h.tags).forEach((t) => set.add(t)));
     return Array.from(set).sort();
   }, [hospedagens]);
 
-  // Filtra hospedagens pela tag ativa
   const hospedagensFiltradas = useMemo(() => {
     if (!tagAtiva) return hospedagens;
     return hospedagens.filter((h) => parseTags(h.tags).includes(tagAtiva));
@@ -127,19 +117,19 @@ export function HospedagemListPage() {
               className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 tagAtiva === null
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
+                  : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
               }`}
             >
               Todas
             </button>
-            {todasAsTags.map((tag, idx) => (
+            {todasAsTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => setTagAtiva(tagAtiva === tag ? null : tag)}
                 className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                   tagAtiva === tag
                     ? "bg-primary text-primary-foreground border-primary"
-                    : `${TAG_COLORS[idx % TAG_COLORS.length]} hover:opacity-80`
+                    : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                 }`}
               >
                 {tag}
@@ -218,9 +208,7 @@ export function HospedagemListPage() {
                           className="text-sm text-primary hover:underline truncate"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {h
-                            .site!.replace(/^https?:\/\//, "")
-                            .replace(/\/$/, "")}
+                          {h.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                         </a>
                       </div>
                     )}
@@ -228,18 +216,14 @@ export function HospedagemListPage() {
                     {tags.length > 0 && (
                       <div className="mt-3 flex flex-wrap items-center gap-1.5">
                         <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                        {tags.map((tag, idx) => (
+                        {tags.map((tag) => (
                           <button
                             key={tag}
-                            onClick={() =>
-                              setTagAtiva(tagAtiva === tag ? null : tag)
-                            }
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-opacity hover:opacity-80 ${
-                              TAG_COLORS[idx % TAG_COLORS.length]
-                            } ${
+                            onClick={() => setTagAtiva(tagAtiva === tag ? null : tag)}
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
                               tagAtiva === tag
-                                ? "ring-2 ring-primary ring-offset-1"
-                                : ""
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                             }`}
                           >
                             {tag}
@@ -306,12 +290,10 @@ export function HospedagemListPage() {
                     {tags.length > 0 && (
                       <div className="mb-5 flex flex-wrap items-center gap-1.5">
                         <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                        {tags.map((tag, idx) => (
+                        {tags.map((tag) => (
                           <span
                             key={tag}
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                              TAG_COLORS[idx % TAG_COLORS.length]
-                            }`}
+                            className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
                           >
                             {tag}
                           </span>
@@ -358,9 +340,7 @@ export function HospedagemListPage() {
                             rel="noopener noreferrer"
                             className="transition-colors hover:text-primary hover:underline truncate"
                           >
-                            {selecionada
-                              .site!.replace(/^https?:\/\//, "")
-                              .replace(/\/$/, "")}
+                            {selecionada.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                           </a>
                         </div>
                       )}
