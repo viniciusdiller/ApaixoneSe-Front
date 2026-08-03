@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertCircle,
@@ -47,6 +47,7 @@ export function HospedagemListPage() {
   const [erro, setErro] = useState(false);
   const [selecionada, setSelecionada] = useState<Hospedagem | null>(null);
   const [clickedCard, setClickedCard] = useState<string | null>(null);
+  const [tagAtiva, setTagAtiva] = useState<string | null>(null);
 
   useEffect(() => {
     hospedagemApi
@@ -64,6 +65,19 @@ export function HospedagemListPage() {
       document.body.style.overflow = "unset";
     };
   }, [selecionada]);
+
+  // Coleta todas as tags únicas de todas as hospedagens
+  const todasAsTags = useMemo(() => {
+    const set = new Set<string>();
+    hospedagens.forEach((h) => parseTags(h.tags).forEach((t) => set.add(t)));
+    return Array.from(set).sort();
+  }, [hospedagens]);
+
+  // Filtra hospedagens pela tag ativa
+  const hospedagensFiltradas = useMemo(() => {
+    if (!tagAtiva) return hospedagens;
+    return hospedagens.filter((h) => parseTags(h.tags).includes(tagAtiva));
+  }, [hospedagens, tagAtiva]);
 
   const imgUrl = (h: Hospedagem) =>
     safeMediaUrl(h.logoUrl) || "/images/hero-saquarema.jpeg";
@@ -101,6 +115,39 @@ export function HospedagemListPage() {
           Hospedagens
         </h2>
 
+        {/* Filtro por Tags */}
+        {!loading && !erro && todasAsTags.length > 0 && (
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+              <Tag className="h-4 w-4" />
+              Filtrar por tag:
+            </span>
+            <button
+              onClick={() => setTagAtiva(null)}
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                tagAtiva === null
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
+              }`}
+            >
+              Todas
+            </button>
+            {todasAsTags.map((tag, idx) => (
+              <button
+                key={tag}
+                onClick={() => setTagAtiva(tagAtiva === tag ? null : tag)}
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  tagAtiva === tag
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : `${TAG_COLORS[idx % TAG_COLORS.length]} hover:opacity-80`
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {loading ? (
             <p className="col-span-full text-center text-muted-foreground">
@@ -117,18 +164,22 @@ export function HospedagemListPage() {
                 tarde.
               </p>
             </div>
-          ) : hospedagens.length === 0 ? (
+          ) : hospedagensFiltradas.length === 0 ? (
             <div className="col-span-full py-10 text-center">
               <span className="mb-3 block text-5xl">🏨</span>
               <p className="font-display text-2xl text-foreground">
-                Nenhuma hospedagem disponível no momento.
+                {tagAtiva
+                  ? `Nenhuma hospedagem encontrada com a tag "${tagAtiva}".`
+                  : "Nenhuma hospedagem disponível no momento."}
               </p>
               <p className="mt-2 text-muted-foreground">
-                Em breve novos parceiros serão adicionados.
+                {tagAtiva
+                  ? "Tente selecionar outra tag ou veja todas."
+                  : "Em breve novos parceiros serão adicionados."}
               </p>
             </div>
           ) : (
-            hospedagens.map((h, i) => {
+            hospedagensFiltradas.map((h, i) => {
               const tags = parseTags(h.tags);
               const siteHref = buildSiteHref(h.site);
               return (
@@ -178,14 +229,21 @@ export function HospedagemListPage() {
                       <div className="mt-3 flex flex-wrap items-center gap-1.5">
                         <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
                         {tags.map((tag, idx) => (
-                          <span
+                          <button
                             key={tag}
-                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                            onClick={() =>
+                              setTagAtiva(tagAtiva === tag ? null : tag)
+                            }
+                            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium transition-opacity hover:opacity-80 ${
                               TAG_COLORS[idx % TAG_COLORS.length]
+                            } ${
+                              tagAtiva === tag
+                                ? "ring-2 ring-primary ring-offset-1"
+                                : ""
                             }`}
                           >
                             {tag}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     )}
