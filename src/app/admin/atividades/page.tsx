@@ -19,7 +19,7 @@ const PAGE_SIZE = 10;
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
   { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
-  { value: "DE_PRAIAS", label: "De Praias" },
+  { value: "DE_PRAIAS", label: "Praias e Lagoas" },
   { value: "CULTURAL", label: "Cultural" },
   { value: "RELIGIOSO", label: "Religioso" },
   { value: "RURAL", label: "Rural" },
@@ -173,8 +173,12 @@ export default function AdminAtividadesPage() {
     if (pastedData.includes(",")) {
       e.preventDefault();
       const [latStr, lngStr] = pastedData.split(",").map((c) => c.trim());
-      const parsedLat = latStr ? parseFloat(latStr.replace(",", ".")) : undefined;
-      const parsedLng = lngStr ? parseFloat(lngStr.replace(",", ".")) : undefined;
+      const parsedLat = latStr
+        ? parseFloat(latStr.replace(",", "."))
+        : undefined;
+      const parsedLng = lngStr
+        ? parseFloat(lngStr.replace(",", "."))
+        : undefined;
       setForm((prev) => ({
         ...prev,
         latitude: parsedLat && !isNaN(parsedLat) ? parsedLat : undefined,
@@ -297,7 +301,10 @@ export default function AdminAtividadesPage() {
                 Logo
               </dt>
               <dd className="pt-1">
-                <MediaPreview url={viewing.logoUrl ?? ""} label={viewing.titulo} />
+                <MediaPreview
+                  url={viewing.logoUrl ?? ""}
+                  label={viewing.titulo}
+                />
               </dd>
             </div>
             <ViewRow label="Título" value={viewing.titulo} />
