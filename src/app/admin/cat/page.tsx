@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState } from "react";
 import { catApi } from "@/lib/api";
 import { catMovelApi } from "@/lib/api/cat-movel";
@@ -23,6 +25,7 @@ import {
   Save,
   MapPin,
   RefreshCw,
+  GripVertical,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -39,6 +42,14 @@ type ManagedImage =
   | { mode: "new"; file: File; preview: string }
   | { mode: "deleted"; url: string };
 
+// ─── ordem final das imagens (existentes mantidas + marcador para novas) ────
+// Preserva a ordem em que o usuário organizou as imagens no ImageManager.
+function buildOrdem(images: ManagedImage[]): string[] {
+  return images
+    .filter((i) => i.mode !== "deleted")
+    .map((i) => (i.mode === "existing" ? i.url : "__new__"));
+}
+
 // ─── buildFormData (CAT Fixo) ────────────────────────────────────────────────
 function buildFormData(texto: string, images: ManagedImage[], newVideo: File | null): FormData {
   const fd = new FormData();
@@ -46,13 +57,19 @@ function buildFormData(texto: string, images: ManagedImage[], newVideo: File | n
   const newFiles = images.filter((i) => i.mode === "new") as { mode: "new"; file: File; preview: string }[];
   newFiles.forEach(({ file }) => fd.append("imagens", file));
   if (newVideo) fd.append("video", newVideo);
+  fd.append("ordem", JSON.stringify(buildOrdem(images)));
   return fd;
 }
 
 // ─── ImageManager ────────────────────────────────────────────────────────────
 function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: (images: ManagedImage[]) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const visible = images.filter((i) => i.mode !== "deleted");
+  const dragIdx = useRef<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+
+  const visible = images
+    .map((img, idx) => ({ img, idx }))
+    .filter(({ img }) => img.mode !== "deleted");
   const total = visible.length;
 
   const addFiles = (files: FileList | null) => {
@@ -63,19 +80,23 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
     onChange([...images, ...added]);
   };
 
-  const remove = (visibleIdx: number) => {
-    let count = 0;
-    const next: ManagedImage[] = [];
-    images.forEach((img) => {
-      if (img.mode === "deleted") { next.push(img); return; }
-      if (count === visibleIdx) {
-        count++;
-        if (img.mode === "new") { URL.revokeObjectURL(img.preview); return; }
-        next.push({ mode: "deleted" as const, url: img.url }); return;
-      }
-      count++;
-      next.push(img);
-    });
+  const remove = (idx: number) => {
+    const img = images[idx];
+    if (img.mode === "new") {
+      URL.revokeObjectURL(img.preview);
+      onChange(images.filter((_, i) => i !== idx));
+      return;
+    }
+    if (img.mode === "existing") {
+      onChange(images.map((im, i) => (i === idx ? { mode: "deleted" as const, url: img.url } : im)));
+    }
+  };
+
+  const move = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx) return;
+    const next = [...images];
+    const [moved] = next.splice(fromIdx, 1);
+    next.splice(toIdx, 0, moved);
     onChange(next);
   };
 
@@ -96,16 +117,34 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
         </button>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {visible.map((img, visIdx) => {
+          {visible.map(({ img, idx }, visPos) => {
             const src = img.mode === "existing" ? safeMediaUrl(img.url) : img.mode === "new" ? img.preview : null;
             return src ? (
-              <div key={visIdx} className={`group relative aspect-square overflow-hidden rounded-xl border-2 ${img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"}`}>
-                <Image src={src} alt={`Imagem ${visIdx + 1}`} fill className="object-cover" />
+              <div
+                key={idx}
+                draggable
+                onDragStart={() => { dragIdx.current = idx; }}
+                onDragOver={(e) => { e.preventDefault(); if (overIdx !== idx) setOverIdx(idx); }}
+                onDragLeave={() => setOverIdx((v) => (v === idx ? null : v))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragIdx.current !== null) move(dragIdx.current, idx);
+                  dragIdx.current = null;
+                  setOverIdx(null);
+                }}
+                onDragEnd={() => { dragIdx.current = null; setOverIdx(null); }}
+                className={`group relative aspect-square cursor-grab overflow-hidden rounded-xl border-2 active:cursor-grabbing ${
+                  overIdx === idx ? "border-primary ring-2 ring-primary/40" : img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"
+                }`}
+              >
+                <Image src={src} alt={`Imagem ${visPos + 1}`} fill className="pointer-events-none object-cover" />
                 {img.mode === "new" && <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">NOVA</span>}
-                <button type="button" onClick={() => remove(visIdx)} title="Remover imagem" className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600">
+                <button type="button" onClick={() => remove(idx)} title="Remover imagem" className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600">
                   <Trash2 size={11} />
                 </button>
-                <span className="absolute bottom-1 left-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">{visIdx + 1}</span>
+                <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
+                  <GripVertical size={10} className="opacity-70" />{visPos + 1}
+                </span>
               </div>
             ) : null;
           })}
@@ -116,6 +155,7 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
           )}
         </div>
       )}
+      {total > 1 && <p className="text-xs text-muted-foreground">Arraste as imagens para reordenar.</p>}
       <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => addFiles(e.target.files)} />
     </div>
   );
@@ -187,6 +227,7 @@ export default function AdminCatPage() {
   const [movelForm, setMovelForm] = useState({ titulo: "", descricao: "" });
   const [movelImagem, setMovelImagem] = useState<File | null>(null);
   const [movelVideo, setMovelVideo] = useState<File | null>(null);
+  const [movelGaleria, setMovelGaleria] = useState<ManagedImage[]>([]);
   const movelImagemRef = useRef<HTMLInputElement>(null);
   const movelVideoRef = useRef<HTMLInputElement>(null);
 
@@ -228,7 +269,7 @@ export default function AdminCatPage() {
   };
 
   const handleDelete = async (item: Cat) => {
-    if (!confirm("Excluir este registro CAT?")) return;
+    if (!(await confirmAction("Excluir este registro CAT?"))) return;
     await catApi.remove(item.id); loadCat();
   };
 
@@ -237,7 +278,9 @@ export default function AdminCatPage() {
   // CAT Móvel handlers
   function openMovelModal() {
     setMovelForm({ titulo: movel?.titulo ?? "", descricao: movel?.descricao ?? "" });
-    setMovelImagem(null); setMovelVideo(null); setMovelModal(true);
+    setMovelImagem(null); setMovelVideo(null);
+    setMovelGaleria((movel?.imagensUrl ?? []).map((url) => ({ mode: "existing" as const, url })));
+    setMovelModal(true);
   }
 
   async function handleSaveMovel(e: React.FormEvent) {
@@ -248,6 +291,10 @@ export default function AdminCatPage() {
       fd.append("descricao", movelForm.descricao);
       if (movelImagem) fd.append("imagem", movelImagem);
       if (movelVideo) fd.append("video", movelVideo);
+      movelGaleria
+        .filter((i): i is { mode: "new"; file: File; preview: string } => i.mode === "new")
+        .forEach(({ file }) => fd.append("imagens", file));
+      fd.append("ordem", JSON.stringify(buildOrdem(movelGaleria)));
 
       if (movel) {
         await catMovelApi.update(fd);
@@ -475,6 +522,12 @@ export default function AdminCatPage() {
                 )}
                 <input ref={movelVideoRef} type="file" accept="video/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setMovelVideo(f); setMovelImagem(null); } }} />
                 <p className="mt-1.5 text-xs text-muted-foreground">ℹ️ Selecione imagem <strong>ou</strong> vídeo. Enviar um substitui o outro.</p>
+              </div>
+
+              {/* Galeria (carrossel exibido ao lado da mídia principal) */}
+              <div>
+                <ImageManager images={movelGaleria} onChange={setMovelGaleria} />
+                <p className="mt-1.5 text-xs text-muted-foreground">ℹ️ Exibida em carrossel ao lado da mídia principal na página pública.</p>
               </div>
 
               <div className="flex gap-3 justify-end pt-1">

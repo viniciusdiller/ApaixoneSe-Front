@@ -17,7 +17,7 @@ export type RoteiroMeta = {
   slug: string;
   label: string;
   descricao: string;
-
+  /** Imagem usada no bento grid da home E no hero da página do roteiro */
   imagem: string;
   /** Layout no bento grid da home */
   span: string;
@@ -27,10 +27,10 @@ export const ROTEIROS: RoteiroMeta[] = [
   {
     enum: "A_PE",
     slug: "a-pe",
-    label: "A P\u00e9",
+    label: "A Pé",
     descricao:
       "Percursos e trilhas para explorar Saquarema a pé, com contato direto com a natureza e a cultura local.",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/a_pe.jpeg",
     span: "",
   },
   {
@@ -39,16 +39,15 @@ export const ROTEIROS: RoteiroMeta[] = [
     label: "Esporte e Aventura",
     descricao:
       "Adrenalina pura em um dos destinos esportivos mais famosos do Brasil.",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/esporte.jpeg",
     span: "md:col-span-2",
   },
   {
     enum: "DE_PRAIAS",
     slug: "de-praias",
     label: "De Praias",
-    descricao:
-      "As praias de Saquarema — cada uma com uma personalidade \u00fanica.",
-    imagem: "/images/itauna-surf.jpg",
+    descricao: "As praias de Saquarema — cada uma com uma personalidade única.",
+    imagem: "/images/roteiros/praia.jpeg",
     span: "",
   },
   {
@@ -56,8 +55,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     slug: "cultural",
     label: "Cultural",
     descricao:
-      "Mergulhe na hist\u00f3ria, na f\u00e9 e na arte que moldaram a identidade de Saquarema.",
-    imagem: "/images/igreja-nazare.jpg",
+      "Mergulhe na história, na fé e na arte que moldaram a identidade de Saquarema.",
+    imagem: "/images/roteiros/cultural.jpeg",
     span: "md:col-span-2 md:row-span-2",
   },
   {
@@ -65,8 +64,8 @@ export const ROTEIROS: RoteiroMeta[] = [
     slug: "religioso",
     label: "Religioso",
     descricao:
-      "Espiritualidade e devoc\u00e3o em lugares sagrados de grande beleza e tradi\u00e7\u00e3o.",
-    imagem: "/images/igreja-nazare.jpg",
+      "Espiritualidade e devoção em lugares sagrados de grande beleza e tradição.",
+    imagem: "/images/roteiros/religioso.jpeg",
     span: "",
   },
   {
@@ -74,17 +73,17 @@ export const ROTEIROS: RoteiroMeta[] = [
     slug: "rural",
     label: "Rural",
     descricao:
-      "Fazendas, gastronomia do campo e tradi\u00e7\u00f5es do interior de Saquarema.",
-    imagem: "/images/gastronomia.jpg",
+      "Fazendas, gastronomia do campo e tradições do interior de Saquarema.",
+    imagem: "/images/roteiros/rural.jpeg",
     span: "",
   },
   {
     enum: "ECOLOGICO",
     slug: "ecologico",
-    label: "Ecol\u00f3gico",
+    label: "Ecológico",
     descricao:
       "Natureza exuberante, lagoas, restingas e fauna local para os amantes do ecoturismo.",
-    imagem: "/images/itauna-surf.jpg",
+    imagem: "/images/roteiros/ecologico.jpeg",
     span: "",
   },
 ];

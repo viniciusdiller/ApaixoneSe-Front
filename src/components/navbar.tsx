@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -169,7 +171,7 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         .catch((error) => {
           console.error("Erro ao reproduzir o áudio:", error);
           setIsPlaying(false);
-          alert(
+          notify.error(
             "Não foi possível tocar o áudio. Verifique se o arquivo está na pasta 'public/sounds/ondas.mp3'.",
           );
         });
@@ -212,9 +214,12 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
           >
             <Waves className="hidden h-10 w-10 md:block" />
             <div>
-              <span className="font-display text-xl font-bold tracking-wide notranslate">
-                APAIXONE-SE
-              </span>
+              <img
+                src="/images/apaixone-se-Branco.png"
+                alt=""
+                height={95}
+                width={95}
+              />
               <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
                 {" "}
                 Saquarema/rj - BR
@@ -279,6 +284,13 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                 >
                   <LayoutDashboard className="h-3.5 w-3.5" />
                   <span>Painel Admin</span>
+                </Link>
+                <Link
+                  href="/perfil"
+                  className="flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:bg-primary-foreground/25"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  <span>Meu Perfil</span>
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -445,17 +457,15 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
                     </li>
                   )}
 
-                  {user.perfil !== "ADMIN" && (
-                    <li>
-                      <Link
-                        href="/perfil"
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
-                      >
-                        <User className="h-4 w-4" /> Meu Perfil
-                      </Link>
-                    </li>
-                  )}
+                  <li>
+                    <Link
+                      href="/perfil"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 rounded-full bg-primary-foreground/20 px-5 py-2 font-display text-sm uppercase tracking-wide text-primary-foreground"
+                    >
+                      <User className="h-4 w-4" /> Meu Perfil
+                    </Link>
+                  </li>
 
                   <li>
                     <button

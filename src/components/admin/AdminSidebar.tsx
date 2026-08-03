@@ -18,6 +18,7 @@ import {
   Banknote,
   Landmark,
   GalleryHorizontal,
+  Palette,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
@@ -27,6 +28,8 @@ const links = [
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
   { label: "Fique Por Dentro", href: "/admin/fique-por-dentro", icon: GalleryHorizontal },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
+  { label: "Praias e Lagoas", href: "/admin/praias-lagoas", icon: Waves },
+  { label: "Cultura", href: "/admin/cultura", icon: Palette },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
   { label: "Evento Principal", href: "/admin/evento-principal", icon: Calendar },
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
@@ -50,10 +53,45 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="sticky top-0 flex h-screen w-64 flex-shrink-0 flex-col border-r border-border bg-card">
+    <aside
+      className="sticky top-0 flex h-screen w-64 flex-shrink-0 flex-col border-r border-border"
+      style={{
+        background:
+          "linear-gradient(175deg, hsl(var(--primary) / 0.14) 0%, hsl(var(--card)) 30%)",
+      }}
+    >
+      {/* reflexo de luz no topo */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 right-0 top-0 h-48 opacity-50"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% -10%, hsl(var(--primary) / 0.22) 0%, transparent 100%)",
+        }}
+      />
+
+      {/* linha decorativa lateral direita (borda interna) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-0 inset-y-0 w-px"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, hsl(var(--primary) / 0.4) 40%, hsl(var(--accent) / 0.3) 70%, transparent 100%)",
+        }}
+      />
+
       {/* Brand */}
-      <div className="flex items-center gap-2 border-b border-border px-5 py-5">
-        <Waves className="h-7 w-7 text-primary" />
+      <div className="relative flex items-center gap-3 border-b border-border px-5 py-5">
+        {/* ícone com halo */}
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-xl"
+          style={{
+            background: "linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.08) 100%)",
+            boxShadow: "0 0 0 1px hsl(var(--primary) / 0.25), 0 2px 8px hsl(var(--primary) / 0.15)",
+          }}
+        >
+          <Waves className="h-5 w-5 text-primary" />
+        </div>
         <div>
           <span className="font-display block text-sm font-bold uppercase tracking-widest text-primary">
             Apaixone-se
@@ -65,7 +103,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <nav className="relative flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-0.5">
           {links.map(({ label, href, icon: Icon }) => {
             const isActive =
@@ -76,15 +114,33 @@ export function AdminSidebar() {
               <li key={href}>
                 <Link
                   href={href}
-                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
                   }`}
+                  style={
+                    isActive
+                      ? {
+                          background:
+                            "linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.85) 100%)",
+                          boxShadow:
+                            "0 2px 8px hsl(var(--primary) / 0.35), inset 0 1px 0 hsl(var(--primary-foreground) / 0.12)",
+                        }
+                      : undefined
+                  }
                 >
+                  {/* bolinha indicadora no item ativo */}
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -left-3 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full"
+                      style={{ background: "hsl(var(--primary-foreground) / 0.5)" }}
+                    />
+                  )}
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   <span className="flex-1">{label}</span>
-                  {isActive && <ChevronRight className="h-3 w-3 opacity-60" />}
+                  {isActive && <ChevronRight className="h-3 w-3 opacity-70" />}
                 </Link>
               </li>
             );
@@ -95,18 +151,18 @@ export function AdminSidebar() {
       {/* Cronômetro de sessão */}
       <SessionTimer />
 
-      <div className="mt-auto pt-4">
+      <div className="relative mt-auto pt-2">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
+          className="group flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-950/30"
         >
-          <LogOut size={20} />
+          <LogOut size={16} className="transition-transform group-hover:-translate-x-0.5" />
           Sair
         </button>
       </div>
 
       {/* Footer link */}
-      <div className="border-t border-border p-4">
+      <div className="relative border-t border-border p-4">
         <Link
           href="/"
           className="flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"

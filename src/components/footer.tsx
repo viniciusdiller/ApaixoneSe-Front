@@ -3,9 +3,40 @@
 import Link from "next/link";
 import { Facebook, Instagram, Send, Waves, Youtube, Globe } from "lucide-react";
 import { useState } from "react";
+import { ondasNewsletterApi } from "@/lib/api/ondas-newsletter";
+import CarrosselLogo from "./CarroselLogo";
 
 export function Footer() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || loading) return;
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await ondasNewsletterApi.subscribe(normalizedEmail);
+      setSuccess(
+        response.message ||
+          "Inscrição confirmada! Você receberá todos os dias pela manhã o boletim de ondas.",
+      );
+      setEmail("");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Erro ao realizar inscrição.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <footer className="bg-primary text-primary-foreground">
@@ -25,6 +56,8 @@ export function Footer() {
                 Capital Nacional do Esporte — Região dos Lagos, RJ
               </span>
             </p>
+
+            <CarrosselLogo />
           </div>
 
           <div>
@@ -64,6 +97,30 @@ export function Footer() {
                   Gastronomia
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/hospedagens"
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  Hospedagem
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/servicos"
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  Serviço para o Turista
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faq"
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  FAQ
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -73,28 +130,28 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-primary-foreground/70">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/transparencia"
                   className="transition-colors hover:text-primary-foreground"
                 >
                   Transparência
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/politica-de-privacidade"
                   className="transition-colors hover:text-primary-foreground"
                 >
                   Política de Privacidade
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/termos-de-uso"
                   className="transition-colors hover:text-primary-foreground"
                 >
                   Termos de Uso
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -172,33 +229,6 @@ export function Footer() {
                   <Facebook className="h-5 w-5" />
                 </a>
               </div>
-            </div>
-            <div className="mt-7">
-              <p className="mb-2 text-xs text-primary-foreground/60">
-                Receba as ondas no seu e-mail
-              </p>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setEmail("");
-                }}
-                className="flex"
-              >
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  className="flex-1 rounded-l-full border-0 bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:ring-1 focus:ring-accent"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="rounded-r-full bg-accent px-4 py-2 text-accent-foreground transition-colors hover:bg-accent/90"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </form>
             </div>
           </div>
         </div>

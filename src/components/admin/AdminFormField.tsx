@@ -23,7 +23,7 @@ export const AdminFormField = forwardRef<
   const [showPassword, setShowPassword] = useState(false);
 
   const base =
-    "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition";
+    "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-all duration-150";
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -37,14 +37,17 @@ export const AdminFormField = forwardRef<
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="flex flex-col gap-1.5">
+      <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
+        {props.required && (
+          <span className="text-red-400" aria-hidden="true">*</span>
+        )}
       </label>
       {multiline ? (
         <textarea
           rows={rows}
-          className={`${base} resize-none`}
+          className={`${base} resize-none ${error ? "border-red-400 focus:ring-red-400/40" : ""}`}
           ref={ref as React.Ref<HTMLTextAreaElement>}
           onChange={handleChange}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
@@ -53,7 +56,7 @@ export const AdminFormField = forwardRef<
         <div className="relative">
           <input
             type={inputType}
-            className={`${base} ${isPassword ? "pr-10" : ""}`}
+            className={`${base} ${isPassword ? "pr-10" : ""} ${error ? "border-red-400 focus:ring-red-400/40" : ""}`}
             ref={ref as React.Ref<HTMLInputElement>}
             onChange={handleChange}
             {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
@@ -71,7 +74,11 @@ export const AdminFormField = forwardRef<
           )}
         </div>
       )}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="flex items-center gap-1 text-xs text-red-500">
+          <span aria-hidden="true">↳</span> {error}
+        </p>
+      )}
     </div>
   );
 });

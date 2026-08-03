@@ -13,30 +13,16 @@ import {
   Car,
   Banknote,
   FileText,
+  House,
 } from "lucide-react";
 import { catApi, secretariaTurismoApi } from "@/lib/api";
 import type { Cat, SecretariaTurismo } from "@/lib/api";
+import { motion } from "framer-motion";
 
 function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
   if (words.length <= max) return text;
   return words.slice(0, max).join(" ") + "…";
-}
-
-const LOGO_COLORS = ["#6ab04c", "#da7101", "#006494", "#d63384"];
-
-function ColoredTitle() {
-  const words = ["Secretaria", "de", "Turismo"];
-  return (
-    <h2 className="text-2xl font-bold mb-2 leading-snug">
-      {words.map((word, i) => (
-        <span key={word} style={{ color: LOGO_COLORS[i % LOGO_COLORS.length] }}>
-          {word}
-          {i < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </h2>
-  );
 }
 
 export default function ServicosPage() {
@@ -45,6 +31,7 @@ export default function ServicosPage() {
   const [catLoading, setCatLoading] = useState(true);
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
   const [secretariaLoading, setSecretariaLoading] = useState(true);
+  const [clickedCard, setClickedCard] = useState<string | null>(null);
 
   useEffect(() => {
     catApi
@@ -71,7 +58,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Compass size={32} />,
-      title: "Agências",
+      title: "Agências de turismo",
       description:
         "Pacotes completos, passeios de barco e roteiros personalizados para você.",
       label: "Ver agências",
@@ -79,7 +66,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Bike size={32} />,
-      title: "Esporte & Lazer",
+      title: "Esportes & Lazer",
       description:
         "Atividades esportivas, aventura e lazer para toda a família em Saquarema.",
       label: "Ver esportes",
@@ -95,7 +82,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Banknote size={32} />,
-      title: "Casa de Câmbio",
+      title: "Casas de Câmbio",
       description:
         "Troque sua moeda com segurança em casas de câmbio credenciadas em Saquarema.",
       label: "Ver casas de câmbio",
@@ -114,14 +101,13 @@ export default function ServicosPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
-        <span
-          aria-hidden
-          className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
+      <section className="bg-primary px-4 pb-12 pt-32">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="container mx-auto text-center"
         >
-          🗺️
-        </span>
-        <div className="container relative z-10 mx-auto">
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -129,17 +115,14 @@ export default function ServicosPage() {
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
-            Saquarema
-          </p>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Serviços Turísticos
           </h1>
-          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
             Explore nossa cidade com os melhores profissionais. Encontre guias
             apaixonados, agências de confiança ou tire suas dúvidas no CAT.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       <section className="container mx-auto max-w-5xl px-4 py-16">
@@ -172,13 +155,18 @@ export default function ServicosPage() {
 
         {/* ── Secretaria de Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Secretaria de Turismo — esquerda, sem ícone */}
+          {/* Secretaria de Turismo — esquerda */}
           <div
             onClick={() => router.push("/servicos/secretaria-de-turismo")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-[#6ab04c]/30
-           text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
           >
-            <ColoredTitle />
+            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
+              <House size={32} />
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2 text-foreground">
+              Secretaria Municipal de Esporte, Lazer e Turismo
+            </h2>
 
             <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
               Saquarema · RJ

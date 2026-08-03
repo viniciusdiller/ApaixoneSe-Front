@@ -1,24 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { locaisCulturais } from "@/lib/data";
-import { X, ArrowLeft } from "lucide-react";
+import { culturaApi } from "@/lib/api";
+import type { LocalCultural } from "@/lib/api";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { X, ArrowLeft, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function CulturaPage() {
-  const [localSelecionado, setLocalSelecionado] = useState<typeof locaisCulturais[0] | null>(null);
+  const [locais, setLocais] = useState<LocalCultural[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(false);
+  const [clickedCard, setClickedCard] = useState<string | null>(null);
+  const [localSelecionado, setLocalSelecionado] =
+    useState<LocalCultural | null>(null);
+
+  useEffect(() => {
+    culturaApi
+      .getAll()
+      .then(setLocais)
+      .catch(() => setErro(true))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="relative flex h-[55vh] items-center justify-center overflow-hidden pt-20">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/images/igreja-nazare.jpg)" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/85 via-primary/30 to-black/30" />
-        <div className="relative z-10 px-4 text-center text-primary-foreground">
+      <section className="bg-primary px-4 pb-12 pt-32">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={clickedCard ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="container mx-auto text-center"
+        >
           <Link
             href="/"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
@@ -26,45 +41,66 @@ export default function CulturaPage() {
             <ArrowLeft className="h-4 w-4" />
             Voltar para página inicial
           </Link>
-          <p className="mb-3 text-sm uppercase tracking-[0.3em]">
-            Tradição e Identidade
-          </p>
-          <h1 className="font-display text-5xl font-bold uppercase md:text-7xl">
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground md:text-6xl">
             Cultura
           </h1>
-        </div>
+          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+            Conheça um pouco mais da tradição saquaremense.
+          </p>
+        </motion.div>
       </section>
 
       <section className="container mx-auto px-4 py-16">
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
           Lugares Culturais
         </h2>
-        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-          {locaisCulturais.map((local, i) => (
-            <motion.div
-              key={local.nome}
-              initial={{ opacity: 0, y: 26 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <article
-                onClick={() => setLocalSelecionado(local)}
-                className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
+
+        {loading ? (
+          <p className="mt-8 text-center text-muted-foreground">
+            Carregando lugares culturais...
+          </p>
+        ) : erro ? (
+          <div className="mt-8 rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+            <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
+            <p className="font-display text-2xl font-bold text-foreground">
+              Ops! Tivemos um imprevisto.
+            </p>
+            <p className="mt-2 text-muted-foreground">
+              Não conseguimos carregar os dados. Tente novamente mais tarde.
+            </p>
+          </div>
+        ) : locais.length === 0 ? (
+          <p className="mt-8 text-center text-muted-foreground">
+            Nenhum local cultural cadastrado ainda.
+          </p>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {locais.map((local, i) => (
+              <motion.div
+                key={local.id}
+                initial={{ opacity: 0, y: 26 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <h3 className="relative z-10 font-display text-2xl uppercase transition-colors group-hover:text-primary">
-                  {local.nome}
-                </h3>
-                <p className="relative z-10 mt-2 text-sm text-muted-foreground line-clamp-3">
-                  {local.descricao}
-                </p>
-                <p className="relative z-10 mt-4 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
-                  Ler mais &rarr;
-                </p>
-              </article>
-            </motion.div>
-          ))}
-        </div>
+                <article
+                  onClick={() => setLocalSelecionado(local)}
+                  className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <h3 className="relative z-10 font-display text-2xl uppercase transition-colors group-hover:text-primary">
+                    {local.nome}
+                  </h3>
+                  <p className="relative z-10 mt-2 text-sm text-muted-foreground line-clamp-3">
+                    {local.descricao}
+                  </p>
+                  <p className="relative z-10 mt-4 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+                    Ler mais &rarr;
+                  </p>
+                </article>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="bg-muted px-4 py-14">
@@ -86,11 +122,11 @@ export default function CulturaPage() {
               total sintonia com o mar.
             </p>
           </article>
-          <article className="rounded-xl border border-border bg-card p-6">
+          <article className="p-0 md:p-8 md:rounded-2xl md:border md:border-border md:bg-card md:shadow-sm">
             <h2 className="font-display text-3xl uppercase text-primary">
               Destaques Visuais
             </h2>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 "/images/destaques-visuais/Esquadrilha-Fumaça.jpg",
                 "/images/destaques-visuais/WSL.jpg",
@@ -101,7 +137,7 @@ export default function CulturaPage() {
               ].map((imagem) => (
                 <div
                   key={imagem}
-                  className="h-48 rounded-md bg-cover bg-center"
+                  className="h-28 md:h-48 rounded-md bg-cover bg-center"
                   style={{ backgroundImage: `url(${imagem})` }}
                 />
               ))}
@@ -120,7 +156,7 @@ export default function CulturaPage() {
               onClick={() => setLocalSelecionado(null)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
             />
-            
+
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -135,23 +171,26 @@ export default function CulturaPage() {
                 <X className="h-5 w-5" />
               </button>
 
-              {localSelecionado.imagem && localSelecionado.imagem !== "/images/placeholder.svg" && (
-                <div className="relative h-64 w-full bg-primary/20">
-                  <Image
-                    src={localSelecionado.imagem}
-                    alt={localSelecionado.nome}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-              )}
+              {(() => {
+                const src = safeMediaUrl(localSelecionado.imagemUrl);
+                return src ? (
+                  <div className="relative h-64 w-full bg-primary/20">
+                    <Image
+                      src={src}
+                      alt={localSelecionado.nome}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  </div>
+                ) : null;
+              })()}
 
               <div className="p-8">
                 <h3 className="font-display text-3xl font-bold uppercase text-foreground">
                   {localSelecionado.nome}
                 </h3>
-                
+
                 <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                     {localSelecionado.texto || localSelecionado.descricao}

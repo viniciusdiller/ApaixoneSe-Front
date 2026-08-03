@@ -39,6 +39,8 @@ export interface User {
   usuario: string;
   email: string;
   perfil: Perfil;
+  /** Coluna `active` do banco — exibida no admin como "Email verificado" */
+  active?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -70,6 +72,7 @@ export interface Atividade {
   latitude?: number | null;
   longitude?: number | null;
   roteiro: TipoRoteiro;
+  logoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -81,6 +84,7 @@ export interface CreateAtividadeDto {
   latitude?: number;
   longitude?: number;
   roteiro: TipoRoteiro;
+  logoUrl?: string;
 }
 
 export type UpdateAtividadeDto = Partial<CreateAtividadeDto>;
@@ -92,6 +96,7 @@ export interface Evento {
   descricao: string;
   data: string;
   local: string;
+  endereco?: string | null;
   fotoUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -102,6 +107,7 @@ export interface CreateEventoDto {
   descricao: string;
   data: string;
   local: string;
+  endereco?: string;
   fotoUrl?: string;
 }
 
@@ -322,6 +328,8 @@ export interface CatMovel {
   imagemUrl?: string | null;
   /** URL do vídeo — exclusivo com imagemUrl */
   videoUrl?: string | null;
+  /** Galeria de imagens exibida em carrossel ao lado da mídia principal */
+  imagensUrl?: string[] | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -462,3 +470,64 @@ export interface CreateProjetoDto {
 }
 
 export type UpdateProjetoDto = Partial<CreateProjetoDto>;
+
+// ─── Praias e Lagoas ────────────────────────────────────────────────────────
+export type TipoPontoAgua = "PRAIA" | "LAGOA";
+
+export interface PontoAgua {
+  id: string;
+  tipo: TipoPontoAgua;
+  nome: string;
+  slug: string;
+  descricaoCurta: string;
+  descricao: string;
+  imagemUrl?: string | null;
+  filtros?: string[] | null;
+  acessivel: boolean;
+  dificuldade?: string | null;
+  estacionamento: boolean;
+  quiosques: boolean;
+  endereco?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreatePontoAguaDto {
+  tipo: TipoPontoAgua;
+  nome: string;
+  descricaoCurta: string;
+  descricao: string;
+  filtros?: string[];
+  acessivel?: boolean;
+  dificuldade?: string;
+  estacionamento?: boolean;
+  quiosques?: boolean;
+  endereco?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export type UpdatePontoAguaDto = Partial<CreatePontoAguaDto>;
+
+// ─── Cultura ──────────────────────────────────────────────────────────────────
+export interface LocalCultural {
+  id: string;
+  nome: string;
+  descricao: string;
+  texto: string;
+  imagemUrl?: string | null;
+  endereco?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateLocalCulturalDto {
+  nome: string;
+  descricao: string;
+  texto: string;
+  endereco?: string;
+}
+
+export type UpdateLocalCulturalDto = Partial<CreateLocalCulturalDto>;

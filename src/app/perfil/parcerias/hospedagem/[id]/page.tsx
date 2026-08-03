@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { hospedagemApi } from "@/lib/api";
 import { FormularioHospedagem } from "@/components/perfil/forms/FormularioHospedagem"; 
@@ -23,7 +25,7 @@ export default function PaginaHospedagem({ params }: { params: { id?: string } }
           setLoading(false);
         })
         .catch(() => {
-          alert("Erro ao buscar hospedagem. Verifique se o ID está correto.");
+          notify.error("Erro ao buscar hospedagem. Verifique se o ID está correto.");
           setLoading(false);
         });
     }

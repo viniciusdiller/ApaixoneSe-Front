@@ -19,3 +19,6 @@ export {
   turistandoApi,
   projetoApi,
 } from "./secretaria-turismo";
+export { ondasNewsletterApi } from "./ondas-newsletter";
+export { pontosAguaApi } from "./pontos-agua";
+export { culturaApi } from "./cultura";

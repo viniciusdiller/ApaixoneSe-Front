@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { confirmAction } from "@/lib/feedback";
+
+import { useEffect, useState, useMemo } from "react";
 import { eventosApi } from "@/lib/api";
 import type { Evento, CreateEventoDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -8,24 +10,59 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil } from "lucide-react";
+import { Plus, Eye, Pencil, Search, X } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 const empty: CreateEventoDto = {
   titulo: "",
   descricao: "",
   data: "",
   local: "",
+  endereco: "",
   fotoUrl: "",
 };
+
+/**
+ * Máscara visual: transforma input bruto em DD/MM/AAAA
+ * - Aceita apenas dígitos, insere "/" automaticamente
+ * - Limita o ano a 4 dígitos (máx 10 chars no total)
+ */
+function maskDate(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 8); // máx 8 dígitos
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+/** Converte DD/MM/AAAA → YYYY-MM-DD para enviar à API */
+function toISO(display: string): string {
+  const [d, m, y] = display.split("/");
+  if (!d || !m || !y || y.length !== 4) return display;
+  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+/** Converte YYYY-MM-DD (ou ISO string) → DD/MM/AAAA para exibir no campo */
+function toDisplay(iso: string): string {
+  if (!iso) return "";
+  const clean = iso.slice(0, 10); // descarta hora se vier junto
+  const [y, m, d] = clean.split("-");
+  if (!y || !m || !d) return "";
+  return `${d}/${m}/${y}`;
+}
 
 export default function AdminEventosPage() {
   const [items, setItems] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{ open: boolean; editing: Evento | null }>(
     { open: false, editing: null },
   );
   const [viewing, setViewing] = useState<Evento | null>(null);
+  // form.data armazena DD/MM/AAAA (valor do campo visual)
   const [form, setForm] = useState<CreateEventoDto>(empty);
   const [files, setFiles] = useState<{ foto?: File }>({});
   const [saving, setSaving] = useState(false);
@@ -40,24 +77,53 @@ export default function AdminEventosPage() {
   };
   useEffect(load, []);
 
+  // ── filtro + paginação ──
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (i) =>
+        i.titulo.toLowerCase().includes(q) ||
+        i.local.toLowerCase().includes(q) ||
+        (i.endereco ?? "").toLowerCase().includes(q) ||
+        (i.descricao ?? "").toLowerCase().includes(q),
+    );
+  }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
+
   const openCreate = () => {
     setForm(empty);
     setFiles({});
     setError("");
     setModal({ open: true, editing: null });
   };
+
   const openEdit = (item: Evento) => {
     setForm({
       titulo: item.titulo,
       descricao: item.descricao,
-      data: item.data?.slice(0, 16) ?? "",
+      // Converte YYYY-MM-DD para DD/MM/AAAA para exibir no campo com máscara
+      data: toDisplay(item.data ?? ""),
       local: item.local,
+      endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
     });
     setFiles({});
     setError("");
     setModal({ open: true, editing: item });
   };
+
   const closeModal = () => setModal({ open: false, editing: null });
 
   const handleSave = async (e: React.FormEvent) => {
@@ -68,8 +134,10 @@ export default function AdminEventosPage() {
       const formData = new FormData();
       formData.append("titulo", form.titulo);
       formData.append("descricao", form.descricao);
-      formData.append("data", form.data);
+      // Converte DD/MM/AAAA → YYYY-MM-DD antes de enviar à API
+      formData.append("data", toISO(form.data));
       formData.append("local", form.local);
+      if (form.endereco) formData.append("endereco", form.endereco);
       if (files.foto) formData.append("foto", files.foto);
 
       modal.editing
@@ -90,7 +158,7 @@ export default function AdminEventosPage() {
   };
 
   const handleDelete = async (item: Evento) => {
-    if (!confirm(`Excluir "${item.titulo}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.titulo}"?`))) return;
     await eventosApi.remove(item.id);
     load();
   };
@@ -119,7 +187,10 @@ export default function AdminEventosPage() {
             Eventos
           </h1>
           <p className="text-sm text-muted-foreground">
-            {items.length} registros
+            {filtered.length === items.length
+              ? `${items.length} registros`
+              : `${filtered.length} de ${items.length} registros`}
+            {totalPages > 1 && ` — página ${page} de ${totalPages}`}
           </p>
         </div>
         <button
@@ -130,48 +201,81 @@ export default function AdminEventosPage() {
         </button>
       </div>
 
+      {/* barra de pesquisa */}
+      <div className="relative mb-4">
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
+        <input
+          type="search"
+          placeholder="Pesquisar por título, local, endereço ou descrição…"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => handleSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            aria-label="Limpar pesquisa"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
-        <AdminTable
-          data={items}
-          columns={[
-            {
-              key: "fotoUrl",
-              label: "Foto",
-              render: (_val, row) => (
-                <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
-              ),
-            },
-            { key: "titulo", label: "Título" },
-            { key: "local", label: "Local" },
-            {
-              key: "data",
-              label: "Data",
-              render: (_val, row) =>
-                new Date(row.data).toLocaleDateString("pt-BR"),
-            },
-          ]}
-          extraActions={(row) => (
-            <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Pencil size={16} />
-              </button>
-            </>
-          )}
-          onDelete={handleDelete}
-        />
+        <>
+          <AdminTable
+            data={paged}
+            columns={[
+              {
+                key: "fotoUrl",
+                label: "Foto",
+                render: (_val, row) => (
+                  <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
+                ),
+              },
+              { key: "titulo", label: "Título" },
+              { key: "local", label: "Local" },
+              {
+                key: "data",
+                label: "Data",
+                render: (_val, row) =>
+                  new Date(row.data).toLocaleDateString("pt-BR"),
+              },
+            ]}
+            extraActions={(row) => (
+              <>
+                <button
+                  onClick={() => setViewing(row)}
+                  title="Ver detalhes"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Eye size={16} />
+                </button>
+                <button
+                  onClick={() => openEdit(row)}
+                  title="Editar"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Pencil size={16} />
+                </button>
+              </>
+            )}
+            onDelete={handleDelete}
+          />
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
       )}
 
       {/* Modal Visualização */}
@@ -192,9 +296,10 @@ export default function AdminEventosPage() {
             </div>
             <ViewRow label="Título" value={viewing.titulo} />
             <ViewRow label="Local" value={viewing.local} />
+            <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow
               label="Data"
-              value={new Date(viewing.data).toLocaleString("pt-BR")}
+              value={new Date(viewing.data).toLocaleDateString("pt-BR")}
             />
             <ViewRow label="Descrição" value={viewing.descricao} />
           </dl>
@@ -221,10 +326,20 @@ export default function AdminEventosPage() {
             required
           />
           <AdminFormField
-            label="Data e Hora"
+            label="Endereço"
+            value={form.endereco}
+            onChange={set("endereco")}
+            placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
+          />
+          <AdminFormField
+            label="Data"
             value={form.data}
             onChange={set("data")}
-            type="datetime-local"
+            type="text"
+            inputMode="numeric"
+            placeholder="DD/MM/AAAA"
+            maxLength={10}
+            mask={maskDate}
             required
           />
           <AdminFormField

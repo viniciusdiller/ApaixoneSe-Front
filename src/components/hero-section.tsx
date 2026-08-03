@@ -15,26 +15,21 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-black/30" />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-4 font-sans text-sm uppercase tracking-[0.3em] text-primary-foreground/80"
-        >
-          Bem-vindo ao Maracanã do Surf
-        </motion.p>
-
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="font-display text-5xl font-bold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-7xl lg:text-8xl"
+          className="font-display text-2xl font-semibold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-6xl lg:text-7xl"
         >
-          APAIXONE-SE
+          APAIXONE-SE POR
           <br />
-          PELA Capital Nacional
-          <br />
-          <span className="text-accent">do Esporte</span>
+          <img
+            src="/images/Saquarema.png"
+            alt="Saquarema"
+            width="300"
+            height="150"
+            className="mx-auto mt-2 md:mt-4"
+          />
         </motion.h1>
 
         <motion.p

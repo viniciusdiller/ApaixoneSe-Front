@@ -25,17 +25,23 @@ export function AdminTable<T extends { id: string | number }>({
 }: Props<T>) {
   if (data.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-surface py-16 text-center">
+      <div className="rounded-xl border border-border bg-card py-16 text-center">
         <p className="text-muted-foreground">Nenhum registro encontrado.</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border bg-surface-offset">
+          <tr
+            className="border-b border-border"
+            style={{
+              background:
+                "linear-gradient(90deg, hsl(var(--primary) / 0.06) 0%, hsl(var(--card)) 100%)",
+            }}
+          >
             {columns.map((col) => (
               <th
                 key={String(col.key)}
@@ -52,10 +58,11 @@ export function AdminTable<T extends { id: string | number }>({
           </tr>
         </thead>
         <tbody>
-          {data.map((row) => (
+          {data.map((row, rowIndex) => (
             <tr
               key={row.id}
-              className="border-b border-border last:border-0 transition-colors hover:bg-surface-offset"
+              className="border-b border-border last:border-0 transition-colors hover:bg-primary/[0.03]"
+              style={rowIndex % 2 === 1 ? { backgroundColor: "hsl(var(--muted) / 0.3)" } : {}}
             >
               {columns.map((col) => (
                 <td key={String(col.key)} className="px-4 py-3 text-foreground">
@@ -72,9 +79,9 @@ export function AdminTable<T extends { id: string | number }>({
                       <button
                         onClick={() => onDelete(row)}
                         title="Excluir"
-                        className="rounded p-1 text-muted-foreground transition hover:bg-error/10 hover:text-error"
+                        className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={15} />
                       </button>
                     )}
                   </div>

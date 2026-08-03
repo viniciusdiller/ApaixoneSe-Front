@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { confirmAction, notify } from "@/lib/feedback";
+
+import { useEffect, useRef, useState, useMemo } from "react";
 import { hospedagemApi, usersApi } from "@/lib/api";
 import { HOSPEDAGEM_TAGS } from "@/lib/api/hospedagem";
 import type { Hospedagem, CreateHospedagemDto, User } from "@/lib/api";
@@ -9,6 +11,7 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import {
   Plus,
@@ -22,6 +25,8 @@ import {
   CheckCircle2,
   Clock,
   Globe,
+  Search,
+  X,
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
@@ -31,6 +36,8 @@ import {
   maskPhone,
   numericInputProps,
 } from "@/lib/masks";
+
+const PAGE_SIZE = 10;
 
 // ─── helpers de validade ───────────────────────────────────────────────────
 type ValidadeStatus = "ok" | "alerta" | "vencido" | "sem-data";
@@ -94,7 +101,7 @@ function ComprovanteBotao({ url }: { url?: string | null }) {
   );
 }
 
-// ─── estado inicial ────────────────────────────────────────────────────────
+// ─── estado inicial ────────────────────────────────────────────────────────────────
 const empty: CreateHospedagemDto & { validade?: string; site?: string } = {
   nome: "",
   telefone: "",
@@ -124,6 +131,8 @@ export default function AdminHospedagemPage() {
   const [items, setItems] = useState<Hospedagem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{
     open: boolean;
     editing: Hospedagem | null;
@@ -146,6 +155,30 @@ export default function AdminHospedagemPage() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  // ── filtro + paginação ──
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (i) =>
+        i.nome.toLowerCase().includes(q) ||
+        i.endereco.toLowerCase().includes(q) ||
+        (i.textoDiferencial ?? "").toLowerCase().includes(q),
+    );
+  }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   const openCreate = () => {
     setForm(empty);
@@ -219,15 +252,12 @@ export default function AdminHospedagemPage() {
       if (form.instagram) fd.append("instagram", form.instagram);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
-      // validade NÃO vai no FormData — DTO multipart não aceita esse campo
-      // e retornaria "property validade should not exist"
       if (form.site) fd.append("site", form.site);
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
       if (modal.editing) {
         await hospedagemApi.update(modal.editing.id, fd);
-        // validade enviada separadamente via JSON para não quebrar o DTO multipart
         if (form.validade) {
           await hospedagemApi.updateStatus(modal.editing.id, {
             validade: form.validade,
@@ -252,7 +282,7 @@ export default function AdminHospedagemPage() {
   };
 
   const handleDelete = async (item: Hospedagem) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await hospedagemApi.delete(item.id);
     load();
   };
@@ -291,7 +321,10 @@ export default function AdminHospedagemPage() {
             Hospedagem
           </h1>
           <p className="text-sm text-muted-foreground">
-            {items.length} registros
+            {filtered.length === items.length
+              ? `${items.length} registros`
+              : `${filtered.length} de ${items.length} registros`}
+            {totalPages > 1 && ` — página ${page} de ${totalPages}`}
           </p>
         </div>
         <button
@@ -302,101 +335,131 @@ export default function AdminHospedagemPage() {
         </button>
       </div>
 
+      {/* barra de pesquisa */}
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por nome, endereço ou diferencial…"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => handleSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            aria-label="Limpar pesquisa"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
-        <AdminTable
-          data={items}
-          columns={[
-            {
-              key: "logoUrl",
-              label: "Logo",
-              render: (_val, row) => (
-                <MediaPreview url={row.logoUrl} label="Logo" />
-              ),
-            },
-            { key: "nome", label: "Nome" },
-            { key: "endereco", label: "Endereço" },
-            {
-              key: "tags",
-              label: "Tags",
-              render: (_val, row) => {
-                const t: string[] = (() => {
-                  const raw = row.tags;
-                  if (!raw) return [];
-                  if (Array.isArray(raw)) return raw as string[];
-                  try {
-                    return JSON.parse(raw as unknown as string) as string[];
-                  } catch {
-                    return [];
-                  }
-                })();
-                if (t.length === 0)
-                  return (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  );
-                return (
-                  <div className="flex flex-wrap gap-1">
-                    {t.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {t.length > 3 && (
-                      <span className="text-xs text-muted-foreground">
-                        +{t.length - 3}
-                      </span>
-                    )}
-                  </div>
-                );
+        <>
+          <AdminTable
+            data={paged}
+            columns={[
+              {
+                key: "logoUrl",
+                label: "Logo",
+                render: (_val, row) => (
+                  <MediaPreview url={row.logoUrl} label="Logo" />
+                ),
               },
-            },
-            {
-              key: "status",
-              label: "Status",
-              render: (_val, row) => (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
+              { key: "nome", label: "Nome" },
+              { key: "endereco", label: "Endereço" },
+              {
+                key: "tags",
+                label: "Tags",
+                render: (_val, row) => {
+                  const t: string[] = (() => {
+                    const raw = row.tags;
+                    if (!raw) return [];
+                    if (Array.isArray(raw)) return raw as string[];
+                    try {
+                      return JSON.parse(raw as unknown as string) as string[];
+                    } catch {
+                      return [];
+                    }
+                  })();
+                  if (t.length === 0)
+                    return (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    );
+                  return (
+                    <div className="flex flex-wrap gap-1">
+                      {t.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {t.length > 3 && (
+                        <span className="text-xs text-muted-foreground">
+                          +{t.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  );
+                },
+              },
+              {
+                key: "status",
+                label: "Status",
+                render: (_val, row) => (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
+                  >
+                    {row.status}
+                  </span>
+                ),
+              },
+              {
+                key: "validade",
+                label: "Validade Comprovante",
+                render: (_val, row) => (
+                  <ValidityBadge
+                    validade={
+                      (row as Hospedagem & { validade?: string }).validade
+                    }
+                  />
+                ),
+              },
+            ]}
+            extraActions={(row) => (
+              <>
+                <button
+                  onClick={() => setViewing(row)}
+                  title="Ver detalhes"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
                 >
-                  {row.status}
-                </span>
-              ),
-            },
-            {
-              key: "validade",
-              label: "Validade Comprovante",
-              render: (_val, row) => (
-                <ValidityBadge
-                  validade={
-                    (row as Hospedagem & { validade?: string }).validade
-                  }
-                />
-              ),
-            },
-          ]}
-          extraActions={(row) => (
-            <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Pencil size={16} />
-              </button>
-            </>
-          )}
-          onDelete={handleDelete}
-        />
+                  <Eye size={16} />
+                </button>
+                <button
+                  onClick={() => openEdit(row)}
+                  title="Editar"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Pencil size={16} />
+                </button>
+              </>
+            )}
+            onDelete={handleDelete}
+          />
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
       )}
 
       {/* ── Modal Visualização ── */}
@@ -441,9 +504,7 @@ export default function AdminHospedagemPage() {
                   <dd className="text-sm">
                     <a
                       href={
-                        (
-                          viewing as Hospedagem & { site?: string }
-                        ).site!.startsWith("http")
+                        (viewing as Hospedagem & { site?: string }).site!.startsWith("http")
                           ? (viewing as Hospedagem & { site?: string }).site!
                           : `https://${(viewing as Hospedagem & { site?: string }).site}`
                       }
@@ -458,16 +519,9 @@ export default function AdminHospedagemPage() {
               )}
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
-            <ViewRow
-              label="Texto Diferencial"
-              value={viewing.textoDiferencial}
-            />
-            <ViewRow
-              label="Usuário Dono"
-              value={ownerName(viewing.usuarioId)}
-            />
+            <ViewRow label="Texto Diferencial" value={viewing.textoDiferencial} />
+            <ViewRow label="Usuário Dono" value={ownerName(viewing.usuarioId)} />
 
-            {/* Tags */}
             {(() => {
               const t: string[] = (() => {
                 const raw = viewing.tags;
@@ -499,10 +553,9 @@ export default function AdminHospedagemPage() {
               );
             })()}
 
-            {/* Bloco Comprovante + Validade */}
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <FileText size={13} /> Comprovante
+                <FileText size={13} /> Comprovante cadastur
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <ComprovanteBotao url={viewing.documentoPdfUrl} />
@@ -525,12 +578,7 @@ export default function AdminHospedagemPage() {
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Nome"
-              value={form.nome}
-              onChange={set("nome")}
-              required
-            />
+            <AdminFormField label="Nome" value={form.nome} onChange={set("nome")} required />
             <AdminFormField
               label="Telefone"
               value={form.telefone}
@@ -541,60 +589,18 @@ export default function AdminHospedagemPage() {
               required
             />
           </div>
-          <AdminFormField
-            label="Endereço"
-            value={form.endereco}
-            onChange={set("endereco")}
-            required
-          />
-          <AdminFormField
-            label="Texto Diferencial"
-            value={form.textoDiferencial}
-            onChange={set("textoDiferencial")}
-            multiline
-            required
-          />
+          <AdminFormField label="Endereço" value={form.endereco} onChange={set("endereco")} required />
+          <AdminFormField label="Texto Diferencial" value={form.textoDiferencial} onChange={set("textoDiferencial")} multiline required />
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="CNPJ"
-              value={form.cnpj}
-              onChange={set("cnpj")}
-              mask={maskCnpj}
-              maxLength={18}
-              {...numericInputProps}
-              required
-            />
-            <AdminFormField
-              label="Instagram"
-              value={form.instagram ?? ""}
-              onChange={set("instagram")}
-            />
+            <AdminFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} mask={maskCnpj} maxLength={18} {...numericInputProps} required />
+            <AdminFormField label="Instagram" value={form.instagram ?? ""} onChange={set("instagram")} />
           </div>
-          <AdminFormField
-            label="Site"
-            value={form.site ?? ""}
-            onChange={set("site")}
-          />
+          <AdminFormField label="Site" value={form.site ?? ""} onChange={set("site")} />
           <div className="grid grid-cols-2 gap-3">
-            <AdminFormField
-              label="Responsável (Nome)"
-              value={form.responsavelNome}
-              onChange={set("responsavelNome")}
-              mask={maskPersonName}
-              required
-            />
-            <AdminFormField
-              label="Responsável (CPF)"
-              value={form.responsavelCpf}
-              onChange={set("responsavelCpf")}
-              mask={maskCpf}
-              maxLength={14}
-              {...numericInputProps}
-              required
-            />
+            <AdminFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} mask={maskPersonName} required />
+            <AdminFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} mask={maskCpf} maxLength={14} {...numericInputProps} required />
           </div>
 
-          {/* Tags */}
           <div className="space-y-2">
             <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               <Tag className="h-3.5 w-3.5" /> Comodidades (opcional)
@@ -619,9 +625,7 @@ export default function AdminHospedagemPage() {
               })}
             </div>
             {(form.tags ?? []).length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                {(form.tags ?? []).length} comodidade(s) selecionada(s)
-              </p>
+              <p className="text-xs text-muted-foreground">{(form.tags ?? []).length} comodidade(s) selecionada(s)</p>
             )}
           </div>
 
@@ -631,129 +635,62 @@ export default function AdminHospedagemPage() {
             currentUrl={form.logoUrl}
             required
             hint="PNG, JPG ou WEBP"
-            onFileChange={(url, file) => {
-              setField("logoUrl", url);
-              setFiles((p) => ({ ...p, logo: file }));
-            }}
-            onClear={() => {
-              setField("logoUrl", "");
-              setFiles((p) => ({ ...p, logo: undefined }));
-            }}
+            onFileChange={(url, file) => { setField("logoUrl", url); setFiles((p) => ({ ...p, logo: file })); }}
+            onClear={() => { setField("logoUrl", ""); setFiles((p) => ({ ...p, logo: undefined })); }}
           />
 
-          {/* Bloco Comprovante */}
           <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <FileText size={13} /> Comprovante
+              <FileText size={13} /> Comprovante cadastur
             </p>
-
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">
-                Arquivo
-                {!modal.editing && <span className="text-red-500"> *</span>} —
-                PDF ou imagem
+                Arquivo{!modal.editing && <span className="text-red-500"> *</span>} — PDF ou imagem
               </label>
               {comprovantePreviewUrl && (
                 <div className="flex items-center gap-2">
-                  <a
-                    href={comprovantePreviewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:text-primary"
-                  >
+                  <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:text-primary">
                     <FileText size={12} />
-                    {files.comprovante
-                      ? files.comprovante.name
-                      : "Comprovante atual"}
+                    {files.comprovante ? files.comprovante.name : "Comprovante atual"}
                     <ExternalLink size={11} className="text-muted-foreground" />
                   </a>
                   {comprovanteExistente && !files.comprovante && (
-                    <span className="text-xs text-muted-foreground">
-                      (existente)
-                    </span>
+                    <span className="text-xs text-muted-foreground">(existente)</span>
                   )}
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => comprovanteRef.current?.click()}
-                className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
-              >
+              <button type="button" onClick={() => comprovanteRef.current?.click()}
+                className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-primary">
                 <FileText size={14} />
-                {files.comprovante
-                  ? "Trocar arquivo"
-                  : comprovanteExistente
-                    ? "Substituir comprovante"
-                    : "Selecionar comprovante (PDF ou imagem)"}
+                {files.comprovante ? "Trocar arquivo" : comprovanteExistente ? "Substituir comprovante" : "Selecionar comprovante (PDF ou imagem)"}
               </button>
-              <input
-                ref={comprovanteRef}
-                type="file"
-                accept="application/pdf,image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) setFiles((p) => ({ ...p, comprovante: f }));
-                }}
-              />
+              <input ref={comprovanteRef} type="file" accept="application/pdf,image/*" className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) setFiles((p) => ({ ...p, comprovante: f })); }} />
             </div>
-
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <CalendarClock size={13} /> Data de validade do comprovante
+                <CalendarClock size={13} /> Data de validade do comprovante cadastur
               </label>
-              <input
-                type="date"
-                value={form.validade ?? ""}
-                onChange={set("validade")}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-              />
-              {form.validade && (
-                <div className="pt-1">
-                  <ValidityBadge validade={form.validade} />
-                </div>
-              )}
+              <input type="date" value={form.validade ?? ""} onChange={set("validade")}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary" />
+              {form.validade && <div className="pt-1"><ValidityBadge validade={form.validade} /></div>}
             </div>
           </div>
 
-          {/* Usuário Dono */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Usuário Dono *
-            </label>
-            <select
-              value={form.usuarioId}
-              onChange={set("usuarioId")}
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Usuário Dono *</label>
+            <select value={form.usuarioId} onChange={set("usuarioId")} required
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary">
               <option value="">Selecione um usuário</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nome} (@{u.usuario})
-                </option>
-              ))}
+              {users.map((u) => <option key={u.id} value={u.id}>{u.nome} (@{u.usuario})</option>)}
             </select>
           </div>
 
-          {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
-              {error}
-            </p>
-          )}
+          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">{error}</p>}
           <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={closeModal}
-              className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+            <button type="button" onClick={closeModal} className="rounded-md border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted">Cancelar</button>
+            <button type="submit" disabled={saving} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
               {saving ? "Salvando..." : "Salvar"}
             </button>
           </div>
@@ -767,9 +704,7 @@ function ViewRow({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
       <dd className="text-sm text-foreground whitespace-pre-wrap">{value}</dd>
     </div>
   );

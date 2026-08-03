@@ -5,25 +5,25 @@ import { X, Globe, Tag, FileText, ExternalLink, Building2 } from "lucide-react";
 export type NegocioModal = {
   id: string;
   nome: string;
-  endereco?: string;
-  telefone?: string;
-  logoUrl?: string;
+  endereco?: string | null;
+  telefone?: string | null;
+  logoUrl?: string | null;
   categoria: "hospedagem" | "gastronomia" | "servico-turista";
-  status?: string;
-  cnpj?: string;
-  instagram?: string;
-  site?: string;
-  responsavelNome?: string;
-  responsavelCpf?: string;
-  textoDiferencial?: string;
-  descricao?: string;
-  especialidade?: string;
-  idiomas?: string;
-  roteiro?: string;
-  tipo?: string;
-  tags?: string[] | string;
-  documentoPdfUrl?: string;
-  comprovanteUrl?: string; // <-- ADICIONAMOS AQUI O CAMPO DE SERVIÇOS
+  status?: string | null;
+  cnpj?: string | null;
+  instagram?: string | null;
+  site?: string | null;
+  responsavelNome?: string | null;
+  responsavelCpf?: string | null;
+  textoDiferencial?: string | null;
+  descricao?: string | null;
+  especialidade?: string | null;
+  idiomas?: string | null;
+  roteiro?: string | null;
+  tipo?: string | null;
+  tags?: string[] | string | null;
+  documentoPdfUrl?: string | null;
+  comprovanteUrl?: string | null; // <-- ADICIONAMOS AQUI O CAMPO DE SERVIÇOS
 };
 
 interface VisualizacaoModalProps {
@@ -31,7 +31,7 @@ interface VisualizacaoModalProps {
   onClose: () => void;
 }
 
-const Field = ({ label, value, icon: Icon }: { label: string; value?: string; icon?: any }) => {
+const Field = ({ label, value, icon: Icon }: { label: string; value?: string | null; icon?: any }) => {
   if (!value) return null;
   return (
     <div>
@@ -44,7 +44,7 @@ const Field = ({ label, value, icon: Icon }: { label: string; value?: string; ic
   );
 };
 
-const getStatusBadge = (status?: string) => {
+const getStatusBadge = (status?: string | null) => {
   if (!status) return null;
   const s = status.toUpperCase();
   if (s === "APROVADO") return <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-bold text-green-700">APROVADO</span>;
@@ -52,7 +52,7 @@ const getStatusBadge = (status?: string) => {
   return <span className="rounded-md bg-yellow-100 px-2 py-1 text-xs font-bold text-yellow-700">PENDENTE</span>;
 };
 
-const renderTags = (tagsRaw?: string[] | string) => {
+const renderTags = (tagsRaw?: string[] | string | null) => {
   if (!tagsRaw) return null;
   let tagsArray: string[] = [];
   if (Array.isArray(tagsRaw)) {

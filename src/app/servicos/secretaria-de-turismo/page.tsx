@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Info, Video, ChevronLeft, ChevronRight, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Info,
+  Video,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+} from "lucide-react";
 import { secretariaTurismoApi } from "@/lib/api/secretaria-turismo";
 import type { SecretariaTurismo } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -28,7 +35,7 @@ function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
   if (total === 1) {
     const src = safeMediaUrl(urls[0]);
     return src ? (
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
+      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted">
         <Image src={src} alt={alt} fill className="object-cover" />
       </div>
     ) : null;
@@ -37,18 +44,52 @@ function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
   const src = safeMediaUrl(urls[idx]);
   return (
     <div className="select-none space-y-3">
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
-        {src && <Image src={src} alt={`${alt} ${idx + 1}`} fill className="object-cover transition-opacity duration-300" />}
-        <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70" aria-label="Anterior"><ChevronLeft size={20} /></button>
-        <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70" aria-label="Próxima"><ChevronRight size={20} /></button>
-        <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white backdrop-blur-sm">{idx + 1} / {total}</span>
+      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted">
+        {src && (
+          <Image
+            src={src}
+            alt={`${alt} ${idx + 1}`}
+            fill
+            className="object-cover transition-opacity duration-300"
+          />
+        )}
+        <button
+          onClick={prev}
+          className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+          aria-label="Anterior"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          onClick={next}
+          className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/70"
+          aria-label="Próxima"
+        >
+          <ChevronRight size={20} />
+        </button>
+        <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs text-white backdrop-blur-sm">
+          {idx + 1} / {total}
+        </span>
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {urls.map((url, i) => {
           const s = safeMediaUrl(url);
           return s ? (
-            <button key={i} onClick={() => setIdx(i)} className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${i === idx ? "border-primary opacity-100" : "border-transparent opacity-60 hover:opacity-100"}`}>
-              <Image src={s} alt={`Thumb ${i + 1}`} fill className="object-cover" />
+            <button
+              key={i}
+              onClick={() => setIdx(i)}
+              className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                i === idx
+                  ? "border-primary opacity-100"
+                  : "border-transparent opacity-60 hover:opacity-100"
+              }`}
+            >
+              <Image
+                src={s}
+                alt={`Thumb ${i + 1}`}
+                fill
+                className="object-cover"
+              />
             </button>
           ) : null;
         })}
@@ -70,9 +111,17 @@ function StickyVideo({ url }: { url: string }) {
       const wrapRect = wrap.getBoundingClientRect();
       const boxH = box.offsetHeight;
       const top = 96;
-      if (wrapRect.top > top) { box.style.position = "relative"; box.style.top = "0"; }
-      else if (wrapRect.bottom - boxH < top) { box.style.position = "absolute"; box.style.top = `${wrap.offsetHeight - boxH}px`; }
-      else { box.style.position = "fixed"; box.style.top = `${top}px`; box.style.width = `${wrap.offsetWidth}px`; }
+      if (wrapRect.top > top) {
+        box.style.position = "relative";
+        box.style.top = "0";
+      } else if (wrapRect.bottom - boxH < top) {
+        box.style.position = "absolute";
+        box.style.top = `${wrap.offsetHeight - boxH}px`;
+      } else {
+        box.style.position = "fixed";
+        box.style.top = `${top}px`;
+        box.style.width = `${wrap.offsetWidth}px`;
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -88,7 +137,12 @@ function StickyVideo({ url }: { url: string }) {
             <Video size={14} className="text-white/60" />
             <span className="text-xs text-white/60">Vídeo</span>
           </div>
-          <video src={src} controls className="w-full" style={{ maxHeight: "360px" }} />
+          <video
+            src={src}
+            controls
+            className="w-full"
+            style={{ maxHeight: "360px" }}
+          />
         </div>
       </div>
     </div>
@@ -99,6 +153,8 @@ export default function SecretariaTurismoPage() {
   const [secretaria, setSecretaria] = useState<SecretariaTurismo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 4;
 
   useEffect(() => {
     secretariaTurismoApi
@@ -108,19 +164,45 @@ export default function SecretariaTurismoPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Ordena pelo campo `ordem` para refletir a ordem definida no admin
+  const turistandos = [...(secretaria?.turistandos ?? [])].sort(
+    (a, b) => ((a as any).ordem ?? 0) - ((b as any).ordem ?? 0),
+  );
+
+  const totalPages = Math.ceil(turistandos.length / ITEMS_PER_PAGE);
+
+  const currentTuristandos = turistandos.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
   return (
     <main className="min-h-screen bg-background">
       <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
-        <span aria-hidden className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10">🏖️</span>
+        <span
+          aria-hidden
+          className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
+        >
+          🏖️
+        </span>
         <div className="container relative z-10 mx-auto">
-          <Link href="/servicos" className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground">
+          <Link
+            href="/servicos"
+            className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
+          >
             <ArrowLeft className="h-4 w-4" /> Voltar para Serviços
           </Link>
           <div className="mb-3 inline-flex items-center gap-2">
-            <span className="inline-block rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold text-primary-foreground">Prefeitura de Saquarema</span>
+            <span className="inline-block rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold text-primary-foreground">
+              Prefeitura de Saquarema
+            </span>
           </div>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">Secretaria de Turismo</h1>
-          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">Esporte, Lazer e Turismo — Prefeitura de Saquarema.</p>
+          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
+            Secretaria de Turismo
+          </h1>
+          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+            Esporte, Lazer e Turismo — Prefeitura de Saquarema.
+          </p>
         </div>
       </section>
 
@@ -143,21 +225,26 @@ export default function SecretariaTurismoPage() {
           {!loading && error && (
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
-              <p className="text-base font-medium">Não foi possível carregar as informações da Secretaria.</p>
-              <p className="mt-1 text-sm">Verifique sua conexão e tente novamente.</p>
+              <p className="text-base font-medium">
+                Não foi possível carregar as informações da Secretaria.
+              </p>
+              <p className="mt-1 text-sm">
+                Verifique sua conexão e tente novamente.
+              </p>
             </div>
           )}
 
           {!loading && !error && !secretaria && (
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <Info className="mb-4 h-10 w-10 text-muted-foreground/50" />
-              <p className="text-base font-medium">Informações da Secretaria de Turismo não disponíveis no momento.</p>
+              <p className="text-base font-medium">
+                Informações da Secretaria de Turismo não disponíveis no momento.
+              </p>
             </div>
           )}
 
           {!loading && !error && secretaria && (
             <div className="space-y-16">
-
               {/* Institucional */}
               <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_420px]">
                 <div className="space-y-8">
@@ -166,14 +253,18 @@ export default function SecretariaTurismoPage() {
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <Info size={20} />
                       </div>
-                      <h2 className="text-xl font-bold text-foreground">Sobre a Secretaria</h2>
+                      <h2 className="text-xl font-bold text-foreground">
+                        Sobre a Secretaria
+                      </h2>
                     </div>
                     <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
                       {secretaria.textoExplicativo}
                     </p>
                   </div>
                 </div>
-                {secretaria.videoUrl && <StickyVideo url={secretaria.videoUrl} />}
+                {secretaria.videoUrl && (
+                  <StickyVideo url={secretaria.videoUrl} />
+                )}
               </div>
 
               {/* Vídeo mobile */}
@@ -194,49 +285,68 @@ export default function SecretariaTurismoPage() {
                 </div>
               )}
 
-              {/* Turistando — chave correta: turistandos (plural) */}
-              {secretaria.turistandos && secretaria.turistandos.length > 0 && (
+              {/* Turistando / Projetos */}
+              {turistandos.length > 0 && (
                 <div className="space-y-10">
-                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Turistando</h2>
-                  {secretaria.turistandos.map((t, i) => (
-                    <div key={t.id} className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start">
-                      <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-                        <h3 className="text-lg font-semibold text-foreground mb-3">{t.titulo}</h3>
-                        <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{t.texto}</p>
-                      </div>
-                      {t.imagensUrl?.length > 0 && (
-                        <div className={i % 2 === 1 ? "lg:order-1" : ""}>
-                          <Carousel urls={t.imagensUrl} alt={t.titulo} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                  <h2 className="border-b border-border pb-3 text-2xl font-bold text-foreground">
+                    Projetos
+                  </h2>
 
-              {/* Projetos */}
-              {secretaria.projetos && secretaria.projetos.length > 0 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-foreground border-b border-border pb-3">Projetos &amp; Cursos</h2>
-                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {secretaria.projetos.map((p) => (
-                      <div key={p.id} className="rounded-2xl overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-                        {p.imagemUrl ? (
-                          <div className="relative w-full h-40">
-                            <Image src={safeMediaUrl(p.imagemUrl) ?? ""} alt={p.titulo} fill className="object-cover" />
-                          </div>
-                        ) : (
-                          <div className="w-full h-40 flex items-center justify-center bg-muted">
-                            <span className="text-4xl">📌</span>
+                  <div className="space-y-12">
+                    {currentTuristandos.map((t, i) => (
+                      <div
+                        key={t.id}
+                        className="grid grid-cols-1 items-start gap-8 lg:grid-cols-2"
+                      >
+                        <div className={i % 2 === 1 ? "lg:order-2" : ""}>
+                          <h3 className="mb-3 text-lg font-semibold text-foreground">
+                            {t.titulo}
+                          </h3>
+                          <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                            {t.texto}
+                          </p>
+                        </div>
+                        {t.imagensUrl?.length > 0 && (
+                          <div
+                            className={`relative aspect-video w-full overflow-hidden rounded-xl shadow-sm ${
+                              i % 2 === 1 ? "lg:order-1" : ""
+                            }`}
+                          >
+                            <Carousel urls={t.imagensUrl} alt={t.titulo} />
                           </div>
                         )}
-                        <div className="p-4">
-                          <h3 className="font-semibold text-foreground text-sm mb-1">{p.titulo}</h3>
-                          <p className="text-muted-foreground text-xs leading-relaxed line-clamp-3">{p.descricao}</p>
-                        </div>
                       </div>
                     ))}
                   </div>
+
+                  {/* Controles de paginação */}
+                  {totalPages > 1 && (
+                    <div className="mt-8 flex items-center justify-center gap-4 border-t border-border pt-8">
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                        disabled={currentPage === 1}
+                        className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        <ChevronLeft size={16} /> Anterior
+                      </button>
+
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Página {currentPage} de {totalPages}
+                      </span>
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                      >
+                        Próxima <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

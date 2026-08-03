@@ -49,17 +49,39 @@ type PendingItem =
   | { kind: "hospedagem"; data: Hospedagem }
   | { kind: "servico"; data: ServicoTurista };
 
-function StatCard({ label, count, icon, color }: {
+// ── StatCard com ícone + número + label + barra decorativa na base ──────────
+function StatCard({ label, count, icon, color, accent }: {
   label: string; count: number | string;
-  icon: React.ReactNode; color: string;
+  icon: React.ReactNode; color: string; accent?: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-lg border border-border bg-card p-5 shadow-sm">
-      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${color}`}>{icon}</div>
-      <div>
-        <p className="text-2xl font-bold text-foreground">{count}</p>
-        <p className="text-sm text-muted-foreground">{label}</p>
+    <div
+      className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+    >
+      {/* brilho de canto superior direito */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-10 transition-opacity group-hover:opacity-20"
+        style={{ background: accent ?? "hsl(var(--primary))" }}
+      />
+      <div className="flex items-start justify-between">
+        <div
+          className={`flex h-11 w-11 items-center justify-center rounded-xl ${color} shadow-sm`}
+          style={{ boxShadow: `0 2px 8px ${accent ?? "hsl(var(--primary))" }33` }}
+        >
+          {icon}
+        </div>
+        <p className="text-2xl font-bold tabular-nums text-foreground">{count}</p>
       </div>
+      <p className="mt-3 text-sm font-medium text-muted-foreground">{label}</p>
+      {/* barra decorativa na base */}
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 h-0.5 w-full opacity-60"
+        style={{
+          background: `linear-gradient(90deg, ${accent ?? "hsl(var(--primary))"} 0%, transparent 100%)`,
+        }}
+      />
     </div>
   );
 }
@@ -135,11 +157,19 @@ function PendingDetailModal({
   const categoryLabel = item.kind === "gastronomia" ? "Gastronomia" : item.kind === "hospedagem" ? "Hospedagem" : "Serviço Turístico";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl shadow-2xl"
+      <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl shadow-2xl"
         style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-        <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+        {/* faixa de cor no topo do modal */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-1 rounded-t-2xl"
+          style={{
+            background: "linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%)",
+          }}
+        />
+        <div className="flex items-center gap-3 px-6 pt-5 pb-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
           <div className="relative h-10 w-10 flex-shrink-0">
             {logoResolved ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -154,7 +184,7 @@ function PendingDetailModal({
             <h2 className="font-display truncate text-lg font-bold uppercase tracking-widest text-foreground">{nome}</h2>
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">{categoryLabel} · PENDENTE</span>
           </div>
-          <button onClick={onClose} className="ml-2 rounded p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
+          <button onClick={onClose} className="ml-2 rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"><X size={18} /></button>
         </div>
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
           <OwnerCard usuarioId={data.usuarioId} embedded={data.usuario} />
@@ -204,13 +234,13 @@ function PendingDetailModal({
           )}
         </div>
         <div className="flex items-center justify-end gap-2 px-6 py-4" style={{ borderTop: "1px solid hsl(var(--border))" }}>
-          <button onClick={onClose} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">Cancelar</button>
+          <button onClick={onClose} className="rounded-lg border border-border px-4 py-2 text-sm transition hover:bg-muted">Cancelar</button>
           <button onClick={onReject} disabled={actionLoading}
-            className="flex items-center gap-1.5 rounded-md bg-red-100 px-4 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-200 disabled:opacity-50">
+            className="flex items-center gap-1.5 rounded-lg bg-red-100 px-4 py-2 text-sm font-semibold text-red-800 transition hover:bg-red-200 disabled:opacity-50">
             <XCircle size={15} /> Recusar
           </button>
           <button onClick={onApprove} disabled={actionLoading}
-            className="flex items-center gap-1.5 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50">
+            className="flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50">
             <CheckCircle2 size={15} /> Aprovar
           </button>
         </div>
@@ -224,8 +254,10 @@ function PendingCard({ logoRaw, nome, sub, onView }: {
 }) {
   const logo = resolveUrl(logoRaw);
   return (
-    <div className="flex items-center gap-3 rounded-lg p-3"
-      style={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}>
+    <div
+      className="group flex items-center gap-3 rounded-xl p-3 transition-colors"
+      style={{ backgroundColor: "hsl(var(--background))", border: "1px solid hsl(var(--border))" }}
+    >
       <div className="relative h-9 w-9 flex-shrink-0">
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -239,8 +271,10 @@ function PendingCard({ logoRaw, nome, sub, onView }: {
         <p className="truncate text-sm font-semibold text-foreground">{nome}</p>
         <p className="truncate text-xs text-muted-foreground">{sub}</p>
       </div>
-      <button onClick={onView}
-        className="flex flex-shrink-0 items-center gap-1 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted">
+      <button
+        onClick={onView}
+        className="flex flex-shrink-0 items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted hover:border-primary/30"
+      >
         <Eye size={13} /> Ver mais
       </button>
     </div>
@@ -251,14 +285,34 @@ function PendingSection({ icon, title, count, children }: {
   icon: React.ReactNode; title: string; count: number; children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl p-4" style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
+    <div
+      className="rounded-xl p-4"
+      style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
+    >
+      {/* cabeçalho da seção com linha decorativa */}
       <div className="mb-3 flex items-center gap-2">
-        <span className="text-primary">{icon}</span>
+        <span
+          className="flex h-7 w-7 items-center justify-center rounded-lg"
+          style={{
+            background: "hsl(var(--primary) / 0.1)",
+            color: "hsl(var(--primary))",
+          }}
+        >
+          {icon}
+        </span>
         <h3 className="font-display text-sm font-bold uppercase tracking-widest text-foreground">{title}</h3>
         <span className="ml-auto rounded-full px-2 py-0.5 text-xs font-semibold text-amber-800" style={{ backgroundColor: "#fef3c7" }}>
           {count} pendente{count !== 1 ? "s" : ""}
         </span>
       </div>
+      {/* separador decorativo */}
+      <div
+        aria-hidden="true"
+        className="mb-3 h-px w-full"
+        style={{
+          background: "linear-gradient(90deg, hsl(var(--primary) / 0.3) 0%, transparent 100%)",
+        }}
+      />
       {count === 0 ? <p className="text-sm italic text-muted-foreground">Nenhuma solicitação pendente.</p>
         : <div className="space-y-2">{children}</div>}
     </div>
@@ -329,26 +383,43 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <h1 className="font-display mb-2 text-3xl font-bold uppercase tracking-widest text-foreground">Painel Admin</h1>
+      {/* Header com divisor decorativo */}
+      <div className="relative pb-6">
+        <h1 className="font-display mb-1 text-3xl font-bold uppercase tracking-widest text-foreground">
+          Painel Admin
+        </h1>
         <p className="text-muted-foreground">Visão geral dos dados cadastrados no sistema.</p>
+        <div
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 h-px w-24"
+          style={{
+            background: "linear-gradient(90deg, hsl(var(--primary)) 0%, transparent 100%)",
+          }}
+        />
       </div>
 
+      {/* Stats grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Usuários" count={stats.users} icon={<Users className="h-5 w-5 text-white" />} color="bg-primary" />
-        <StatCard label="Atividades" count={stats.atividades} icon={<MapPin className="h-5 w-5 text-white" />} color="bg-restinga" />
-        <StatCard label="Eventos" count={stats.eventos} icon={<Calendar className="h-5 w-5 text-white" />} color="bg-accent" />
-        <StatCard label="Gastronomia" count={stats.gastronomia} icon={<Utensils className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="Hospedagem" count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" />
-        <StatCard label="Serviços" count={stats.servicos} icon={<Wrench className="h-5 w-5 text-white" />} color="bg-restinga" />
-        <StatCard label="Planos de Viagem" count={stats.planos} icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" />
-        <StatCard label="CAT" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" />
-        <StatCard label="Sec. de Turismo" count={stats.secretaria} icon={<Building2 className="h-5 w-5 text-white" />} color="bg-primary" />
+        <StatCard label="Usuários" count={stats.users} icon={<Users className="h-5 w-5 text-white" />} color="bg-primary" accent="hsl(var(--primary))" />
+        <StatCard label="Atividades" count={stats.atividades} icon={<MapPin className="h-5 w-5 text-white" />} color="bg-restinga" accent="hsl(var(--restinga))" />
+        <StatCard label="Eventos" count={stats.eventos} icon={<Calendar className="h-5 w-5 text-white" />} color="bg-accent" accent="hsl(var(--accent))" />
+        <StatCard label="Gastronomia" count={stats.gastronomia} icon={<Utensils className="h-5 w-5 text-white" />} color="bg-secondary" accent="hsl(var(--secondary))" />
+        <StatCard label="Hospedagem" count={stats.hospedagem} icon={<BedDouble className="h-5 w-5 text-white" />} color="bg-primary" accent="hsl(var(--primary))" />
+        <StatCard label="Serviços" count={stats.servicos} icon={<Wrench className="h-5 w-5 text-white" />} color="bg-restinga" accent="hsl(var(--restinga))" />
+        <StatCard label="Planos de Viagem" count={stats.planos} icon={<BookOpen className="h-5 w-5 text-white" />} color="bg-secondary" accent="hsl(var(--secondary))" />
+        <StatCard label="CAT" count={stats.cats} icon={<Tag className="h-5 w-5 text-white" />} color="bg-accent" accent="hsl(var(--accent))" />
+        <StatCard label="Sec. de Turismo" count={stats.secretaria} icon={<Building2 className="h-5 w-5 text-white" />} color="bg-primary" accent="hsl(var(--primary))" />
       </div>
 
+      {/* Pendentes */}
       <div>
         <div className="mb-4 flex items-center gap-3">
-          <Clock size={20} className="text-amber-500" />
+          <span
+            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ background: "#fef3c7", color: "#92400e" }}
+          >
+            <Clock size={18} />
+          </span>
           <h2 className="font-display text-xl font-bold uppercase tracking-widest text-foreground">Solicitações Pendentes</h2>
           {!pendLoading && (
             <span className="ml-1 rounded-full px-2.5 py-0.5 text-sm font-bold text-amber-800" style={{ backgroundColor: "#fef3c7" }}>
@@ -368,13 +439,13 @@ export default function AdminDashboardPage() {
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-3">
-            <PendingSection icon={<Utensils size={16} />} title="Gastronomia" count={pendGast.length}>
+            <PendingSection icon={<Utensils size={14} />} title="Gastronomia" count={pendGast.length}>
               {pendGast.map((g) => (<PendingCard key={g.id} logoRaw={g.logoUrl} nome={g.nome} sub={g.endereco} onView={() => setActiveItem({ kind: "gastronomia", data: g })} />))}
             </PendingSection>
-            <PendingSection icon={<BedDouble size={16} />} title="Hospedagem" count={pendHosp.length}>
+            <PendingSection icon={<BedDouble size={14} />} title="Hospedagem" count={pendHosp.length}>
               {pendHosp.map((h) => (<PendingCard key={h.id} logoRaw={h.logoUrl} nome={h.nome} sub={h.endereco} onView={() => setActiveItem({ kind: "hospedagem", data: h })} />))}
             </PendingSection>
-            <PendingSection icon={<ConciergeBell size={16} />} title="Serviços Turísticos" count={pendServ.length}>
+            <PendingSection icon={<ConciergeBell size={14} />} title="Serviços Turísticos" count={pendServ.length}>
               {pendServ.map((s) => (<PendingCard key={s.id} logoRaw={s.logoUrl} nome={s.nome} sub={s.tipo.replaceAll("_", " ")} onView={() => setActiveItem({ kind: "servico", data: s })} />))}
             </PendingSection>
           </div>

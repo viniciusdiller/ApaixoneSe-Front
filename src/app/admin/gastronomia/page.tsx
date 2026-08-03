@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { confirmAction, notify } from "@/lib/feedback";
+
+import { useEffect, useRef, useState, useMemo } from "react";
 import { gastronomiaApi, usersApi } from "@/lib/api";
 import type { Gastronomia, CreateGastronomiaDto, User } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
@@ -8,6 +10,7 @@ import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import {
   Plus,
@@ -19,6 +22,8 @@ import {
   CalendarClock,
   CheckCircle2,
   Clock,
+  Search,
+  X,
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
@@ -28,6 +33,8 @@ import {
   maskPhone,
   numericInputProps,
 } from "@/lib/masks";
+
+const PAGE_SIZE = 10;
 
 // ─── helpers de validade ───────────────────────────────────────────────────
 type ValidadeStatus = "ok" | "alerta" | "vencido" | "sem-data";
@@ -119,6 +126,8 @@ export default function AdminGastronomiaPage() {
   const [items, setItems] = useState<Gastronomia[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{
     open: boolean;
     editing: Gastronomia | null;
@@ -141,6 +150,30 @@ export default function AdminGastronomiaPage() {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  // ── filtro + paginação ──
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (i) =>
+        i.nome.toLowerCase().includes(q) ||
+        i.endereco.toLowerCase().includes(q) ||
+        (i.especialidade ?? "").toLowerCase().includes(q),
+    );
+  }, [items, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
 
   const openCreate = () => {
     setForm(empty);
@@ -187,14 +220,11 @@ export default function AdminGastronomiaPage() {
       fd.append("responsavelNome", form.responsavelNome);
       fd.append("responsavelCpf", form.responsavelCpf);
       if (form.instagram) fd.append("instagram", form.instagram);
-      // Nota: validade é enviado separadamente via updateStatus()
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
       if (modal.editing) {
-        // Atualizar dados principais via FormData
         await gastronomiaApi.update(modal.editing.id, fd);
-        // Atualizar validade separadamente via JSON (se preenchida)
         if (form.validade) {
           await gastronomiaApi.updateStatus(modal.editing.id, {
             validade: form.validade,
@@ -218,7 +248,7 @@ export default function AdminGastronomiaPage() {
   };
 
   const handleDelete = async (item: Gastronomia) => {
-    if (!confirm(`Excluir "${item.nome}"?`)) return;
+    if (!(await confirmAction(`Excluir "${item.nome}"?`))) return;
     await gastronomiaApi.delete(item.id);
     load();
   };
@@ -259,7 +289,10 @@ export default function AdminGastronomiaPage() {
             Gastronomia
           </h1>
           <p className="text-sm text-muted-foreground">
-            {items.length} registros
+            {filtered.length === items.length
+              ? `${items.length} registros`
+              : `${filtered.length} de ${items.length} registros`}
+            {totalPages > 1 && ` — página ${page} de ${totalPages}`}
           </p>
         </div>
         <button
@@ -270,64 +303,94 @@ export default function AdminGastronomiaPage() {
         </button>
       </div>
 
+      {/* barra de pesquisa */}
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Pesquisar por nome, endereço ou especialidade…"
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {search && (
+          <button
+            type="button"
+            onClick={() => handleSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            aria-label="Limpar pesquisa"
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
-        <AdminTable
-          data={items}
-          columns={[
-            {
-              key: "logoUrl",
-              label: "Logo",
-              render: (_val, row) => (
-                <MediaPreview url={row.logoUrl} label="Logo" />
-              ),
-            },
-            { key: "nome", label: "Nome" },
-            { key: "endereco", label: "Endereço" },
-            {
-              key: "status",
-              label: "Status",
-              render: (_val, row) => (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
+        <>
+          <AdminTable
+            data={paged}
+            columns={[
+              {
+                key: "logoUrl",
+                label: "Logo",
+                render: (_val, row) => (
+                  <MediaPreview url={row.logoUrl} label="Logo" />
+                ),
+              },
+              { key: "nome", label: "Nome" },
+              { key: "endereco", label: "Endereço" },
+              {
+                key: "status",
+                label: "Status",
+                render: (_val, row) => (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}
+                  >
+                    {row.status}
+                  </span>
+                ),
+              },
+              {
+                key: "validade",
+                label: "Validade Comprovante Cadastur",
+                render: (_val, row) => (
+                  <ValidityBadge
+                    validade={
+                      (row as Gastronomia & { validade?: string }).validade
+                    }
+                  />
+                ),
+              },
+            ]}
+            extraActions={(row) => (
+              <>
+                <button
+                  onClick={() => setViewing(row)}
+                  title="Ver detalhes"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
                 >
-                  {row.status}
-                </span>
-              ),
-            },
-            {
-              key: "validade",
-              label: "Validade Comprovante",
-              render: (_val, row) => (
-                <ValidityBadge
-                  validade={
-                    (row as Gastronomia & { validade?: string }).validade
-                  }
-                />
-              ),
-            },
-          ]}
-          extraActions={(row) => (
-            <>
-              <button
-                onClick={() => setViewing(row)}
-                title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Eye size={16} />
-              </button>
-              <button
-                onClick={() => openEdit(row)}
-                title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
-              >
-                <Pencil size={16} />
-              </button>
-            </>
-          )}
-          onDelete={handleDelete}
-        />
+                  <Eye size={16} />
+                </button>
+                <button
+                  onClick={() => openEdit(row)}
+                  title="Editar"
+                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                >
+                  <Pencil size={16} />
+                </button>
+              </>
+            )}
+            onDelete={handleDelete}
+          />
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
       )}
 
       {/* ── Modal Visualização ── */}
@@ -372,10 +435,9 @@ export default function AdminGastronomiaPage() {
               value={ownerName(viewing.usuarioId)}
             />
 
-            {/* Bloco Comprovante + Validade */}
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <FileText size={13} /> Comprovante
+                <FileText size={13} /> Comprovante Cadastur
               </p>
               <div className="flex flex-wrap items-center gap-3">
                 <ComprovanteBotao url={viewing.documentoPdfUrl} />
@@ -476,13 +538,11 @@ export default function AdminGastronomiaPage() {
             }}
           />
 
-          {/* Bloco Comprovante */}
           <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <FileText size={13} /> Comprovante
+              <FileText size={13} /> Comprovante Cadastur
             </p>
 
-            {/* Upload */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">
                 Arquivo
@@ -534,10 +594,9 @@ export default function AdminGastronomiaPage() {
               />
             </div>
 
-            {/* Data de validade */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <CalendarClock size={13} /> Data de validade do comprovante
+                <CalendarClock size={13} /> Data de validade do comprovante cadastur
               </label>
               <input
                 type="date"
@@ -553,7 +612,6 @@ export default function AdminGastronomiaPage() {
             </div>
           </div>
 
-          {/* Usuário Dono */}
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Usuário Dono *

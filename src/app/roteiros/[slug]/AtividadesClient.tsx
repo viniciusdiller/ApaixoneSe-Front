@@ -15,6 +15,7 @@ import type { RoteiroMeta } from "@/lib/roteiros";
 import { atividadesApi } from "@/lib/api";
 import type { Atividade } from "@/lib/api";
 import { useVisitas } from "@/hooks/useVisitas";
+import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 function AtividadeSkeleton() {
   return (
@@ -153,16 +154,29 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
                       </div>
                     )}
 
-                    <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
-                      {atividade.titulo}
-                    </h3>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
+                          {atividade.titulo}
+                        </h3>
 
-                    {atividade.local && (
-                      <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                        <span>{atividade.local}</span>
+                        {atividade.local && (
+                          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />
+                            <span>{atividade.local}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
+
+                      {atividade.logoUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={safeMediaUrl(atividade.logoUrl)}
+                          alt={atividade.titulo}
+                          className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
+                        />
+                      )}
+                    </div>
 
                     <p className="mt-3 text-sm text-muted-foreground">
                       {atividade.descricao}

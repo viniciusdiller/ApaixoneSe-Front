@@ -1,5 +1,7 @@
 "use client";
 
+import { confirmAction, notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { planoViagemApi, usersApi } from "@/lib/api";
 import type { PlanoViagem, CreatePlanoViagemDto, User } from "@/lib/api";
@@ -90,7 +92,7 @@ export default function AdminPlanosPage() {
   };
 
   const handleDelete = async (item: PlanoViagem) => {
-    if (!confirm(`Excluir plano "${item.titulo}"?`)) return;
+    if (!(await confirmAction(`Excluir plano "${item.titulo}"?`))) return;
     await planoViagemApi.remove(item.id);
     load();
   };

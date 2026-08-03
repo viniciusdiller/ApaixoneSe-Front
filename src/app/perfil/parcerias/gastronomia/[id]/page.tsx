@@ -1,5 +1,7 @@
 "use client";
 
+import { notify } from "@/lib/feedback";
+
 import { useEffect, useState } from "react";
 import { gastronomiaApi } from "@/lib/api";
 import { FormularioGastronomia } from "@/components/perfil/forms/FormularioGastronomia"; 
@@ -22,7 +24,7 @@ export default function PaginaGastronomia({ params }: { params: { id?: string } 
           setLoading(false);
         })
         .catch(() => {
-          alert("Erro ao buscar estabelecimento. Verifique se o ID está correto.");
+          notify.error("Erro ao buscar estabelecimento. Verifique se o ID está correto.");
           setLoading(false);
         });
     }
