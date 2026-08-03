@@ -27,7 +27,13 @@ export function GastronomiaListPage() {
   const [selecionado, setSelecionado] = useState<Gastronomia | null>(null);
   const [clickedCard, setClickedCard] = useState<string | null>(null);
 
+  const [isMounted, setIsMounted] = useState(false);
+
   const { gastronomiasVisitadas, isLogado, toggleGastronomia } = useVisitas();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     gastronomiaApi
@@ -92,7 +98,7 @@ export function GastronomiaListPage() {
           <h2 className="font-display text-4xl font-bold uppercase text-foreground">
             Restaurantes
           </h2>
-          {isLogado && (
+          {isMounted && isLogado && (
             <p className="text-sm text-muted-foreground">
               ✓ Marque os restaurantes que você já visitou!
             </p>
@@ -134,7 +140,9 @@ export function GastronomiaListPage() {
                 index={i}
                 onVerDetalhes={setSelecionado}
                 visitado={gastronomiasVisitadas.has(restaurante.id)}
-                onToggleCheckin={isLogado ? toggleGastronomia : undefined}
+                onToggleCheckin={
+                  isMounted && isLogado ? toggleGastronomia : undefined
+                }
               />
             ))
           )}
@@ -195,7 +203,7 @@ export function GastronomiaListPage() {
                     {selecionado.nome}
                   </h3>
 
-                  {isLogado && (
+                  {isMounted && isLogado && (
                     <button
                       onClick={() => toggleGastronomia(selecionado.id)}
                       className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 ${
