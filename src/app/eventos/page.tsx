@@ -101,7 +101,7 @@ export default function EventosPage() {
     <div className="min-h-screen bg-background overflow-hidden">
       <section
         className="relative bg-cover bg-center px-4 pb-12 pt-32"
-        style={{ backgroundImage: "url('/images/hero-saquarema.jpeg')" }}
+        style={{ backgroundImage: "url('/images/header/eventos.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <motion.div
@@ -139,7 +139,12 @@ export default function EventosPage() {
               variants={itemVariants}
               animate={
                 clickedCard === slug
-                  ? { scale: 3, opacity: 0, zIndex: 50, transition: { duration: 0.5, ease: "easeInOut" } }
+                  ? {
+                      scale: 3,
+                      opacity: 0,
+                      zIndex: 50,
+                      transition: { duration: 0.5, ease: "easeInOut" },
+                    }
                   : clickedCard
                     ? { opacity: 0, scale: 0.9, transition: { duration: 0.3 } }
                     : "show"

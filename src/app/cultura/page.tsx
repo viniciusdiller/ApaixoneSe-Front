@@ -29,7 +29,7 @@ export default function CulturaPage() {
     <div className="min-h-screen bg-background">
       <section
         className="relative bg-cover bg-center px-4 pb-12 pt-32"
-        style={{ backgroundImage: "url('/images/hero-saquarema.jpeg')" }}
+        style={{ backgroundImage: "url('/images/header/cultura.jpeg')" }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <motion.div
@@ -200,4 +200,7 @@ export default function CulturaPage() {
             </motion.div>
           </div>
         )}
-      </AnimateP
+      </AnimatePresence>
+    </div>
+  );
+}
