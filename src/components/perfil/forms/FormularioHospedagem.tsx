@@ -204,7 +204,6 @@ export function FormularioHospedagem({
     try {
       await hospedagemApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
-      toast.success("Hospedagem excuida com Sucesso")
       router.push("/perfil");
     } catch (err) {
       notify.error("Erro ao excluir a hospedagem.");

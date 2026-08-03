@@ -224,7 +224,6 @@ export function FormularioServico({
     setIsDeleting(true);
     try {
       await servicoTuristaApi.delete(estabelecimentoId);
-      toast.success("Serviço excluido com sucesso!")
       setShowDeleteModal(false);
       router.push("/perfil");
     } catch (err) {
