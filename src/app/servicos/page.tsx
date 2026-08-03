@@ -103,7 +103,7 @@ export default function ServicosPage() {
       {/* Hero Refatorado com Imagem e Overlay */}
       <section
         className="relative bg-cover bg-center px-4 pb-12 pt-32"
-        style={{ backgroundImage: "url('/images/header/cat.jpg')" }}
+        style={{ backgroundImage: "url('/images/header/servicos.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/50" />
 
@@ -209,42 +209,53 @@ export default function ServicosPage() {
           {/* CAT — direita */}
           <div
             onClick={() => router.push("/servicos/cat")}
-            className="group relative flex flex-col items-center p-8 rounded-2xl border border-dashed border-border bg-secondary/20 text-center cursor-pointer hover:shadow-md hover:border-primary/50 transition-all"
+            className="group relative flex flex-col items-center justify-center p-8 rounded-2xl cursor-pointer overflow-hidden transition-all hover:shadow-xl border border-border/50"
           >
-            <div className="p-4 rounded-full bg-secondary text-secondary-foreground mb-4 group-hover:scale-110 transition-transform">
-              <Info size={32} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2 text-foreground">CAT</h2>
-            <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full mb-4">
-              Ponto de Informação
-            </span>
+            <div
+              className="absolute inset-0 bg-center bg-cover transition-transform duration-500 group-hover:scale-110"
+              style={{ backgroundImage: "url('/images/header/cat.png')" }}
+            />
 
-            {catLoading && (
-              <div className="w-full max-w-md space-y-2 animate-pulse">
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
+            <div className="absolute inset-0 bg-black/60 transition-colors duration-300 group-hover:bg-black/70" />
+
+            <div className="relative z-10 flex flex-col items-center transition-transform duration-300 group-hover:-translate-y-1">
+              <div className="p-4 rounded-full bg-white/20 text-white mb-4 backdrop-blur-sm">
+                <Info size={32} />
               </div>
-            )}
 
-            {!catLoading && cat && (
-              <p className="text-muted-foreground text-sm max-w-xl">
-                {truncateWords(cat.texto, 10)}
-              </p>
-            )}
+              <h2 className="text-2xl font-bold mb-2 text-white">CAT</h2>
 
-            {!catLoading && !cat && (
-              <p className="text-muted-foreground text-sm">
-                Centro de Atendimento ao Turista. Venha nos visitar
-                presencialmente para mapas, dicas e suporte local gratuito.
-              </p>
-            )}
+              <span className="inline-block px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full mb-4 backdrop-blur-sm">
+                Ponto de Informação
+              </span>
 
-            <div className="mt-4 flex items-center text-primary font-medium text-sm">
-              Saiba mais
-              <ArrowRight
-                size={16}
-                className="ml-2 group-hover:translate-x-1 transition-transform"
-              />
+              {catLoading && (
+                <div className="w-full max-w-md space-y-2 animate-pulse">
+                  <div className="h-3 w-full rounded bg-white/30" />
+                  <div className="h-3 w-5/6 rounded bg-white/30" />
+                </div>
+              )}
+
+              {!catLoading && cat && (
+                <p className="text-white/80 text-sm max-w-xl text-center">
+                  {truncateWords(cat.texto, 10)}
+                </p>
+              )}
+
+              {!catLoading && !cat && (
+                <p className="text-white/80 text-sm text-center">
+                  Centro de Atendimento ao Turista. Venha nos visitar
+                  presencialmente para mapas, dicas e suporte local gratuito.
+                </p>
+              )}
+
+              <div className="mt-4 flex items-center text-secondary font-semibold text-sm">
+                Saiba mais
+                <ArrowRight
+                  size={16}
+                  className="ml-2 transition-transform group-hover:translate-x-1"
+                />
+              </div>
             </div>
           </div>
         </div>
