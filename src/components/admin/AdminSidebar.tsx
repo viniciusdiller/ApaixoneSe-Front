@@ -26,18 +26,29 @@ import { useAuth } from "@/context/AuthContext";
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
-  { label: "Fique Por Dentro", href: "/admin/fique-por-dentro", icon: GalleryHorizontal },
+  {
+    label: "Fique Por Dentro",
+    href: "/admin/fique-por-dentro",
+    icon: GalleryHorizontal,
+  },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
   { label: "Praias e Lagoas", href: "/admin/praias-lagoas", icon: Waves },
   { label: "Cultura", href: "/admin/cultura", icon: Palette },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
-  { label: "Evento Principal", href: "/admin/evento-principal", icon: Calendar },
+  {
+    label: "Evento Principal",
+    href: "/admin/evento-principal",
+    icon: Calendar,
+  },
   { label: "Gastronomia", href: "/admin/gastronomia", icon: Utensils },
   { label: "Hospedagem", href: "/admin/hospedagem", icon: BedDouble },
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },
   { label: "Casa de Câmbio", href: "/admin/casa-de-cambio", icon: Banknote },
-  { label: "Secretaria de Turismo", href: "/admin/secretaria-de-turismo", icon: Landmark },
-  { label: "Planos de Viagem", href: "/admin/planos-de-viagem", icon: BookOpen },
+  {
+    label: "Secretaria de Turismo",
+    href: "/admin/secretaria-de-turismo",
+    icon: Landmark,
+  },
   { label: "CAT", href: "/admin/cat", icon: Tag },
 ];
 
@@ -86,8 +97,10 @@ export function AdminSidebar() {
         <div
           className="flex h-9 w-9 items-center justify-center rounded-xl"
           style={{
-            background: "linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.08) 100%)",
-            boxShadow: "0 0 0 1px hsl(var(--primary) / 0.25), 0 2px 8px hsl(var(--primary) / 0.15)",
+            background:
+              "linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.08) 100%)",
+            boxShadow:
+              "0 0 0 1px hsl(var(--primary) / 0.25), 0 2px 8px hsl(var(--primary) / 0.15)",
           }}
         >
           <Waves className="h-5 w-5 text-primary" />
@@ -135,7 +148,9 @@ export function AdminSidebar() {
                     <span
                       aria-hidden="true"
                       className="absolute -left-3 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full"
-                      style={{ background: "hsl(var(--primary-foreground) / 0.5)" }}
+                      style={{
+                        background: "hsl(var(--primary-foreground) / 0.5)",
+                      }}
                     />
                   )}
                   <Icon className="h-4 w-4 flex-shrink-0" />
@@ -156,7 +171,10 @@ export function AdminSidebar() {
           onClick={handleLogout}
           className="group flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium text-red-500 transition-all hover:bg-red-50 dark:hover:bg-red-950/30"
         >
-          <LogOut size={16} className="transition-transform group-hover:-translate-x-0.5" />
+          <LogOut
+            size={16}
+            className="transition-transform group-hover:-translate-x-0.5"
+          />
           Sair
         </button>
       </div>

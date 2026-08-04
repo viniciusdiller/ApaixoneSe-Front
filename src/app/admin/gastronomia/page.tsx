@@ -269,11 +269,6 @@ export default function AdminGastronomiaPage() {
   const setField = (k: keyof typeof empty, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
 
-  const ownerName = (id: string) => {
-    const u = users.find((u) => u.id === id);
-    return u ? `${u.nome} (@${u.usuario})` : id;
-  };
-
   const comprovanteExistente =
     (modal.editing as (Gastronomia & { documentoPdfUrl?: string }) | null)
       ?.documentoPdfUrl ?? null;
@@ -305,7 +300,10 @@ export default function AdminGastronomiaPage() {
 
       {/* barra de pesquisa */}
       <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+        />
         <input
           type="search"
           placeholder="Pesquisar por nome, endereço ou especialidade…"
@@ -430,10 +428,6 @@ export default function AdminGastronomiaPage() {
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Especialidade" value={viewing.especialidade} />
-            <ViewRow
-              label="Usuário Dono"
-              value={ownerName(viewing.usuarioId)}
-            />
 
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -596,7 +590,8 @@ export default function AdminGastronomiaPage() {
 
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <CalendarClock size={13} /> Data de validade do comprovante cadastur
+                <CalendarClock size={13} /> Data de validade do comprovante
+                cadastur
               </label>
               <input
                 type="date"
@@ -610,25 +605,6 @@ export default function AdminGastronomiaPage() {
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Usuário Dono *
-            </label>
-            <select
-              value={form.usuarioId}
-              onChange={set("usuarioId")}
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Selecione um usuário</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nome} (@{u.usuario})
-                </option>
-              ))}
-            </select>
           </div>
 
           {error && (
