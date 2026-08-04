@@ -325,10 +325,6 @@ export default function AdminServicosPage() {
     TIPOS_SERVICO.find((t) => t.value === v)?.label ?? v;
   const roteiroLabel = (v?: TipoRoteiro | null) =>
     v ? (ROTEIROS.find((r) => r.value === v)?.label ?? v) : "—";
-  const ownerName = (id: string) => {
-    const u = users.find((u) => u.id === id);
-    return u ? `${u.nome} (@${u.usuario})` : id;
-  };
 
   const requerComprovante = REQUER_COMPROVANTE.includes(
     form.tipo as TipoServicoTurista,
@@ -518,10 +514,7 @@ export default function AdminServicosPage() {
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Descrição" value={viewing.descricao} />
-            <ViewRow
-              label="Usuário Prestador"
-              value={ownerName(viewing.usuarioId)}
-            />
+
             {REQUER_COMPROVANTE.includes(viewing.tipo) && (
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -788,24 +781,7 @@ export default function AdminServicosPage() {
               </div>
             </div>
           )}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Usuário Prestador *
-            </label>
-            <select
-              value={form.usuarioId}
-              onChange={set("usuarioId")}
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Selecione um usuário</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.nome} (@{u.usuario})
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="space-y-1"></div>
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}
