@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  Eye,
-  EyeOff,
-  AlertCircle,
-  Loader2,
-  Waves,
-} from "lucide-react";
+import { Eye, EyeOff, AlertCircle, Loader2, Waves } from "lucide-react";
 import Image from "next/image";
 import { usersApi } from "@/lib/api/users";
 import type { RegisterUserDto } from "@/lib/api/types";
@@ -48,7 +42,9 @@ export default function RegisterPage() {
       await usersApi.register(formData);
       toast.success("Conta criada! Verifique seu e-mail para ativar a conta.");
       // Redireciona direto para a página de digitar o código OTP
-      router.push(`/verificar-email?email=${encodeURIComponent(formData.email)}`);
+      router.push(
+        `/verificar-email?email=${encodeURIComponent(formData.email)}`,
+      );
     } catch (err: unknown) {
       let msg = "Erro ao criar conta. Tente novamente.";
       try {
@@ -107,7 +103,7 @@ export default function RegisterPage() {
               className="text-4xl font-display font-bold uppercase tracking-widest"
               style={{ color: "hsl(26.5 87.3% 75%)" }}
             >
-              ApaixoneSe
+              Apaixone-Se
             </p>
             <p
               className="text-sm font-sans leading-relaxed max-w-xs"

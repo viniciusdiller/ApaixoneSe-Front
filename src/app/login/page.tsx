@@ -35,7 +35,8 @@ function LoginPageContent() {
     try {
       await login({ identificador, senha });
 
-      const raw = typeof window !== "undefined" ? localStorage.getItem("app_user") : null;
+      const raw =
+        typeof window !== "undefined" ? localStorage.getItem("app_user") : null;
       const user = raw ? JSON.parse(raw) : null;
 
       if (user?.perfil === "ADMIN") {
@@ -103,20 +104,27 @@ function LoginPageContent() {
               className="text-4xl font-display font-bold uppercase tracking-widest"
               style={{ color: "hsl(26.5 87.3% 75%)" }}
             >
-              ApaixoneSe
+              Apaixone-Se
             </p>
             <p
               className="text-sm font-sans leading-relaxed max-w-xs"
               style={{ color: "hsl(179.5 60% 85%)" }}
             >
-              Descubra experiências únicas, roteiros inesquecíveis e a beleza das praias e lagoas de Saquarema.
+              Descubra experiências únicas, roteiros inesquecíveis e a beleza
+              das praias e lagoas de Saquarema.
             </p>
           </div>
 
           {/* Ondas decorativas */}
-          <div className="flex items-center gap-3 mt-2" style={{ color: "hsl(179.5 60% 75%)" }}>
+          <div
+            className="flex items-center gap-3 mt-2"
+            style={{ color: "hsl(179.5 60% 75%)" }}
+          >
             <Waves className="h-5 w-5" />
-            <span className="font-handwritten text-lg" style={{ color: "hsl(26.5 87.3% 78%)" }}>
+            <span
+              className="font-handwritten text-lg"
+              style={{ color: "hsl(26.5 87.3% 78%)" }}
+            >
               Saquarema
             </span>
             <Waves className="h-5 w-5" />
@@ -171,7 +179,10 @@ function LoginPageContent() {
             className="space-y-5 rounded-2xl border border-border bg-card p-8 shadow-sm"
           >
             <div className="space-y-1.5">
-              <label htmlFor="identificador" className="text-sm font-semibold text-foreground">
+              <label
+                htmlFor="identificador"
+                className="text-sm font-semibold text-foreground"
+              >
                 Usuário ou E-mail
               </label>
               <input
@@ -187,7 +198,10 @@ function LoginPageContent() {
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="senha" className="text-sm font-semibold text-foreground">
+              <label
+                htmlFor="senha"
+                className="text-sm font-semibold text-foreground"
+              >
                 Senha
               </label>
               <div className="relative">
@@ -206,13 +220,20 @@ function LoginPageContent() {
                   onClick={() => setShowSenha((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground"
                 >
-                  {showSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showSenha ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
 
               {/* Link esqueci a senha */}
               <div className="flex justify-end pt-1">
-                <Link href="/esqueci-a-senha" className="text-xs text-primary hover:underline">
+                <Link
+                  href="/esqueci-a-senha"
+                  className="text-xs text-primary hover:underline"
+                >
                   Esqueceu a senha?
                 </Link>
               </div>

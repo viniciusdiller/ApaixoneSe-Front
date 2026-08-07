@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { PlanejeSuaViagemTrigger } from "@/components/planeje-sua-viagem";
 
@@ -52,6 +52,16 @@ export function HeroSection() {
           <PlanejeSuaViagemTrigger className="rounded-full bg-accent px-8 py-3 font-display text-lg font-semibold uppercase tracking-wide text-accent-foreground shadow-xl transition-transform hover:scale-105">
             Planeje sua Viagem
           </PlanejeSuaViagemTrigger>
+
+          <Link
+            href="https://www.google.com/maps/dir/?api=1&destination=Paróquia+de+Nossa+Senhora+de+Nazareth,+Saquarema"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-full border-2 border-white/50 bg-black/20 px-8 py-3 font-display text-lg font-semibold uppercase tracking-wide text-white shadow-xl backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/30"
+          >
+            <MapPin className="h-5 w-5" />
+            Como Chegar
+          </Link>
         </motion.div>
       </div>
 
