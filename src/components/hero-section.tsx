@@ -15,21 +15,24 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-primary/20 to-black/30" />
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-4 font-sans text-sm uppercase tracking-[0.3em] text-primary-foreground/80"
+        >
+          Bem-vindo a Saquarema
+        </motion.p>
+
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="font-display text-2xl font-semibold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-6xl lg:text-7xl"
+          className="font-display text-4xl font-bold uppercase leading-tight text-primary-foreground drop-shadow-lg md:text-6xl lg:text-7xl"
         >
-          APAIXONE-SE POR
+          APAIXONE-SE pela cidade
           <br />
-          <img
-            src="/images/Saquarema.png"
-            alt="Saquarema"
-            width="300"
-            height="150"
-            className="mx-auto mt-2 md:mt-4"
-          />
+          <span className="text-accent">Dos Esportes</span>
         </motion.h1>
 
         <motion.p
@@ -39,7 +42,7 @@ export function HeroSection() {
           className="mt-6 max-w-2xl font-sans text-lg text-primary-foreground/90 md:text-xl"
         >
           O encontro perfeito entre a adrenalina das ondas e a paz da natureza.
-          Descubra o refúgio da Região dos Lagos.
+          Descubra o refúgio da Costa do Sol.
         </motion.p>
 
         <motion.div
@@ -52,7 +55,6 @@ export function HeroSection() {
           <PlanejeSuaViagemTrigger className="rounded-full bg-accent px-8 py-3 font-display text-lg font-semibold uppercase tracking-wide text-accent-foreground shadow-xl transition-transform hover:scale-105">
             Planeje sua Viagem
           </PlanejeSuaViagemTrigger>
-
           <Link
             href="https://www.google.com/maps/dir/?api=1&destination=Paróquia+de+Nossa+Senhora+de+Nazareth,+Saquarema"
             target="_blank"

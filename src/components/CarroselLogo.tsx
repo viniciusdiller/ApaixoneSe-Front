@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 
 export default function CarrosselLogo() {
   const imagens = [
+    "/images/Saquarema.png",
     "/images/pref/Pref.png",
-    "/images/pref/LabISA.png",
     "/images/pref/Sec-Turismo.png",
+    "/images/apaixone-se-Branco.png",
     "/images/pref/SMGS.png",
+    "/images/pref/LabISA.png",
   ];
 
   const imagensDuplicadas = [...imagens, ...imagens];

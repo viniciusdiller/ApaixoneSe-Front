@@ -17,7 +17,7 @@ const sections = [
   {
     title: "2. Sobre o portal",
     content:
-      "O portal é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria de Turismo, com o objetivo de:\n\n• Divulgar atrativos turísticos, eventos, praias, gastronomia e hospedagens do município.\n• Permitir que visitantes e moradores criem e compartilhem roteiros personalizados.\n• Disponibilizar informações sobre serviços públicos voltados ao turista.",
+      "O portal é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria de Esporte, Lazer e Turismo, com o objetivo de:\n\n• Divulgar atrativos turísticos, eventos, praias, gastronomia e hospedagens do município.\n• Permitir que visitantes e moradores criem e compartilhem roteiros personalizados.\n• Disponibilizar informações sobre serviços públicos voltados ao turista.",
   },
   {
     title: "3. Cadastro e conta de usuário",

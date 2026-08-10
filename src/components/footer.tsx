@@ -50,10 +50,10 @@ export function Footer() {
             <p className="text-sm leading-relaxed text-primary-foreground/70">
               Prefeitura Municipal de Saquarema
               <br />
-              Secretaria de Turismo
+              Secretaria de Esporte, Lazer e Turismo
               <br />
               <span className="text-xs opacity-60">
-                Capital Nacional do Esporte — Região dos Lagos, RJ
+                Cidade dos Esportes - Costa do Sol
               </span>
             </p>
 
@@ -207,7 +207,7 @@ export function Footer() {
 
             <div>
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">
-                Secretaria de Turismo
+                Secretaria de Esporte, Lazer e Turismo
               </span>
               <div className="flex gap-3">
                 <a

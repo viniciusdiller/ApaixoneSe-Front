@@ -311,7 +311,7 @@ export default function SecretariaTurismoAdminPage() {
               rows={7}
               required
               className="w-full resize-none rounded-xl border border-input px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
-              placeholder="Descreva a Secretaria de Turismo..."
+              placeholder="Descreva a Secretaria de Esporte, Lazer e Turismo..."
             />
           </div>
 

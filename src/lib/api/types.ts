@@ -273,7 +273,10 @@ export interface ItemPlanoViagem {
   planoViagemId: string;
   planoViagem?: Pick<PlanoViagem, "id" | "titulo">;
   gastronomiaId?: string | null;
-  gastronomia?: Pick<Gastronomia, "id" | "nome" | "endereco" | "logoUrl"> | null;
+  gastronomia?: Pick<
+    Gastronomia,
+    "id" | "nome" | "endereco" | "logoUrl"
+  > | null;
   hospedagemId?: string | null;
   hospedagem?: Pick<Hospedagem, "id" | "nome" | "endereco" | "logoUrl"> | null;
   eventoId?: string | null;
@@ -281,7 +284,10 @@ export interface ItemPlanoViagem {
   atividadeId?: string | null;
   atividade?: Pick<Atividade, "id" | "titulo" | "local" | "roteiro"> | null;
   servicoTuristaId?: string | null;
-  servicoTurista?: Pick<ServicoTurista, "id" | "nome" | "tipo" | "logoUrl"> | null;
+  servicoTurista?: Pick<
+    ServicoTurista,
+    "id" | "nome" | "tipo" | "logoUrl"
+  > | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -416,7 +422,7 @@ export interface UpdateCasaDeCambioDto extends Partial<CreateCasaDeCambioDto> {
   status?: StatusEstabelecimento;
 }
 
-// ─── Secretaria de Turismo ────────────────────────────────────────────────────
+// ─── Secretaria de Esporte, Lazer e Turismo ────────────────────────────────────────────────────
 export interface SecretariaTurismo {
   id: string;
   textoExplicativo: string;

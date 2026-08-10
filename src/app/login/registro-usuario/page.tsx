@@ -110,7 +110,7 @@ export default function RegisterPage() {
               style={{ color: "hsl(179.5 60% 85%)" }}
             >
               Descubra experiências únicas, roteiros inesquecíveis e a beleza
-              das praias e lagoas de Saquarema.
+              das praias e lagoas.
             </p>
           </div>
 

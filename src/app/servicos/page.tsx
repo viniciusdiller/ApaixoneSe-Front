@@ -158,9 +158,9 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* ── Secretaria de Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
+        {/* ── Secretaria de Esporte, Lazer e Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Secretaria de Turismo — esquerda */}
+          {/* Secretaria de Esporte, Lazer e Turismo — esquerda */}
           <div
             onClick={() => router.push("/servicos/secretaria-de-turismo")}
             className="group relative flex flex-col items-center justify-center p-8 rounded-2xl cursor-pointer overflow-hidden transition-all hover:shadow-xl border border-border/50"

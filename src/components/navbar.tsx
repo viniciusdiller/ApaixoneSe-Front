@@ -216,17 +216,10 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
             <div>
               <img
                 src="/images/apaixone-se-Branco.png"
-                alt=""
+                alt="Logo Apaixone-se"
                 height={95}
                 width={95}
               />
-              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-                {" "}
-                Saquarema/rj - BR
-              </span>
-              <span className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-                Capital Nacional do Esporte
-              </span>
             </div>
           </Link>
         </div>

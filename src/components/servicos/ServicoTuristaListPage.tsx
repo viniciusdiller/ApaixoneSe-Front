@@ -3,11 +3,18 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe, Filter } from "lucide-react";
+import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe, Filter, Star } from "lucide-react";
 import { servicoTuristaApi } from "@/lib/api";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { ROTEIROS } from "@/lib/roteiros";
+
+// Tipos que exigem comprovante Cadastur (mesmos exigidos no cadastro admin)
+const EXIGE_CADASTUR: TipoServicoTurista[] = [
+  "GUIA_TURISMO",
+  "AGENCIA_TURISMO",
+  "LOCADORA_VEICULOS",
+];
 
 interface Props {
   tipo: TipoServicoTurista;
@@ -66,6 +73,8 @@ export function ServicoTuristaListPage({
 
   const getRoteiroSlug = (s: ServicoTurista) =>
     s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.slug ?? null : null;
+
+  const exigeCadastur = EXIGE_CADASTUR.includes(tipo);
 
   // Coleta apenas os roteiros presentes nesta lista de serviços
   const roteirosDisponiveis = useMemo(() => {
@@ -194,9 +203,16 @@ export function ServicoTuristaListPage({
                   className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
                 >
                   <div
-                    className="h-52 shrink-0 bg-contain bg-center bg-no-repeat"
+                    className="relative h-52 shrink-0 bg-contain bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${imgUrl(servico)})` }}
-                  />
+                  >
+                    {exigeCadastur && (
+                      <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow">
+                        <Star className="h-3 w-3 fill-current" />
+                        Cadastur
+                      </div>
+                    )}
+                  </div>
                   <div className="flex grow flex-col p-5">
                     <h3 className="font-display text-2xl font-bold uppercase">
                       {servico.nome}
