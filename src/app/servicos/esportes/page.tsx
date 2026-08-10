@@ -4,7 +4,7 @@ export default function EsportesPage() {
   return (
     <ServicoTuristaListPage
       tipo="ESPORTE_LAZER"
-      titulo="Esporte & Lazer"
+      titulo="Esportes & Lazer"
       subtitulo="Aventura e diversão"
       descricao="Atividades esportivas, aventura e lazer para toda a família em Saquarema."
       emoji="🏄"

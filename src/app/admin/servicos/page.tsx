@@ -41,7 +41,7 @@ const PAGE_SIZE = 10;
 const TIPOS_SERVICO: { value: TipoServicoTurista; label: string }[] = [
   { value: "GUIA_TURISMO", label: "Guia de Turismo" },
   { value: "AGENCIA_TURISMO", label: "Agência de Turismo" },
-  { value: "ESPORTE_LAZER", label: "Esporte e Lazer" },
+  { value: "ESPORTE_LAZER", label: "Esportes e Lazer" },
   { value: "LOCADORA_VEICULOS", label: "Locadora de Veículos" },
 ];
 
@@ -57,7 +57,7 @@ const IDIOMAS_DISPONIVEIS = [
 
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
-  { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
+  { value: "ESPORTE_E_AVENTURA", label: "Esportes e Aventura" },
   { value: "DE_PRAIAS", label: "Praias e Lagoas" },
   { value: "CULTURAL", label: "Cultural" },
   { value: "RELIGIOSO", label: "Religioso" },

@@ -38,7 +38,7 @@ interface FormularioServicoProps {
 const TIPOS_SERVICO = [
   { value: "GUIA_TURISMO", label: "Guia de Turismo" },
   { value: "AGENCIA_TURISMO", label: "Agência de Turismo" },
-  { value: "ESPORTE_LAZER", label: "Esporte e Lazer" },
+  { value: "ESPORTE_LAZER", label: "Esportes e Lazer" },
   { value: "LOCADORA_VEICULOS", label: "Locadora de Veículos" },
 ];
 
@@ -226,7 +226,7 @@ export function FormularioServico({
     try {
       await servicoTuristaApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
-      toast.success("Serviço excluido com sucesso!")
+      toast.success("Serviço excluido com sucesso!");
       router.push("/perfil");
     } catch (err) {
       notify.error("Erro ao excluir o serviço.");
@@ -244,7 +244,6 @@ export function FormularioServico({
   return (
     <>
       <div className="mx-auto max-w-3xl overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-xl shadow-black/5">
-
         {/* ── Cabeçalho com identidade visual ── */}
         <div className="relative overflow-hidden border-b border-border/70">
           <div className="relative bg-primary px-6 pb-10 pt-8 md:px-8">
@@ -276,7 +275,9 @@ export function FormularioServico({
                   Solicitação de serviço · Saquarema
                 </div>
                 <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
-                  {modo === "criar" ? "Cadastrar Novo Serviço" : "Gerenciar Serviço"}
+                  {modo === "criar"
+                    ? "Cadastrar Novo Serviço"
+                    : "Gerenciar Serviço"}
                 </h2>
                 <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
                   {modo === "criar"
@@ -293,12 +294,13 @@ export function FormularioServico({
         </div>
 
         <form onSubmit={handleSave} className="space-y-8 px-6 py-8 md:px-8">
-
           {/* ── Bloco 1: Dados Principais ── */}
           <section className="space-y-5">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Dados do Serviço</p>
+              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Dados do Serviço
+              </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
@@ -315,7 +317,9 @@ export function FormularioServico({
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
                 {TIPOS_SERVICO.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -405,7 +409,9 @@ export function FormularioServico({
               >
                 <option value="">Nenhum</option>
                 {ROTEIROS.map((r) => (
-                  <option key={r.value} value={r.value}>{r.label}</option>
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -415,7 +421,9 @@ export function FormularioServico({
           <section className="space-y-5 rounded-[24px] border border-border/70 bg-background/60 p-5 md:p-6">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Identidade Visual</p>
+              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Identidade Visual
+              </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
@@ -456,14 +464,22 @@ export function FormularioServico({
               <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-primary" />
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comprovante Cadastur</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Comprovante Cadastur
+                  </p>
                   {!comprovanteExistente && (
-                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">Obrigatório</span>
+                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                      Obrigatório
+                    </span>
                   )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground">
-                    Arquivo {!comprovanteExistente && <span className="text-red-500">*</span>} — PDF ou imagem
+                    Arquivo{" "}
+                    {!comprovanteExistente && (
+                      <span className="text-red-500">*</span>
+                    )}{" "}
+                    — PDF ou imagem
                   </label>
                   {comprovantePreviewUrl && (
                     <div className="mb-2 mt-1">
@@ -473,7 +489,11 @@ export function FormularioServico({
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
                       >
-                        <FileText size={14} /> {files.comprovante ? files.comprovante.name : "Ver Cadastur atual"} <ExternalLink size={12} />
+                        <FileText size={14} />{" "}
+                        {files.comprovante
+                          ? files.comprovante.name
+                          : "Ver Cadastur atual"}{" "}
+                        <ExternalLink size={12} />
                       </a>
                     </div>
                   )}
@@ -483,7 +503,9 @@ export function FormularioServico({
                     className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
                   >
                     <FileText size={14} />
-                    {comprovanteExistente || files.comprovante ? "Substituir Arquivo" : "Selecionar arquivo"}
+                    {comprovanteExistente || files.comprovante
+                      ? "Substituir Arquivo"
+                      : "Selecionar arquivo"}
                   </button>
                   <input
                     ref={comprovanteRef}
@@ -522,7 +544,11 @@ export function FormularioServico({
               disabled={saving}
               className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50"
             >
-              {saving ? "Salvando..." : modo === "criar" ? "Enviar para Análise" : "Salvar Alterações"}
+              {saving
+                ? "Salvando..."
+                : modo === "criar"
+                  ? "Enviar para Análise"
+                  : "Salvar Alterações"}
             </button>
           </div>
         </form>
@@ -532,11 +558,15 @@ export function FormularioServico({
           <div className="mx-6 mb-8 mt-2 overflow-hidden rounded-2xl border border-red-200 md:mx-8">
             <div className="flex items-center gap-3 border-b border-red-200 bg-red-50 px-5 py-3">
               <Trash2 className="h-4 w-4 text-red-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-red-600">Zona de Perigo</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-red-600">
+                Zona de Perigo
+              </h3>
             </div>
             <div className="px-5 py-4">
               <p className="mb-4 text-sm text-muted-foreground">
-                Ao excluir este serviço, todos os dados, imagens e informações serão permanentemente removidos. Esta ação não pode ser desfeita.
+                Ao excluir este serviço, todos os dados, imagens e informações
+                serão permanentemente removidos. Esta ação não pode ser
+                desfeita.
               </p>
               <button
                 type="button"
@@ -558,10 +588,13 @@ export function FormularioServico({
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="mb-2 text-xl font-bold text-foreground">Você tem certeza?</h3>
+              <h3 className="mb-2 text-xl font-bold text-foreground">
+                Você tem certeza?
+              </h3>
               <p className="mb-6 text-sm text-muted-foreground">
                 Esta ação é irreversível. O serviço{" "}
-                <strong>{form.nome || "selecionado"}</strong> será excluído permanentemente.
+                <strong>{form.nome || "selecionado"}</strong> será excluído
+                permanentemente.
               </p>
               <div className="flex w-full gap-3">
                 <button

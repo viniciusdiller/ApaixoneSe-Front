@@ -58,7 +58,7 @@ export default function ServicosPage() {
     },
     {
       icon: <Compass size={32} />,
-      title: "Agências de turismo",
+      title: "Agências de Turismo",
       description:
         "Pacotes completos, passeios de barco e roteiros personalizados para você.",
       label: "Ver agências",

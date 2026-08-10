@@ -64,7 +64,7 @@ export default function ParceriasPage() {
             <CategoriaCard
               href="/perfil/parcerias/servico-turista/novo"
               titulo="Serviços ao Turista"
-              descricao="Agências de turismo, guias locais, locadoras de veículos, passeios, esportes e lazer."
+              descricao="Agências de Turismo, guias locais, locadoras de veículos, passeios, esportes e lazer."
               Icone={Compass}
             />
           </div>

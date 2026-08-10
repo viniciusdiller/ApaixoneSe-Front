@@ -70,7 +70,7 @@ export function Footer() {
                   href="/praias"
                   className="transition-colors hover:text-primary-foreground"
                 >
-                  Praias
+                  Praias & Lagoas
                 </Link>
               </li>
               <li>
@@ -78,7 +78,7 @@ export function Footer() {
                   href="/cultura"
                   className="transition-colors hover:text-primary-foreground"
                 >
-                  Cultura & História
+                  Cultura
                 </Link>
               </li>
               <li>

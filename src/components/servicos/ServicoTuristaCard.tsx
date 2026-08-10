@@ -1,7 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { Phone, MapPin, Instagram, Languages, Route, Globe } from "lucide-react";
+import {
+  Phone,
+  MapPin,
+  Instagram,
+  Languages,
+  Route,
+  Globe,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
@@ -10,7 +17,7 @@ import { ROTEIROS } from "@/lib/roteiros";
 const TIPO_LABEL: Record<TipoServicoTurista, string> = {
   GUIA_TURISMO: "Guia de Turismo",
   AGENCIA_TURISMO: "Agência de Turismo",
-  ESPORTE_LAZER: "Esporte & Lazer",
+  ESPORTE_LAZER: "Esportes & Lazer",
   LOCADORA_VEICULOS: "Locadora de Veículos",
 };
 
@@ -43,13 +50,19 @@ export function ServicoTuristaCard({ servico, index }: Props) {
       ? siteUrl
       : `https://${siteUrl}`
     : null;
-  const siteLabel = siteUrl ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "") : null;
+  const siteLabel = siteUrl
+    ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
+    : null;
 
   return (
     <motion.article
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.07,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       {/* Banner superior com logo/foto */}
@@ -108,7 +121,9 @@ export function ServicoTuristaCard({ servico, index }: Props) {
         {servico.endereco && (
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <span className="text-sm text-muted-foreground">{servico.endereco}</span>
+            <span className="text-sm text-muted-foreground">
+              {servico.endereco}
+            </span>
           </div>
         )}
 
@@ -129,7 +144,9 @@ export function ServicoTuristaCard({ servico, index }: Props) {
         {servico.idiomas && (
           <div className="flex items-start gap-2">
             <Languages className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <span className="text-sm text-muted-foreground">{servico.idiomas}</span>
+            <span className="text-sm text-muted-foreground">
+              {servico.idiomas}
+            </span>
           </div>
         )}
 
@@ -139,7 +156,9 @@ export function ServicoTuristaCard({ servico, index }: Props) {
             <Route className="h-4 w-4 shrink-0 text-primary" />
             <span className="text-sm text-muted-foreground">
               Roteiro:{" "}
-              <span className="font-medium text-foreground">{roteiroLabel}</span>
+              <span className="font-medium text-foreground">
+                {roteiroLabel}
+              </span>
             </span>
           </div>
         )}
@@ -169,8 +188,7 @@ export function ServicoTuristaCard({ servico, index }: Props) {
               aria-label={`Instagram de ${servico.nome}`}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/5 hover:text-primary active:scale-[0.98]"
             >
-              <Instagram className="h-4 w-4" />
-              @{instagramHandle}
+              <Instagram className="h-4 w-4" />@{instagramHandle}
             </a>
           )}
         </div>

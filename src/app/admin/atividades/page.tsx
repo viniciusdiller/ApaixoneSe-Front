@@ -18,7 +18,7 @@ const PAGE_SIZE = 10;
 
 const ROTEIROS: { value: TipoRoteiro; label: string }[] = [
   { value: "A_PE", label: "A Pé" },
-  { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
+  { value: "ESPORTE_E_AVENTURA", label: "Esportes e Aventura" },
   { value: "DE_PRAIAS", label: "Praias e Lagoas" },
   { value: "CULTURAL", label: "Cultural" },
   { value: "RELIGIOSO", label: "Religioso" },
