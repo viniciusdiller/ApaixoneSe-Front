@@ -11,6 +11,7 @@ export default function EsportesPage() {
       labelSingular="atividade"
       labelPlural="atividades"
       imagemFallback="/images/hero-saquarema.jpeg"
+      heroImage="/images/header/esportes.jpg"
     />
   );
 }

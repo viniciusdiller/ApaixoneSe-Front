@@ -11,6 +11,7 @@ export default function LocadorasPage() {
       labelSingular="locadora"
       labelPlural="locadoras"
       imagemFallback="/images/hero-saquarema.jpeg"
+      heroImage="/images/header/locadoras.jpg"
     />
   );
 }

@@ -85,7 +85,10 @@ export default function TaxaDeTurismoPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero — igual ao ServicoTuristaListPage */}
-      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+      <section className="relative bg-cover bg-center bg-no-repeat px-4 pb-12 pt-32"
+        style={{ backgroundImage: "url('/images/header/taxa-de-turismo.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
         <span
           aria-hidden
           className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"

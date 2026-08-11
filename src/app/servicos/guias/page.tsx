@@ -11,6 +11,7 @@ export default function GuiasPage() {
       labelSingular="guia"
       labelPlural="guias"
       imagemFallback="/images/hero-saquarema.jpeg"
+      heroImage="/images/header/guias.jpg"
     />
   );
 }

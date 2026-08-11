@@ -11,6 +11,7 @@ export default function AgenciasPage() {
       labelSingular="agência"
       labelPlural="agências"
       imagemFallback="/images/hero-saquarema.jpeg"
+      heroImage="/images/header/agencias.jpg"
     />
   );
 }

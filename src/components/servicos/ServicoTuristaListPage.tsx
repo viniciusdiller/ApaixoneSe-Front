@@ -25,6 +25,7 @@ interface Props {
   labelSingular: string;
   labelPlural: string;
   imagemFallback: string;
+  heroImage?: string;
 }
 
 function buildSiteHref(site?: string | null): string | null {
@@ -41,6 +42,7 @@ export function ServicoTuristaListPage({
   labelSingular,
   labelPlural,
   imagemFallback,
+  heroImage,
 }: Props) {
   const [servicos, setServicos] = useState<ServicoTurista[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,7 +93,11 @@ export function ServicoTuristaListPage({
   return (
     <div className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+      <section
+        className="relative overflow-hidden bg-cover bg-center px-4 pb-16 pt-32"
+        style={{ backgroundImage: `url('${heroImage}')` }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
         <span
           aria-hidden
           className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
