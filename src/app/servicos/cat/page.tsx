@@ -226,7 +226,14 @@ export default function CatPage() {
   return (
     <main className="min-h-screen bg-background">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+      <section
+        className="relative overflow-hidden bg-cover bg-center px-4 pb-16 pt-32"
+        style={{
+          backgroundImage: "url('/images/header/cat.png')",
+          backgroundPosition: "center 70%",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
         <span
           aria-hidden
           className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"

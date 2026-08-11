@@ -178,7 +178,15 @@ export default function SecretariaTurismoPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="relative overflow-hidden bg-primary px-4 pb-16 pt-32">
+      <section
+        className="relative overflow-hidden bg-cover bg-center px-4 pb-16 pt-32"
+        style={{
+          backgroundImage: "url('/images/header/sec-turismo.jpg')",
+          backgroundPosition: "center 68%",
+        }}
+      >
+        <div className="absolute inset-0 bg-black/50" />
+
         <span
           aria-hidden
           className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[160px] opacity-10"
@@ -190,7 +198,8 @@ export default function SecretariaTurismoPage() {
             href="/servicos"
             className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-4 py-2 text-sm text-primary-foreground/80 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
           >
-            <ArrowLeft className="h-4 w-4" /> Voltar para Serviços
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para Serviços
           </Link>
           <div className="mb-3 inline-flex items-center gap-2">
             <span className="inline-block rounded-full bg-primary-foreground/20 px-3 py-1 text-xs font-semibold text-primary-foreground">
