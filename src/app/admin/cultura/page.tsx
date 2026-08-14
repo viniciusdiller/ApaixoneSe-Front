@@ -215,12 +215,14 @@ export default function AdminCulturaPage() {
             label="Nome"
             value={form.nome}
             onChange={set("nome")}
+            maxLength={100}
             required
           />
           <AdminFormField
             label="Descrição (curta, exibida no card)"
             value={form.descricao}
             onChange={set("descricao")}
+            maxLength={150}
             multiline
             required
           />
@@ -228,6 +230,7 @@ export default function AdminCulturaPage() {
             label="Texto completo (exibido nos detalhes)"
             value={form.texto}
             onChange={set("texto")}
+            maxLength={5000}
             multiline
             required
           />
@@ -235,6 +238,7 @@ export default function AdminCulturaPage() {
             label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
+            maxLength={191}
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <FileUploadField

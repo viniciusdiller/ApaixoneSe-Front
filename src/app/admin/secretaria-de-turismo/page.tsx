@@ -307,12 +307,16 @@ export default function SecretariaTurismoAdminPage() {
             </div>
             <textarea
               value={instTexto}
-              onChange={(e) => setInstTexto(e.target.value)}
+              onChange={(e) => setInstTexto(e.target.value.slice(0, 5000))}
+              maxLength={5000}
               rows={7}
               required
               className="w-full resize-none rounded-xl border border-input px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
               placeholder="Descreva a Secretaria de Esporte, Lazer e Turismo..."
             />
+            <div className="flex justify-end text-[10px] text-muted-foreground">
+              <span>{instTexto.length}/5000</span>
+            </div>
           </div>
 
           <div className="space-y-3 rounded-2xl border border-border bg-white p-6 shadow-sm">
@@ -523,12 +527,19 @@ export default function SecretariaTurismoAdminPage() {
                 <input
                   value={turistandoForm.titulo}
                   onChange={(e) =>
-                    setTuristandoForm((f) => ({ ...f, titulo: e.target.value }))
+                    setTuristandoForm((f) => ({
+                      ...f,
+                      titulo: e.target.value.slice(0, 150),
+                    }))
                   }
+                  maxLength={150}
                   required
                   className="w-full rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Título do bloco"
                 />
+                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground">
+                  <span>{turistandoForm.titulo.length}/150</span>
+                </div>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -537,13 +548,20 @@ export default function SecretariaTurismoAdminPage() {
                 <textarea
                   value={turistandoForm.texto}
                   onChange={(e) =>
-                    setTuristandoForm((f) => ({ ...f, texto: e.target.value }))
+                    setTuristandoForm((f) => ({
+                      ...f,
+                      texto: e.target.value.slice(0, 3000),
+                    }))
                   }
                   required
+                  maxLength={3000}
                   rows={4}
                   className="w-full resize-none rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Descrição do bloco"
                 />
+                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground">
+                  <span>{turistandoForm.texto.length}/3000</span>
+                </div>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">

@@ -1,0 +1,445 @@
+diff --git a/src/presentation/dto/request/cat-movel/createCatMovelRequestDto.ts b/src/presentation/dto/request/cat-movel/createCatMovelRequestDto.ts
+index ae2ef38..2e4a929 100644
+--- a/src/presentation/dto/request/cat-movel/createCatMovelRequestDto.ts
++++ b/src/presentation/dto/request/cat-movel/createCatMovelRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+-import { IsNotEmpty, IsOptional, IsString } from "class-validator";
++import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
+ 
+ export class CreateCatMovelRequestDto {
+   @ApiProperty({
+@@ -8,6 +8,7 @@ export class CreateCatMovelRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
+   titulo!: string;
+ 
+   @ApiProperty({
+@@ -16,6 +17,9 @@ export class CreateCatMovelRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(2000, {
++    message: "A descrição deve ter no máximo 2000 caracteres.",
++  })
+   descricao!: string;
+ 
+   @ApiPropertyOptional({
+@@ -46,5 +50,8 @@ export class CreateCatMovelRequestDto {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(4000, {
++    message: "A ordem enviada excedeu o tamanho máximo permitido.",
++  })
+   ordem?: string;
+ }
+diff --git a/src/presentation/dto/request/cat-movel/updateCatMovelRequestDto.ts b/src/presentation/dto/request/cat-movel/updateCatMovelRequestDto.ts
+index 9fb8d8b..f426b26 100644
+--- a/src/presentation/dto/request/cat-movel/updateCatMovelRequestDto.ts
++++ b/src/presentation/dto/request/cat-movel/updateCatMovelRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiPropertyOptional } from "@nestjs/swagger";
+-import { IsOptional, IsString } from "class-validator";
++import { IsOptional, IsString, MaxLength } from "class-validator";
+ 
+ export class UpdateCatMovelRequestDto {
+   @ApiPropertyOptional({
+@@ -8,6 +8,7 @@ export class UpdateCatMovelRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
+   titulo?: string;
+ 
+   @ApiPropertyOptional({
+@@ -16,6 +17,9 @@ export class UpdateCatMovelRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(2000, {
++    message: "A descrição deve ter no máximo 2000 caracteres.",
++  })
+   descricao?: string;
+ 
+   @ApiPropertyOptional({
+@@ -47,5 +51,8 @@ export class UpdateCatMovelRequestDto {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(4000, {
++    message: "A ordem enviada excedeu o tamanho máximo permitido.",
++  })
+   ordem?: string;
+ }
+diff --git a/src/presentation/dto/request/cat/createCatRequestDto.ts b/src/presentation/dto/request/cat/createCatRequestDto.ts
+index a5ddc63..2b2d970 100644
+--- a/src/presentation/dto/request/cat/createCatRequestDto.ts
++++ b/src/presentation/dto/request/cat/createCatRequestDto.ts
+@@ -1,10 +1,11 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
++import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
+ 
+ export class CreateCatRequestDto {
+   @ApiProperty({ description: "Texto informativo do CAT" })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(5000, { message: "O texto deve ter no máximo 5000 caracteres." })
+   texto!: string;
+ 
+   @ApiProperty({
+@@ -32,5 +33,8 @@ export class CreateCatRequestDto {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(4000, {
++    message: "A ordem enviada excedeu o tamanho máximo permitido.",
++  })
+   ordem?: string;
+ }
+diff --git a/src/presentation/dto/request/cat/updateCatRequestDto.ts b/src/presentation/dto/request/cat/updateCatRequestDto.ts
+index 3bb3a55..3b8f496 100644
+--- a/src/presentation/dto/request/cat/updateCatRequestDto.ts
++++ b/src/presentation/dto/request/cat/updateCatRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { PartialType, ApiPropertyOptional } from "@nestjs/swagger";
+-import { IsOptional, IsString } from "class-validator";
++import { IsOptional, IsString, MaxLength } from "class-validator";
+ import { CreateCatRequestDto } from "./createCatRequestDto";
+ 
+ export class UpdateCatRequestDto extends PartialType(CreateCatRequestDto) {
+@@ -10,5 +10,8 @@ export class UpdateCatRequestDto extends PartialType(CreateCatRequestDto) {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(4000, {
++    message: "A ordem enviada excedeu o tamanho máximo permitido.",
++  })
+   ordem?: string;
+ }
+diff --git a/src/presentation/dto/request/cultura/createLocalCulturalRequestDto.ts b/src/presentation/dto/request/cultura/createLocalCulturalRequestDto.ts
+index 68f761d..90f66d8 100644
+--- a/src/presentation/dto/request/cultura/createLocalCulturalRequestDto.ts
++++ b/src/presentation/dto/request/cultura/createLocalCulturalRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
++import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
+ 
+ export class CreateLocalCulturalRequestDto {
+   @ApiProperty({
+@@ -8,6 +8,7 @@ export class CreateLocalCulturalRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty({ message: "O nome é obrigatório." })
++  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
+   nome!: string;
+ 
+   @ApiProperty({
+@@ -17,6 +18,9 @@ export class CreateLocalCulturalRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty({ message: "A descrição é obrigatória." })
++  @MaxLength(1000, {
++    message: "A descrição deve ter no máximo 1000 caracteres.",
++  })
+   descricao!: string;
+ 
+   @ApiProperty({
+@@ -25,6 +29,7 @@ export class CreateLocalCulturalRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty({ message: "O texto é obrigatório." })
++  @MaxLength(5000, { message: "O texto deve ter no máximo 5000 caracteres." })
+   texto!: string;
+ 
+   @ApiPropertyOptional({
+@@ -37,5 +42,6 @@ export class CreateLocalCulturalRequestDto {
+   @ApiPropertyOptional({ example: "Rua Principal, 123 - Centro, Saquarema - RJ" })
+   @IsOptional()
+   @IsString()
++  @MaxLength(191, { message: "O endereço deve ter no máximo 191 caracteres." })
+   endereco?: string;
+ }
+diff --git a/src/presentation/dto/request/fique-por-dentro/createFiquePorDentroRequestDto.ts b/src/presentation/dto/request/fique-por-dentro/createFiquePorDentroRequestDto.ts
+index 37be82a..9997a86 100644
+--- a/src/presentation/dto/request/fique-por-dentro/createFiquePorDentroRequestDto.ts
++++ b/src/presentation/dto/request/fique-por-dentro/createFiquePorDentroRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsString, IsNotEmpty } from "class-validator";
++import { IsString, IsNotEmpty, MaxLength } from "class-validator";
+ 
+ export class CreateFiquePorDentroRequestDto {
+   @ApiProperty({
+@@ -9,6 +9,7 @@ export class CreateFiquePorDentroRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(1, { message: 'A ordem deve ser um único dígito de "1" a "5".' })
+   ordem!: string;
+ 
+   @ApiProperty({
+diff --git a/src/presentation/dto/request/fique-por-dentro/swapFiquePorDentroRequestDto.ts b/src/presentation/dto/request/fique-por-dentro/swapFiquePorDentroRequestDto.ts
+index cda412c..5d6c69e 100644
+--- a/src/presentation/dto/request/fique-por-dentro/swapFiquePorDentroRequestDto.ts
++++ b/src/presentation/dto/request/fique-por-dentro/swapFiquePorDentroRequestDto.ts
+@@ -1,14 +1,16 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsString, IsNotEmpty } from "class-validator";
++import { IsString, IsNotEmpty, MaxLength } from "class-validator";
+ 
+ export class SwapFiquePorDentroRequestDto {
+   @ApiProperty({ description: "ID do primeiro item" })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(36, { message: "O ID deve ter no máximo 36 caracteres." })
+   idA!: string;
+ 
+   @ApiProperty({ description: "ID do segundo item" })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(36, { message: "O ID deve ter no máximo 36 caracteres." })
+   idB!: string;
+ }
+diff --git a/src/presentation/dto/request/fique-por-dentro/updateFiquePorDentroRequestDto.ts b/src/presentation/dto/request/fique-por-dentro/updateFiquePorDentroRequestDto.ts
+index 4c08a9c..be51fc5 100644
+--- a/src/presentation/dto/request/fique-por-dentro/updateFiquePorDentroRequestDto.ts
++++ b/src/presentation/dto/request/fique-por-dentro/updateFiquePorDentroRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiPropertyOptional } from "@nestjs/swagger";
+-import { IsOptional, IsString } from "class-validator";
++import { IsOptional, IsString, MaxLength } from "class-validator";
+ 
+ export class UpdateFiquePorDentroRequestDto {
+   @ApiPropertyOptional({
+@@ -8,5 +8,6 @@ export class UpdateFiquePorDentroRequestDto {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(1, { message: 'A ordem deve ser um único dígito de "1" a "5".' })
+   ordem?: string;
+ }
+diff --git a/src/presentation/dto/request/pontos-agua/createPontoAguaRequestDto.ts b/src/presentation/dto/request/pontos-agua/createPontoAguaRequestDto.ts
+index 5be831f..898e771 100644
+--- a/src/presentation/dto/request/pontos-agua/createPontoAguaRequestDto.ts
++++ b/src/presentation/dto/request/pontos-agua/createPontoAguaRequestDto.ts
+@@ -6,6 +6,7 @@ import {
+   IsEnum,
+   IsBoolean,
+   IsNumber,
++  MaxLength,
+ } from "class-validator";
+ import { Transform, Type } from "class-transformer";
+ import { TipoPontoAgua } from "@prisma/client";
+@@ -19,6 +20,7 @@ export class CreatePontoAguaRequestDto {
+   @ApiProperty({ example: "Praia de Itaúna" })
+   @IsString()
+   @IsNotEmpty({ message: "O nome é obrigatório." })
++  @MaxLength(150, { message: "O nome deve ter no máximo 150 caracteres." })
+   nome!: string;
+ 
+   @ApiProperty({
+@@ -27,6 +29,9 @@ export class CreatePontoAguaRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty({ message: "A descrição curta é obrigatória." })
++  @MaxLength(191, {
++    message: "A descrição curta deve ter no máximo 191 caracteres.",
++  })
+   descricaoCurta!: string;
+ 
+   @ApiProperty({
+@@ -36,6 +41,9 @@ export class CreatePontoAguaRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty({ message: "A descrição é obrigatória." })
++  @MaxLength(5000, {
++    message: "A descrição deve ter no máximo 5000 caracteres.",
++  })
+   descricao!: string;
+ 
+   @ApiPropertyOptional({
+@@ -45,6 +53,9 @@ export class CreatePontoAguaRequestDto {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(1000, {
++    message: "A lista de filtros deve ter no máximo 1000 caracteres.",
++  })
+   filtros?: string;
+ 
+   @ApiPropertyOptional({ example: "true" })
+@@ -60,11 +71,15 @@ export class CreatePontoAguaRequestDto {
+   })
+   @IsOptional()
+   @IsString()
++  @MaxLength(20, {
++    message: "A dificuldade deve ter no máximo 20 caracteres.",
++  })
+   dificuldade?: string;
+ 
+   @ApiPropertyOptional({ example: "Rua Principal, 123 - Centro, Saquarema - RJ" })
+   @IsOptional()
+   @IsString()
++  @MaxLength(191, { message: "O endereço deve ter no máximo 191 caracteres." })
+   endereco?: string;
+ 
+   @ApiPropertyOptional({ example: "true" })
+diff --git a/src/presentation/dto/request/secretaria-turismo/createProjetoRequestDto.ts b/src/presentation/dto/request/secretaria-turismo/createProjetoRequestDto.ts
+index de53c40..29fb662 100644
+--- a/src/presentation/dto/request/secretaria-turismo/createProjetoRequestDto.ts
++++ b/src/presentation/dto/request/secretaria-turismo/createProjetoRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsNotEmpty, IsString } from "class-validator";
++import { IsNotEmpty, IsString, MaxLength } from "class-validator";
+ 
+ export class CreateProjetoRequestDto {
+   @ApiProperty({
+@@ -8,6 +8,7 @@ export class CreateProjetoRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
+   titulo!: string;
+ 
+   @ApiProperty({
+@@ -16,6 +17,9 @@ export class CreateProjetoRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(3000, {
++    message: "A descrição deve ter no máximo 3000 caracteres.",
++  })
+   descricao!: string;
+ 
+   @ApiProperty({
+diff --git a/src/presentation/dto/request/secretaria-turismo/createSecretariaRequestDto.ts b/src/presentation/dto/request/secretaria-turismo/createSecretariaRequestDto.ts
+index 72446de..0e94adb 100644
+--- a/src/presentation/dto/request/secretaria-turismo/createSecretariaRequestDto.ts
++++ b/src/presentation/dto/request/secretaria-turismo/createSecretariaRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsNotEmpty, IsString } from "class-validator";
++import { IsNotEmpty, IsString, MaxLength } from "class-validator";
+ 
+ export class CreateSecretariaRequestDto {
+   @ApiProperty({
+@@ -8,6 +8,9 @@ export class CreateSecretariaRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(5000, {
++    message: "O texto explicativo deve ter no máximo 5000 caracteres.",
++  })
+   textoExplicativo!: string;
+ 
+   @ApiProperty({
+diff --git a/src/presentation/dto/request/secretaria-turismo/createTuristandoRequestDto.ts b/src/presentation/dto/request/secretaria-turismo/createTuristandoRequestDto.ts
+index 7513dbb..ef59288 100644
+--- a/src/presentation/dto/request/secretaria-turismo/createTuristandoRequestDto.ts
++++ b/src/presentation/dto/request/secretaria-turismo/createTuristandoRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsNotEmpty, IsString, IsInt } from "class-validator";
++import { IsNotEmpty, IsString, IsInt, MaxLength } from "class-validator";
+ 
+ export class CreateTuristandoRequestDto {
+   @ApiProperty({
+@@ -8,6 +8,7 @@ export class CreateTuristandoRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
+   titulo!: string;
+ 
+   @ApiProperty({
+@@ -16,6 +17,7 @@ export class CreateTuristandoRequestDto {
+   })
+   @IsString()
+   @IsNotEmpty()
++  @MaxLength(3000, { message: "O texto deve ter no máximo 3000 caracteres." })
+   texto!: string;
+ 
+   @ApiProperty({
+diff --git a/src/presentation/dto/request/secretaria-turismo/updateProjetoRequestDto.ts b/src/presentation/dto/request/secretaria-turismo/updateProjetoRequestDto.ts
+index d39c4ea..e26f2a5 100644
+--- a/src/presentation/dto/request/secretaria-turismo/updateProjetoRequestDto.ts
++++ b/src/presentation/dto/request/secretaria-turismo/updateProjetoRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsOptional, IsString } from "class-validator";
++import { IsOptional, IsString, MaxLength } from "class-validator";
+ 
+ export class UpdateProjetoRequestDto {
+   @ApiProperty({
+@@ -9,6 +9,7 @@ export class UpdateProjetoRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
+   titulo?: string;
+ 
+   @ApiProperty({
+@@ -18,6 +19,9 @@ export class UpdateProjetoRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(3000, {
++    message: "A descrição deve ter no máximo 3000 caracteres.",
++  })
+   descricao?: string;
+ 
+   @ApiProperty({
+diff --git a/src/presentation/dto/request/secretaria-turismo/updateSecretariaRequestDto.ts b/src/presentation/dto/request/secretaria-turismo/updateSecretariaRequestDto.ts
+index 74917a0..cbc8bfb 100644
+--- a/src/presentation/dto/request/secretaria-turismo/updateSecretariaRequestDto.ts
++++ b/src/presentation/dto/request/secretaria-turismo/updateSecretariaRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsOptional, IsString } from "class-validator";
++import { IsOptional, IsString, MaxLength } from "class-validator";
+ 
+ export class UpdateSecretariaRequestDto {
+   @ApiProperty({
+@@ -9,6 +9,9 @@ export class UpdateSecretariaRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(5000, {
++    message: "O texto explicativo deve ter no máximo 5000 caracteres.",
++  })
+   textoExplicativo?: string;
+ 
+   @ApiProperty({
+diff --git a/src/presentation/dto/request/secretaria-turismo/updateTuristandoRequestDto.ts b/src/presentation/dto/request/secretaria-turismo/updateTuristandoRequestDto.ts
+index 5cd83dc..ae1387f 100644
+--- a/src/presentation/dto/request/secretaria-turismo/updateTuristandoRequestDto.ts
++++ b/src/presentation/dto/request/secretaria-turismo/updateTuristandoRequestDto.ts
+@@ -1,5 +1,5 @@
+ import { ApiProperty } from "@nestjs/swagger";
+-import { IsOptional, IsString } from "class-validator";
++import { IsOptional, IsString, MaxLength } from "class-validator";
+ 
+ export class UpdateTuristandoRequestDto {
+   @ApiProperty({
+@@ -9,6 +9,7 @@ export class UpdateTuristandoRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(150, { message: "O título deve ter no máximo 150 caracteres." })
+   titulo?: string;
+ 
+   @ApiProperty({
+@@ -18,6 +19,7 @@ export class UpdateTuristandoRequestDto {
+   })
+   @IsString()
+   @IsOptional()
++  @MaxLength(3000, { message: "O texto deve ter no máximo 3000 caracteres." })
+   texto?: string;
+ 
+   @ApiProperty({

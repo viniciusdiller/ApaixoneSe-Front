@@ -17,7 +17,7 @@ export const AdminFormField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   AdminFormFieldProps
 >(function AdminFormField(
-  { label, error, multiline, rows = 3, mask, onChange, type, ...props },
+  { label, error, multiline, rows = 3, mask, onChange, type, maxLength, ...props },
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,13 +28,21 @@ export const AdminFormField = forwardRef<
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
+    const rawValue = mask ? mask(e.target.value) : e.target.value;
+    const nextValue =
+      typeof maxLength === "number" && rawValue.length > maxLength
+        ? rawValue.slice(0, maxLength)
+        : rawValue;
+
     if (onChange) {
-      onChange(mask ? mask(e.target.value) : e.target.value);
+      onChange(nextValue);
     }
   };
 
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+  const valueLength =
+    typeof props.value === "string" ? props.value.length : 0;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -47,6 +55,7 @@ export const AdminFormField = forwardRef<
       {multiline ? (
         <textarea
           rows={rows}
+          maxLength={maxLength}
           className={`${base} resize-none ${error ? "border-red-400 focus:ring-red-400/40" : ""}`}
           ref={ref as React.Ref<HTMLTextAreaElement>}
           onChange={handleChange}
@@ -56,6 +65,7 @@ export const AdminFormField = forwardRef<
         <div className="relative">
           <input
             type={inputType}
+            maxLength={maxLength}
             className={`${base} ${isPassword ? "pr-10" : ""} ${error ? "border-red-400 focus:ring-red-400/40" : ""}`}
             ref={ref as React.Ref<HTMLInputElement>}
             onChange={handleChange}
@@ -72,6 +82,13 @@ export const AdminFormField = forwardRef<
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           )}
+        </div>
+      )}
+      {typeof maxLength === "number" && (
+        <div className="flex justify-end text-[10px] text-muted-foreground">
+          <span>
+            {valueLength}/{maxLength}
+          </span>
         </div>
       )}
       {error && (
