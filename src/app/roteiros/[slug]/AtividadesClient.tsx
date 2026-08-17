@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowLeft,
-  MapPin,
   AlertCircle,
+  ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   Circle,
+  MapPin,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { RoteiroMeta } from "@/lib/roteiros";
@@ -19,11 +21,14 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 function AtividadeSkeleton() {
   return (
-    <div className="animate-pulse rounded-xl border border-border bg-card p-6">
-      <div className="h-5 w-2/3 rounded bg-muted" />
-      <div className="mt-3 h-3 w-full rounded bg-muted" />
-      <div className="mt-1 h-3 w-5/6 rounded bg-muted" />
-      <div className="mt-4 h-6 w-24 rounded-full bg-muted" />
+    <div className="animate-pulse overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="h-48 bg-muted" />
+      <div className="p-5">
+        <div className="h-5 w-2/3 rounded bg-muted" />
+        <div className="mt-3 h-4 w-1/2 rounded bg-muted" />
+        <div className="mt-5 h-12 rounded bg-muted" />
+        <div className="mt-5 h-8 w-32 rounded-full bg-muted" />
+      </div>
     </div>
   );
 }
@@ -32,12 +37,15 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-
+  const [selectedAtividade, setSelectedAtividade] = useState<Atividade | null>(
+    null,
+  );
   const { atividadesVisitadas, isLogado, toggleAtividade } = useVisitas();
 
   useEffect(() => {
     setLoading(true);
     setError(false);
+
     atividadesApi
       .getByRoteiro(roteiro.enum)
       .then(setAtividades)
@@ -45,171 +53,181 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
       .finally(() => setLoading(false));
   }, [roteiro.enum]);
 
+  useEffect(() => {
+    if (!selectedAtividade) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedAtividade(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedAtividade]);
+
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative flex min-h-[45vh] items-end overflow-hidden px-4 pb-12 pt-32">
-        <Image
-          src={roteiro.imagem}
-          alt={roteiro.label}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-black/40" />
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 select-none text-[120px] opacity-10"></div>
-        <div className="container relative z-10 mx-auto">
+      <section className="relative flex min-h-[45vh] items-end overflow-hidden px-4 pb-10 pt-28 sm:px-6">
+        <div className="absolute inset-0">
+          <Image
+            src={roteiro.imagem}
+            alt={roteiro.label}
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
+        </div>
+
+        <div className="relative z-10 mx-auto w-full max-w-6xl text-white">
           <Link
             href="/"
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+            className="mb-8 inline-flex items-center gap-2 rounded-full border-2 border-white/70 px-4 py-2 text-sm font-semibold transition-colors hover:bg-white hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
-            Voltar para página inicial
+            Voltar ao Início
           </Link>
-          <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
-            Roteiro {roteiro.label}
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-white/75">
+            Roteiro
           </p>
-          <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl"></h1>
-          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+          <h1 className="mt-2 font-display text-4xl font-bold uppercase leading-tight sm:text-6xl">
+            {roteiro.label}
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
             {roteiro.descricao}
           </p>
         </div>
       </section>
 
-      {/* Atividades */}
-      <section className="px-4 py-16">
-        <div className="container mx-auto max-w-5xl">
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-3xl font-bold uppercase text-foreground">
-              Atrativos
-            </h2>
-            <div className="flex items-center gap-3">
-              {isLogado && !loading && !error && atividades.length > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  ✓ Marque as atividades que você já realizou!
-                </p>
-              )}
-              {!loading && !error && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                  <MapPin className="h-4 w-4" />
-                  {atividades.length}{" "}
-                  {atividades.length === 1 ? "atividade" : "atividades"}
-                </span>
-              )}
-            </div>
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+        <div className="mb-10 max-w-2xl">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-primary">
+            Explore o roteiro
+          </p>
+          <h2 className="mt-2 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
+            Atrativos
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            Encontre experiências, lugares e atividades para aproveitar este
+            roteiro. Clique em um atrativo para ver todos os detalhes.
+          </p>
+        </div>
+
+        {loading && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <AtividadeSkeleton />
+            <AtividadeSkeleton />
+            <AtividadeSkeleton />
+            <AtividadeSkeleton />
           </div>
+        )}
 
-          {error && (
-            <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-              <AlertCircle className="mb-4 h-10 w-10 text-destructive/60" />
-              <p className="text-base font-medium">
-                Não foi possível carregar as atividades.
-              </p>
-              <p className="mt-1 text-sm">
-                Verifique sua conexão e tente novamente.
-              </p>
-            </div>
-          )}
+        {!loading && error && (
+          <div className="flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 p-5 text-destructive">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <p className="text-sm">
+              Não foi possível carregar os atrativos deste roteiro. Tente
+              novamente mais tarde.
+            </p>
+          </div>
+        )}
 
-          {loading && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <AtividadeSkeleton key={i} />
-              ))}
-            </div>
-          )}
+        {!loading && !error && atividades.length === 0 && (
+          <div className="rounded-2xl border border-border bg-card px-6 py-16 text-center">
+            <MapPin className="mx-auto h-10 w-10 text-primary/40" />
+            <p className="mt-4 text-muted-foreground">
+              Nenhum atrativo foi cadastrado para este roteiro ainda.
+            </p>
+          </div>
+        )}
 
-          {!loading && !error && atividades.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-              <p className="text-base font-medium">
-                Nenhuma atividade cadastrada ainda.
-              </p>
-              <p className="mt-1 text-sm">
-                Em breve novas experiências serão adicionadas.
-              </p>
-            </div>
-          )}
+        {!loading && !error && atividades.length > 0 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {atividades.map((atividade, i) => {
+              const visitado = atividadesVisitadas.has(atividade.id);
+              const mediaUrl = safeMediaUrl(atividade.logoUrl);
+              const hasMap =
+                atividade.latitude != null && atividade.longitude != null;
 
-          {!loading && !error && atividades.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {atividades.map((atividade, i) => {
-                const visitado = atividadesVisitadas.has(atividade.id);
-                return (
-                  <motion.div
-                    key={atividade.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, delay: i * 0.06 }}
-                    className={`relative rounded-xl border bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md ${
-                      visitado
-                        ? "border-green-400/60 bg-green-50/30 dark:bg-green-950/10"
-                        : "border-border"
-                    }`}
-                  >
-                    {/* Badge "Fiz esta!" no canto */}
-                    {visitado && (
-                      <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-green-500 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white shadow">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Fiz esta!
-                      </div>
+              return (
+                <motion.article
+                  key={atividade.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Ver detalhes de ${atividade.titulo}`}
+                  onClick={() => setSelectedAtividade(atividade)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setSelectedAtividade(atividade);
+                    }
+                  }}
+                  className="group block overflow-hidden rounded-2xl border border-border bg-card text-left transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                >
+                  <div className="relative h-48 overflow-hidden bg-primary/20">
+                    {mediaUrl && (
+                      <Image
+                        src={mediaUrl}
+                        alt={atividade.titulo}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
+                    {hasMap && (
+                      <a
+                        href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(event) => event.stopPropagation()}
+                        className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-md bg-background/85 px-2.5 py-1.5 text-xs font-semibold text-primary shadow-sm backdrop-blur-sm transition-colors hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <MapPin className="h-3.5 w-3.5" />
+                        Ver no mapa
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="p-5">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-display text-xl font-semibold uppercase text-card-foreground">
+                      <div className="min-w-0">
+                        <h3 className="font-display text-xl font-bold uppercase text-foreground transition-colors group-hover:text-primary">
                           {atividade.titulo}
                         </h3>
-
                         {atividade.local && (
-                          <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <MapPin className="h-3.5 w-3.5 shrink-0" />
-                            <span>{atividade.local}</span>
+                          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{atividade.local}</span>
                           </div>
                         )}
                       </div>
-
-                      {atividade.logoUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={safeMediaUrl(atividade.logoUrl)}
-                          alt={atividade.titulo}
-                          className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
-                        />
-                      )}
+                      <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
                     </div>
 
-                    <p className="mt-3 text-sm text-muted-foreground">
+                    <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">
                       {atividade.descricao}
                     </p>
 
-                    {/* Ações: mapa + check-in */}
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      {atividade.latitude != null &&
-                        atividade.longitude != null && (
-                          <a
-                            href={`https://maps.google.com/?q=${atividade.latitude},${atividade.longitude}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-                          >
-                            <MapPin className="h-3.5 w-3.5" />
-                            Ver no mapa
-                          </a>
-                        )}
-
-                      {/* Botão check-in — somente logados */}
                       {isLogado && (
                         <button
-                          onClick={() => toggleAtividade(atividade.id)}
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            toggleAtividade(atividade.id);
+                          }}
                           aria-label={
                             visitado
                               ? "Remover check-in"
                               : "Marcar como realizada"
                           }
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-200 ${
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                             visitado
-                              ? "border-green-500 bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400"
-                              : "border-border bg-background text-muted-foreground hover:border-green-400 hover:text-green-600"
+                              ? "bg-green-50 text-green-700 hover:bg-green-100"
+                              : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
                           }`}
                         >
                           {visitado ? (
@@ -220,24 +238,111 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
                           {visitado ? "Fiz esta!" : "Não fiz"}
                         </button>
                       )}
+                      <span className="text-xs font-semibold text-muted-foreground transition-colors group-hover:text-primary">
+                        Ver detalhes
+                      </span>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+                  </div>
+                </motion.article>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
-          <div className="mt-12">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 rounded-full border-2 border-primary px-8 py-3 font-display text-sm uppercase tracking-wide text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+      {selectedAtividade && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedAtividade(null);
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="atividade-dialog-title"
+            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedAtividade(null)}
+              className="absolute right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all hover:bg-destructive hover:text-white"
+              aria-label="Fechar detalhes do atrativo"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Voltar ao Início
-            </Link>
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="relative h-56 w-full shrink-0 bg-muted sm:h-72">
+              {safeMediaUrl(selectedAtividade.logoUrl) ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={safeMediaUrl(selectedAtividade.logoUrl)}
+                    alt={selectedAtividade.titulo}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                </>
+              ) : (
+                <div className="relative flex h-full w-full items-center justify-center bg-primary/5">
+                  <MapPin className="h-20 w-20 text-primary/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                </div>
+              )}
+            </div>
+
+            <div className="relative -mt-8 flex-1 overflow-y-auto px-6 pb-8 sm:-mt-12 sm:px-10 sm:pb-10">
+              <div className="mb-5 flex">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary shadow-sm">
+                  <MapPin className="h-4 w-4" />
+                  Atrativo
+                </div>
+              </div>
+
+              <h3
+                id="atividade-dialog-title"
+                className="font-display text-3xl font-bold uppercase leading-tight text-foreground sm:text-5xl"
+              >
+                {selectedAtividade.titulo}
+              </h3>
+
+              {selectedAtividade.local && (
+                <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-border/50 bg-muted/50 px-4 py-2.5 text-muted-foreground">
+                  <MapPin className="h-5 w-5 text-accent" />
+                  <span className="text-sm font-medium sm:text-base">
+                    {selectedAtividade.local}
+                  </span>
+                </div>
+              )}
+
+              <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-6">
+                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Sobre o Atrativo
+                </h4>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 sm:text-base">
+                  {selectedAtividade.descricao ||
+                    "Nenhuma descrição detalhada disponível para este atrativo."}
+                </p>
+              </div>
+
+              {selectedAtividade.latitude != null &&
+                selectedAtividade.longitude != null && (
+                  <a
+                    href={`https://maps.google.com/?q=${selectedAtividade.latitude},${selectedAtividade.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    Ver localização no mapa
+                  </a>
+                )}
+            </div>
           </div>
         </div>
-      </section>
+      )}
     </main>
   );
 }
