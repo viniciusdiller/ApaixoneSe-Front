@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowLeft,
@@ -10,7 +11,6 @@ import {
   CheckCircle2,
   Circle,
   MapPin,
-  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { RoteiroMeta } from "@/lib/roteiros";
@@ -34,12 +34,10 @@ function AtividadeSkeleton() {
 }
 
 export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
+  const router = useRouter();
   const [atividades, setAtividades] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [selectedAtividade, setSelectedAtividade] = useState<Atividade | null>(
-    null,
-  );
   const { atividadesVisitadas, isLogado, toggleAtividade } = useVisitas();
 
   useEffect(() => {
@@ -53,16 +51,9 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
       .finally(() => setLoading(false));
   }, [roteiro.enum]);
 
-  useEffect(() => {
-    if (!selectedAtividade) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedAtividade(null);
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedAtividade]);
+  const abrirAtividade = (atividade: Atividade) => {
+    router.push(`/roteiros/${roteiro.slug}/atividades/${atividade.id}`);
+  };
 
   return (
     <main className="min-h-screen bg-background">
@@ -108,7 +99,7 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
           </h2>
           <p className="mt-3 text-muted-foreground">
             Encontre experiências, lugares e atividades para aproveitar este
-            roteiro. Clique em um atrativo para ver todos os detalhes.
+            roteiro. Clique em um atrativo para abrir sua página completa.
           </p>
         </div>
 
@@ -154,17 +145,17 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  role="button"
+                  role="link"
                   tabIndex={0}
-                  aria-label={`Ver detalhes de ${atividade.titulo}`}
-                  onClick={() => setSelectedAtividade(atividade)}
+                  aria-label={`Abrir página de ${atividade.titulo}`}
+                  onClick={() => abrirAtividade(atividade)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
-                      setSelectedAtividade(atividade);
+                      abrirAtividade(atividade);
                     }
                   }}
-                  className="group block overflow-hidden rounded-2xl border border-border bg-card text-left transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  className="group block cursor-pointer overflow-hidden rounded-2xl border border-border bg-card text-left transition-shadow hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 >
                   <div className="relative h-48 overflow-hidden bg-primary/20">
                     {mediaUrl && (
@@ -249,100 +240,6 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
           </div>
         )}
       </section>
-
-      {selectedAtividade && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-opacity"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setSelectedAtividade(null);
-            }
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="atividade-dialog-title"
-            className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
-          >
-            <button
-              type="button"
-              onClick={() => setSelectedAtividade(null)}
-              className="absolute right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-all hover:bg-destructive hover:text-white"
-              aria-label="Fechar detalhes do atrativo"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="relative h-56 w-full shrink-0 bg-muted sm:h-72">
-              {safeMediaUrl(selectedAtividade.logoUrl) ? (
-                <>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={safeMediaUrl(selectedAtividade.logoUrl)}
-                    alt={selectedAtividade.titulo}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-                </>
-              ) : (
-                <div className="relative flex h-full w-full items-center justify-center bg-primary/5">
-                  <MapPin className="h-20 w-20 text-primary/20" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-                </div>
-              )}
-            </div>
-
-            <div className="relative -mt-8 flex-1 overflow-y-auto px-6 pb-8 sm:-mt-12 sm:px-10 sm:pb-10">
-              <div className="mb-5 flex">
-                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary shadow-sm">
-                  <MapPin className="h-4 w-4" />
-                  Atrativo
-                </div>
-              </div>
-
-              <h3
-                id="atividade-dialog-title"
-                className="font-display text-3xl font-bold uppercase leading-tight text-foreground sm:text-5xl"
-              >
-                {selectedAtividade.titulo}
-              </h3>
-
-              {selectedAtividade.local && (
-                <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-border/50 bg-muted/50 px-4 py-2.5 text-muted-foreground">
-                  <MapPin className="h-5 w-5 text-accent" />
-                  <span className="text-sm font-medium sm:text-base">
-                    {selectedAtividade.local}
-                  </span>
-                </div>
-              )}
-
-              <div className="mt-8 rounded-2xl border border-border bg-muted/30 p-6">
-                <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Sobre o Atrativo
-                </h4>
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 sm:text-base">
-                  {selectedAtividade.descricao ||
-                    "Nenhuma descrição detalhada disponível para este atrativo."}
-                </p>
-              </div>
-
-              {selectedAtividade.latitude != null &&
-                selectedAtividade.longitude != null && (
-                  <a
-                    href={`https://maps.google.com/?q=${selectedAtividade.latitude},${selectedAtividade.longitude}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
-                  >
-                    <MapPin className="h-4 w-4" />
-                    Ver localização no mapa
-                  </a>
-                )}
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
