@@ -67,7 +67,7 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
             Voltar para página inicial
           </Link>
           <p className="mb-2 text-sm uppercase tracking-[0.3em] text-primary-foreground/60">
-            Roteiro
+            Roteiro {roteiro.label}
           </p>
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl"></h1>
           <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
@@ -81,7 +81,7 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
         <div className="container mx-auto max-w-5xl">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-3xl font-bold uppercase text-foreground">
-              Atividades
+              Atrativos
             </h2>
             <div className="flex items-center gap-3">
               {isLogado && !loading && !error && atividades.length > 0 && (
