@@ -1,4 +1,5 @@
 "use client";
+import { formatDisplayText } from "@/lib/textDisplay";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -112,8 +113,8 @@ export default function LagoaDetalhesPage() {
         {/* Descrição Completa */}
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <h2 className="text-2xl font-bold">Sobre a Lagoa</h2>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {lagoa.descricao}
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {formatDisplayText(lagoa.descricao)}
           </p>
         </div>
 

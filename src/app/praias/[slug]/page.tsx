@@ -1,4 +1,5 @@
 "use client";
+import { formatDisplayText } from "@/lib/textDisplay";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -114,7 +115,7 @@ export default function PraiaDetalhePage() {
             Sobre a Praia
           </h2>
           <p className="leading-relaxed text-muted-foreground">
-            {praia.descricao}
+            {formatDisplayText(praia.descricao)}
           </p>
         </div>
 

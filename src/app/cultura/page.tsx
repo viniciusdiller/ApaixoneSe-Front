@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatDisplayText } from "@/lib/textDisplay";
 import { motion, AnimatePresence } from "framer-motion";
 import { culturaApi } from "@/lib/api";
 import type { LocalCultural } from "@/lib/api";
@@ -224,8 +225,8 @@ export default function CulturaPage() {
                   {localSelecionado.nome}
                 </h3>
                 <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
-                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {localSelecionado.texto || localSelecionado.descricao}
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {formatDisplayText(localSelecionado.texto || localSelecionado.descricao)}
                   </p>
                 </div>
               </div>

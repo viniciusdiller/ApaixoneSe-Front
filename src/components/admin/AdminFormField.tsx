@@ -33,7 +33,6 @@ export const AdminFormField = forwardRef<
       typeof maxLength === "number" && rawValue.length > maxLength
         ? rawValue.slice(0, maxLength)
         : rawValue;
-
     if (onChange) {
       onChange(nextValue);
     }
