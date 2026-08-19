@@ -1,4 +1,5 @@
 "use client";
+import { formatDisplayText } from "@/lib/textDisplay";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -309,8 +310,8 @@ export default function CatPage() {
                       Sobre o CAT
                     </h2>
                   </div>
-                  <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-                    {cat.texto}
+                  <p className="whitespace-pre-wrap text-base leading-relaxed text-muted-foreground">
+                    {formatDisplayText(cat.texto)}
                   </p>
                 </div>
                 {imagens.length > 0 && <Carousel urls={imagens} />}

@@ -385,7 +385,7 @@ export default function AdminCatPage() {
           {/* Modal Criar/Editar */}
           <AdminModal title={modal.editing ? "Editar CAT" : "Novo Registro CAT"} open={modal.open} onClose={closeModal}>
             <form onSubmit={handleSave} className="space-y-5">
-              <AdminFormField label="Texto descritivo" value={texto} onChange={setTexto} multiline required />
+              <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 5000))} maxLength={5000} multiline required />
               <ImageManager images={images} onChange={setImages} />
               <VideoUpload newFile={newVideo} existingUrl={displayedVideoUrl} onChange={(f) => { setNewVideo(f); setVideoCleared(false); }} onClear={() => { setNewVideo(null); setVideoCleared(true); }} />
               {videoCleared && !newVideo && (
@@ -476,11 +476,13 @@ export default function AdminCatPage() {
             <form onSubmit={handleSaveMovel} className="px-6 py-5 space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Título *</label>
-                <input value={movelForm.titulo} onChange={(e) => setMovelForm((f) => ({ ...f, titulo: e.target.value }))} required className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition" placeholder="Título do CAT Móvel" />
+                <input value={movelForm.titulo} onChange={(e) => setMovelForm((f) => ({ ...f, titulo: e.target.value.slice(0, 150) }))} maxLength={150} required className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition" placeholder="Título do CAT Móvel" />
+                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground"><span>{movelForm.titulo.length}/150</span></div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Descrição *</label>
-                <textarea value={movelForm.descricao} onChange={(e) => setMovelForm((f) => ({ ...f, descricao: e.target.value }))} required rows={4} className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition" placeholder="Descrição do CAT Móvel" />
+                <textarea value={movelForm.descricao} onChange={(e) => setMovelForm((f) => ({ ...f, descricao: e.target.value.slice(0, 5000) }))} maxLength={5000} required rows={4} className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition" placeholder="Descrição do CAT Móvel" />
+                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground"><span>{movelForm.descricao.length}/5000</span></div>
               </div>
 
               {/* Imagem */}

@@ -1,4 +1,5 @@
 "use client";
+import { formatDisplayText } from "@/lib/textDisplay";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -113,8 +114,8 @@ export default function PraiaDetalhePage() {
           <h2 className="mb-4 font-display text-2xl font-bold uppercase text-foreground">
             Sobre a Praia
           </h2>
-          <p className="leading-relaxed text-muted-foreground">
-            {praia.descricao}
+            <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
+            {formatDisplayText(praia.descricao)}
           </p>
         </div>
 
