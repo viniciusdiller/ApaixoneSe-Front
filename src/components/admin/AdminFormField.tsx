@@ -38,10 +38,12 @@ export const AdminFormField = forwardRef<
     }
   };
 
+  const displayValue =
+    mask && typeof props.value === "string" ? mask(props.value) : props.value;
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
   const valueLength =
-    typeof props.value === "string" ? props.value.length : 0;
+    typeof displayValue === "string" ? displayValue.length : 0;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -59,6 +61,7 @@ export const AdminFormField = forwardRef<
           ref={ref as React.Ref<HTMLTextAreaElement>}
           onChange={handleChange}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+          value={displayValue}
         />
       ) : (
         <div className="relative">
@@ -69,6 +72,7 @@ export const AdminFormField = forwardRef<
             ref={ref as React.Ref<HTMLInputElement>}
             onChange={handleChange}
             {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+            value={displayValue}
           />
 
           {isPassword && (

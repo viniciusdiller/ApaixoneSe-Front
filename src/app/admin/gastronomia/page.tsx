@@ -420,11 +420,14 @@ export default function AdminGastronomiaPage() {
               </div>
             )}
             <dl className="grid grid-cols-2 gap-3 text-sm">
-              <ViewRow label="Telefone" value={viewing.telefone} />
-              <ViewRow label="CNPJ" value={viewing.cnpj} />
+              <ViewRow label="Telefone" value={maskPhone(viewing.telefone)} />
+              <ViewRow label="CNPJ" value={maskCnpj(viewing.cnpj)} />
               <ViewRow label="Instagram" value={viewing.instagram} />
               <ViewRow label="Responsável" value={viewing.responsavelNome} />
-              <ViewRow label="CPF Responsável" value={viewing.responsavelCpf} />
+              <ViewRow
+                label="CPF Responsável"
+                value={maskCpf(viewing.responsavelCpf)}
+              />
             </dl>
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Especialidade" value={viewing.especialidade} />

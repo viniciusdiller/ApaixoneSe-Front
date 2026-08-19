@@ -166,7 +166,11 @@ export default function AdminCasaDeCambioPage() {
               ),
             },
             { key: "nome", label: "Nome" },
-            { key: "telefone", label: "Telefone" },
+            {
+              key: "telefone",
+              label: "Telefone",
+              render: (_val, row) => maskPhone(row.telefone),
+            },
             { key: "endereco", label: "Endereço" },
             {
               key: "status",
@@ -221,7 +225,7 @@ export default function AdminCasaDeCambioPage() {
                 {viewing.status}
               </span>
             </div>
-            <ViewRow label="Telefone" value={viewing.telefone} />
+            <ViewRow label="Telefone" value={maskPhone(viewing.telefone)} />
             <ViewRow label="Endereço" value={viewing.endereco} />
           </div>
         )}
