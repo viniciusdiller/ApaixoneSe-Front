@@ -494,11 +494,14 @@ export default function AdminHospedagemPage() {
               </div>
             )}
             <dl className="grid grid-cols-2 gap-3 text-sm">
-              <ViewRow label="Telefone" value={viewing.telefone} />
-              <ViewRow label="CNPJ" value={viewing.cnpj} />
+              <ViewRow label="Telefone" value={maskPhone(viewing.telefone)} />
+              <ViewRow label="CNPJ" value={maskCnpj(viewing.cnpj)} />
               <ViewRow label="Instagram" value={viewing.instagram} />
               <ViewRow label="Responsável" value={viewing.responsavelNome} />
-              <ViewRow label="CPF Responsável" value={viewing.responsavelCpf} />
+              <ViewRow
+                label="CPF Responsável"
+                value={maskCpf(viewing.responsavelCpf)}
+              />
               {(viewing as Hospedagem & { site?: string }).site && (
                 <div className="flex flex-col gap-0.5">
                   <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">

@@ -482,8 +482,11 @@ export default function AdminServicosPage() {
             </div>
             <dl className="grid grid-cols-2 gap-3 text-sm">
               <ViewRow label="Tipo" value={tipoLabel(viewing.tipo)} />
-              <ViewRow label="Telefone" value={viewing.telefone} />
-              <ViewRow label="CNPJ" value={viewing.cnpj} />
+              <ViewRow label="Telefone" value={maskPhone(viewing.telefone)} />
+              <ViewRow
+                label="CNPJ"
+                value={viewing.cnpj ? maskCnpj(viewing.cnpj) : undefined}
+              />
               <ViewRow label="Idiomas" value={viewing.idiomas} />
               <ViewRow label="Instagram" value={viewing.instagram} />
               <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
