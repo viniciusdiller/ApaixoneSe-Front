@@ -215,14 +215,14 @@ export default function AdminCulturaPage() {
             label="Nome"
             value={form.nome}
             onChange={set("nome")}
-            maxLength={100}
+            maxLength={60}
             required
           />
           <AdminFormField
             label="Descrição (curta, exibida no card)"
             value={form.descricao}
             onChange={set("descricao")}
-            maxLength={150}
+            maxLength={280}
             multiline
             required
           />
