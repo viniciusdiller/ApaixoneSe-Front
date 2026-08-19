@@ -647,32 +647,24 @@ export default function AdminServicosPage() {
           />
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Especialidade (opcional)
+              Roteiro (opcional)
             </label>
             <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
               {ROTEIROS.map((roteiro) => {
-                const roteirosArray = form.roteiro
-                  ? form.roteiro.split(", ")
-                  : [];
-                const isChecked = roteirosArray.includes(roteiro.value);
+                const isSelected = form.roteiro === roteiro.value;
                 return (
                   <label
                     key={roteiro.value}
                     className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors"
                   >
                     <input
-                      type="checkbox"
-                      className="rounded border-border text-primary focus:ring-primary h-4 w-4"
-                      checked={isChecked}
-                      onChange={(e) => {
-                        const current = form.roteiro
-                          ? form.roteiro.split(", ")
-                          : [];
-                        const updated = e.target.checked
-                          ? [...current, roteiro.value]
-                          : current.filter((i) => i !== roteiro.value);
-                        setField("roteiro", updated.join(", "));
-                      }}
+                      type="radio"
+                      name="roteiro"
+                      value={roteiro.value}
+                      className="rounded-full border-border text-primary focus:ring-primary h-4 w-4"
+                      checked={isSelected}
+                      required={form.tipo === "GUIA_TURISMO"}
+                      onChange={() => setField("roteiro", roteiro.value)}
                     />
                     {roteiro.label}
                   </label>
