@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { formatDisplayText } from "@/lib/textDisplay";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -267,8 +268,8 @@ export default function SecretariaTurismoPage() {
                         Sobre a Secretaria
                       </h2>
                     </div>
-                    <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">
-                      {secretaria.textoExplicativo}
+                    <p className="whitespace-pre-wrap text-base leading-relaxed text-muted-foreground">
+                      {formatDisplayText(secretaria.textoExplicativo)}
                     </p>
                   </div>
                 </div>
@@ -312,8 +313,8 @@ export default function SecretariaTurismoPage() {
                           <h3 className="mb-3 text-lg font-semibold text-foreground">
                             {t.titulo}
                           </h3>
-                          <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-                            {t.texto}
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                            {formatDisplayText(t.texto)}
                           </p>
                         </div>
                         {t.imagensUrl?.length > 0 && (

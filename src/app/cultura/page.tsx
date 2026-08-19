@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatDisplayText } from "@/lib/textDisplay";
 import { motion, AnimatePresence } from "framer-motion";
 import { culturaApi } from "@/lib/api";
 import type { LocalCultural } from "@/lib/api";
@@ -79,26 +80,27 @@ export default function CulturaPage() {
             Nenhum local cultural cadastrado ainda.
           </p>
         ) : (
-          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="mt-8 grid auto-rows-[210px] grid-cols-1 gap-5 md:auto-rows-[230px] md:grid-cols-3">
             {locais.map((local, i) => (
               <motion.div
                 key={local.id}
                 initial={{ opacity: 0, y: 26 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
+                className="h-full"
               >
                 <article
                   onClick={() => setLocalSelecionado(local)}
-                  className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
+                  className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   <h3 className="relative z-10 font-display text-2xl uppercase transition-colors group-hover:text-primary">
                     {local.nome}
                   </h3>
-                  <p className="relative z-10 mt-2 text-sm text-muted-foreground line-clamp-3">
+                  <p className="relative z-10 mt-2 min-h-0 flex-1 overflow-hidden text-sm leading-5 text-muted-foreground line-clamp-6">
                     {local.descricao}
                   </p>
-                  <p className="relative z-10 mt-4 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
+                  <p className="relative z-10 mt-2 shrink-0 text-sm font-semibold text-primary transition-colors group-hover:text-primary/80">
                     Ler mais &rarr;
                   </p>
                 </article>
@@ -224,8 +226,8 @@ export default function CulturaPage() {
                   {localSelecionado.nome}
                 </h3>
                 <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
-                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {localSelecionado.texto || localSelecionado.descricao}
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    {formatDisplayText(localSelecionado.texto || localSelecionado.descricao)}
                   </p>
                 </div>
               </div>
