@@ -36,12 +36,6 @@ export default function RoteirosPage() {
       </section>
 
             <BentoGrid />
-
-      <section className="container mx-auto px-4 pb-14 pt-2">
-        <CadasturSection />
-      </section>
-
-      
     </div>
   );
 }
