@@ -100,6 +100,38 @@ export default function HistoriaPage() {
         </div>
       </section>
 
+      
+      <section className=" px-4 py-14">
+        <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
+          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
+            <h2 className="font-display text-3xl uppercase text-primary">
+              Casa da Pedra - O Artesanato que Conta a História de Saquarema
+            </h2>
+            <p className="mt-5 text-muted-foreground">
+              A Casa da Pedra é um espaço onde a identidade cultural de
+              Saquarema ganha forma pelas mãos de seus artesãos. O local
+              valoriza os saberes tradicionais, a criatividade e a economia
+              criativa, reunindo peças únicas que transformam materiais,
+              memórias e inspirações do território em arte. Cada artesanato
+              carrega a essência de Saquarema, representando as cores do mar, a
+              cultura caiçara, a riqueza da natureza e tradições que atravessam
+              gerações. Ao prestigiar o artesanato local, moradores e turistas
+              conhecem a cultura do município, fortalecem os artistas da cidade
+              e contribuem para a preservação de suas tradições e para o
+              desenvolvimento da economia criativa.
+            </p>
+          </article>
+          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-2xl md:border md:border-border md:bg-card md:p-8 md:shadow-sm">
+            <h2 className="font-display text-3xl uppercase text-primary">
+              Artesanato Local
+            </h2>
+            <div className="mt-4 h-48 w-full md:h-64">
+              <CarroselArtesanato />
+            </div>
+          </article>
+        </div>
+      </section>
+      
       <section className="container mx-auto px-4 py-16">
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
           Lugares Culturais
@@ -155,37 +187,6 @@ export default function HistoriaPage() {
             ))}
           </div>
         )}
-      </section>
-      
-      <section className=" px-4 py-14">
-        <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
-          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
-            <h2 className="font-display text-3xl uppercase text-primary">
-              Casa da Pedra - O Artesanato que Conta a História de Saquarema
-            </h2>
-            <p className="mt-5 text-muted-foreground">
-              A Casa da Pedra é um espaço onde a identidade cultural de
-              Saquarema ganha forma pelas mãos de seus artesãos. O local
-              valoriza os saberes tradicionais, a criatividade e a economia
-              criativa, reunindo peças únicas que transformam materiais,
-              memórias e inspirações do território em arte. Cada artesanato
-              carrega a essência de Saquarema, representando as cores do mar, a
-              cultura caiçara, a riqueza da natureza e tradições que atravessam
-              gerações. Ao prestigiar o artesanato local, moradores e turistas
-              conhecem a cultura do município, fortalecem os artistas da cidade
-              e contribuem para a preservação de suas tradições e para o
-              desenvolvimento da economia criativa.
-            </p>
-          </article>
-          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-2xl md:border md:border-border md:bg-card md:p-8 md:shadow-sm">
-            <h2 className="font-display text-3xl uppercase text-primary">
-              Artesanato Local
-            </h2>
-            <div className="mt-4 h-48 w-full md:h-64">
-              <CarroselArtesanato />
-            </div>
-          </article>
-        </div>
       </section>
 
       <AnimatePresence>
