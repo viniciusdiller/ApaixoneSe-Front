@@ -70,24 +70,27 @@ export function ServicoTuristaListPage({
   const imgUrl = (s: ServicoTurista) =>
     safeMediaUrl(s.logoUrl ?? s.fotoUrl) || imagemFallback;
 
-  const getRoteiroLabel = (s: ServicoTurista) =>
-    s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.label ?? null : null;
-
-  const getRoteiroSlug = (s: ServicoTurista) =>
-    s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.slug ?? null : null;
+  const getRoteirosMeta = (s: ServicoTurista) =>
+    Array.isArray(s.roteiros)
+      ? s.roteiros
+          .map((r) => ROTEIROS.find((rt) => rt.enum === r))
+          .filter((r): r is (typeof ROTEIROS)[number] => Boolean(r))
+      : [];
 
   const exigeCadastur = EXIGE_CADASTUR.includes(tipo);
 
   // Coleta apenas os roteiros presentes nesta lista de serviços
   const roteirosDisponiveis = useMemo(() => {
-    const enums = new Set(servicos.map((s) => s.roteiro).filter(Boolean));
+    const enums = new Set(servicos.flatMap((s) => s.roteiros ?? []));
     return ROTEIROS.filter((r) => enums.has(r.enum));
   }, [servicos]);
 
   // Filtra serviços pelo roteiro ativo
   const servicosFiltrados = useMemo(() => {
     if (!roteiroAtivo) return servicos;
-    return servicos.filter((s) => s.roteiro === roteiroAtivo);
+    return servicos.filter((s) =>
+      (s.roteiros ?? []).some((r) => r === roteiroAtivo),
+    );
   }, [servicos, roteiroAtivo]);
 
   return (
@@ -229,14 +232,16 @@ export function ServicoTuristaListPage({
                         `Telefone: ${servico.telefone}`}
                     </p>
 
-                    {/* Roteiro vinculado */}
-                    {getRoteiroLabel(servico) && (
-                      <div className="mt-3 flex items-center gap-1.5">
-                        <Route className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    {/* Roteiros vinculados */}
+                    {getRoteirosMeta(servico).length > 0 && (
+                      <div className="mt-3 flex items-start gap-1.5">
+                        <Route className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                         <span className="text-xs text-muted-foreground">
-                          Roteiro:{" "}
+                          Roteiros:{" "}
                           <span className="font-semibold text-foreground">
-                            {getRoteiroLabel(servico)}
+                            {getRoteirosMeta(servico)
+                              .map((r) => r.label)
+                              .join(", ")}
                           </span>
                         </span>
                       </div>
@@ -305,17 +310,18 @@ export function ServicoTuristaListPage({
                     {selecionado.nome}
                   </h3>
 
-                  {/* Badges: roteiro + idiomas */}
+                  {/* Badges: roteiros + idiomas */}
                   <div className="mb-4 flex flex-wrap gap-2">
-                    {getRoteiroLabel(selecionado) && (
+                    {getRoteirosMeta(selecionado).map((r) => (
                       <Link
-                        href={`/roteiros/${getRoteiroSlug(selecionado)}`}
+                        key={r.enum}
+                        href={`/roteiros/${r.slug}`}
                         className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
                       >
                         <Route className="h-3 w-3" />
-                        Roteiro {getRoteiroLabel(selecionado)}
+                        Roteiro {r.label}
                       </Link>
-                    )}
+                    ))}
                     {selecionado.idiomas && (
                       <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                         Idiomas: {selecionado.idiomas}
