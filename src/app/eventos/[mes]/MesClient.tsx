@@ -10,11 +10,11 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 function formatarData(isoDate: string): string {
   try {
-    const d = new Date(isoDate);
-    return d.toLocaleDateString("pt-BR", {
+    return new Date(isoDate).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
+      timeZone: "UTC",
     });
   } catch {
     return isoDate;

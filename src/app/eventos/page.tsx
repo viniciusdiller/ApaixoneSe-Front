@@ -59,8 +59,7 @@ export default function EventosPage() {
         const agrupados: Record<string, string[]> = {};
         eventos.forEach((evento: any) => {
           if (evento.data && evento.titulo) {
-            const dataEvento = new Date(evento.data);
-            const mesIndex = dataEvento.getMonth();
+            const mesIndex = Number(evento.data.slice(5, 7)) - 1;
             const slugMes = slugs[mesIndex];
             if (!agrupados[slugMes]) agrupados[slugMes] = [];
             agrupados[slugMes].push(evento.titulo);

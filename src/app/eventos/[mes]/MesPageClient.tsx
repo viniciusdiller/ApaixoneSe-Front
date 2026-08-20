@@ -44,12 +44,8 @@ export function MesPageClient({ mes, mesAtual }: Props) {
       .getAll()
       .then((data) => {
         const filtrados = data.filter((e) => {
-          try {
-            const d = new Date(e.data);
-            return d.getMonth() + 1 === mesNumero;
-          } catch {
-            return false;
-          }
+          const mesEvento = Number(e.data?.slice(5, 7));
+          return mesEvento === mesNumero;
         });
         filtrados.sort(
           (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()

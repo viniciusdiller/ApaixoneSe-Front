@@ -245,8 +245,7 @@ export default function AdminEventosPage() {
               {
                 key: "data",
                 label: "Data",
-                render: (_val, row) =>
-                  new Date(row.data).toLocaleDateString("pt-BR"),
+                render: (_val, row) => toDisplay(row.data),
               },
             ]}
             extraActions={(row) => (
@@ -299,7 +298,7 @@ export default function AdminEventosPage() {
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow
               label="Data"
-              value={new Date(viewing.data).toLocaleDateString("pt-BR")}
+              value={toDisplay(viewing.data)}
             />
             <ViewRow label="Descrição" value={viewing.descricao} />
           </dl>
