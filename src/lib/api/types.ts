@@ -210,7 +210,7 @@ export interface ServicoTurista {
   descricao?: string | null;
   endereco?: string | null;
   cnpj?: string | null;
-  roteiro?: TipoRoteiro | null;
+  roteiros?: TipoRoteiro[] | null;
   idiomas?: string | null;
   modalidades?: string[] | null;
   logoUrl?: string | null;
@@ -234,7 +234,7 @@ export interface CreateServicoTuristaDto {
   descricao?: string;
   endereco?: string;
   cnpj?: string;
-  roteiro?: TipoRoteiro;
+  roteiros?: TipoRoteiro[];
   idiomas?: string;
   modalidades?: string[];
   logoUrl?: string;
