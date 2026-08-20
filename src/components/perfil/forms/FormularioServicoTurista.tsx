@@ -5,6 +5,7 @@ import { notify } from "@/lib/feedback";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { servicoTuristaApi } from "@/lib/api";
+import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
@@ -26,6 +27,7 @@ import {
   Route,
   Building2,
   Trash2,
+  Tag,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -69,6 +71,7 @@ const emptyForm = {
   site: "",
   idiomas: "",
   roteiro: "",
+  modalidades: [] as string[],
   logoUrl: "",
   fotoUrl: "",
 };
@@ -88,16 +91,29 @@ export function FormularioServico({
     logo?: File;
     foto?: File;
     comprovante?: File;
+    documentoCnpj?: File;
   }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
+  const documentoCnpjRef = useRef<HTMLInputElement>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (modo === "editar" && dadosIniciais) {
+      const existingModalidades: string[] = (() => {
+        const raw = dadosIniciais.modalidades;
+        if (!raw) return [];
+        if (Array.isArray(raw)) return raw as string[];
+        try {
+          return JSON.parse(raw as unknown as string) as string[];
+        } catch {
+          return [];
+        }
+      })();
+
       setForm({
         tipo: dadosIniciais.tipo ?? "GUIA_TURISMO",
         nome: dadosIniciais.nome ?? "",
@@ -109,6 +125,7 @@ export function FormularioServico({
         site: dadosIniciais.site ?? "",
         idiomas: dadosIniciais.idiomas ?? "",
         roteiro: dadosIniciais.roteiro ?? "",
+        modalidades: existingModalidades,
         logoUrl: dadosIniciais.logoUrl ?? "",
         fotoUrl: dadosIniciais.fotoUrl ?? "",
       });
@@ -136,6 +153,18 @@ export function FormularioServico({
 
   const setField = (k: string, value: string) =>
     setForm((prev) => ({ ...prev, [k]: value }));
+
+  const toggleModalidade = (modalidade: string) => {
+    setForm((prev) => {
+      const current = prev.modalidades ?? [];
+      return {
+        ...prev,
+        modalidades: current.includes(modalidade)
+          ? current.filter((m) => m !== modalidade)
+          : [...current, modalidade],
+      };
+    });
+  };
 
   /** Valida todos os campos e retorna um mapa de erros. */
   const runValidations = (): FieldErrors => {
@@ -180,6 +209,20 @@ export function FormularioServico({
       return;
     }
 
+    const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
+    if (isEsporteLazer && form.modalidades.length === 0) {
+      setError("Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).");
+      return;
+    }
+    if (
+      isEsporteLazer &&
+      !dadosIniciais?.documentoCnpjUrl &&
+      !files.documentoCnpj
+    ) {
+      setError("O documento do CNPJ é obrigatório para Esporte/Lazer.");
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -194,10 +237,14 @@ export function FormularioServico({
       if (form.site) fd.append("site", form.site);
       if (form.idiomas) fd.append("idiomas", form.idiomas);
       if (form.roteiro) fd.append("roteiro", form.roteiro);
+      if (form.modalidades.length > 0)
+        fd.append("modalidades", JSON.stringify(form.modalidades));
 
       if (files.logo) fd.append("logo", files.logo);
       if (files.foto) fd.append("foto", files.foto);
       if (files.comprovante) fd.append("comprovante", files.comprovante);
+      if (files.documentoCnpj)
+        fd.append("documentoCnpj", files.documentoCnpj);
 
       if (modo === "editar" && estabelecimentoId) {
         await servicoTuristaApi.update(estabelecimentoId, fd);
@@ -240,6 +287,12 @@ export function FormularioServico({
   const comprovantePreviewUrl = files.comprovante
     ? URL.createObjectURL(files.comprovante)
     : safeMediaUrl(comprovanteExistente);
+
+  const requerDocumentoCnpj = form.tipo === "ESPORTE_LAZER";
+  const documentoCnpjExistente = dadosIniciais?.documentoCnpjUrl ?? null;
+  const documentoCnpjPreviewUrl = files.documentoCnpj
+    ? URL.createObjectURL(files.documentoCnpj)
+    : safeMediaUrl(documentoCnpjExistente);
 
   return (
     <>
@@ -415,6 +468,35 @@ export function FormularioServico({
                 ))}
               </select>
             </div>
+
+            {/* Modalidades (apenas Esporte/Lazer) */}
+            {form.tipo === "ESPORTE_LAZER" && (
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Tag className="h-3.5 w-3.5 text-primary" />
+                  MODALIDADES *
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  {MODALIDADES_ESPORTE.map((modalidade) => {
+                    const active = form.modalidades.includes(modalidade);
+                    return (
+                      <button
+                        key={modalidade}
+                        type="button"
+                        onClick={() => toggleModalidade(modalidade)}
+                        className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                          active
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        {MODALIDADE_LABELS[modalidade]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* ── Bloco 2: Identidade Visual ── */}
@@ -515,6 +597,68 @@ export function FormularioServico({
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Documento do CNPJ (apenas Esporte/Lazer) */}
+            {requerDocumentoCnpj && (
+              <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Documento do CNPJ
+                  </p>
+                  {!documentoCnpjExistente && (
+                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                      Obrigatório
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Arquivo{" "}
+                    {!documentoCnpjExistente && (
+                      <span className="text-red-500">*</span>
+                    )}{" "}
+                    — PDF ou imagem
+                  </label>
+                  {documentoCnpjPreviewUrl && (
+                    <div className="mb-2 mt-1">
+                      <a
+                        href={documentoCnpjPreviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+                      >
+                        <FileText size={14} />{" "}
+                        {files.documentoCnpj
+                          ? files.documentoCnpj.name
+                          : "Ver documento atual"}{" "}
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => documentoCnpjRef.current?.click()}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+                  >
+                    <FileText size={14} />
+                    {documentoCnpjExistente || files.documentoCnpj
+                      ? "Substituir Arquivo"
+                      : "Selecionar arquivo"}
+                  </button>
+                  <input
+                    ref={documentoCnpjRef}
+                    type="file"
+                    accept="application/pdf,image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) setFiles((p) => ({ ...p, documentoCnpj: f }));
                     }}
                   />
                 </div>
