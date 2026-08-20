@@ -1,10 +1,52 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Instagram, Send, Waves, Youtube, Globe } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Send,
+  Waves,
+  Youtube,
+  Globe,
+  Phone,
+  Flame,
+  Shield,
+  ShieldAlert,
+  Siren,
+  LifeBuoy,
+} from "lucide-react";
 import { useState } from "react";
 import { ondasNewsletterApi } from "@/lib/api/ondas-newsletter";
 import CarrosselLogo from "./CarroselLogo";
+
+const usefulNumbers = [
+  { label: "Bombeiros", display: "193", dial: "193", icon: Flame },
+  { label: "Polícia Militar", display: "190", dial: "190", icon: ShieldAlert },
+  {
+    label: "Polícia Civil (124ª DP)",
+    display: "(22) 99202-1973",
+    dial: "+5522992021973",
+    icon: Shield,
+  },
+  {
+    label: "Guarda Civil Municipal",
+    display: "153",
+    dial: "153",
+    icon: Siren,
+  },
+  {
+    label: "Salvamento Marítimo (Salvamar)",
+    display: "(22) 99993-6638",
+    dial: "+5522999936638",
+    icon: LifeBuoy,
+  },
+  {
+    label: "SAMU",
+    display: "192",
+    dial: "192",
+    icon: ShieldAlert,
+  },
+];
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -41,8 +83,8 @@ export function Footer() {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
-          <div>
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+          <div className="col-span-2 md:col-span-1">
             <div className="mb-4 flex items-center gap-2">
               <Waves className="h-7 w-7" />
               <span className="font-display text-xl font-bold">SAQUAREMA</span>
@@ -78,8 +120,7 @@ export function Footer() {
                   href="/historia"
                   className="transition-colors hover:text-primary-foreground"
                 >
-                                    História
-
+                  História
                 </Link>
               </li>
               <li>
@@ -162,10 +203,18 @@ export function Footer() {
                   Termos de Uso
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/legislacao"
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  Legislação
+                </Link>
+              </li>
             </ul>
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-1">
             <h4 className="mb-4 font-display text-sm uppercase tracking-wide text-accent">
               Conecte-se
             </h4>
@@ -242,7 +291,30 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-primary-foreground/10 pt-6 text-center text-xs text-primary-foreground/40">
+        <div className="mt-12 border-t border-primary-foreground/10 pt-8">
+          <h4 className="mb-4 flex items-center gap-2 font-display text-sm uppercase tracking-wide text-accent">
+            <Phone className="h-4 w-4" />
+            Números Úteis (Emergência)
+          </h4>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm text-primary-foreground/70 sm:grid-cols-3 lg:grid-cols-6">
+            {usefulNumbers.map((item) => (
+              <div key={item.label} className="flex items-start gap-2">
+                <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <div>
+                  <p className="text-primary-foreground">{item.label}</p>
+                  <a
+                    href={`tel:${item.dial}`}
+                    className="transition-colors hover:text-primary-foreground hover:underline"
+                  >
+                    {item.display}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-primary-foreground/10 pt-6 text-center text-xs text-primary-foreground/40">
           © {new Date().getFullYear()} Prefeitura Municipal de Saquarema. Todos
           os direitos reservados.
         </div>
