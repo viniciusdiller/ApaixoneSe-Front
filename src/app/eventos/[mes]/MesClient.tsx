@@ -7,19 +7,10 @@ import { ArrowLeft, CalendarDays, MapPin, AlertCircle, X } from "lucide-react";
 import type { MesData } from "@/lib/eventos";
 import type { Evento } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
-
-function formatarData(isoDate: string): string {
-  try {
-    return new Date(isoDate).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  } catch {
-    return isoDate;
-  }
-}
+import {
+  formatarPeriodoEvento,
+  formatarPeriodoEventoCurto,
+} from "@/lib/eventoPeriodo";
 
 interface Props {
   mesAtual: MesData;
@@ -159,7 +150,7 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
                         <CalendarDays className="mb-3 h-10 w-10 text-accent/50" />
                       )}
                       <span className="font-display font-semibold text-center leading-tight">
-                        {formatarData(evento.data)}
+                        {formatarPeriodoEventoCurto(evento.data, evento.dataFim)}
                       </span>
                     </div>
                   </button>
@@ -218,7 +209,7 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
               <div className="mb-5 flex">
                 <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary shadow-sm">
                   <CalendarDays className="h-4 w-4" />
-                  {formatarData(selectedEvento.data)}
+                  {formatarPeriodoEvento(selectedEvento.data, selectedEvento.dataFim)}
                 </div>
               </div>
 
