@@ -9,7 +9,7 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { X, ArrowLeft, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import CarroselCultura from "@/components/CarroselCultura";
+import CarroselArtesanato from "@/components/CarroselArtesanato";
 
 export default function HistoriaPage() {
   const [locais, setLocais] = useState<LocalCultural[]>([]);
@@ -31,7 +31,7 @@ export default function HistoriaPage() {
     <div className="min-h-screen bg-background">
       <section
         className="relative bg-cover bg-center px-4 pb-12 pt-32"
-        style={{ backgroundImage: "url('/images/header/cultura.jpeg')" }}
+        style={{ backgroundImage: "url('/images/header/historia.jpeg')" }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <motion.div
@@ -48,7 +48,7 @@ export default function HistoriaPage() {
             Voltar para página inicial
           </Link>
           <h1 className="font-display text-5xl font-bold uppercase text-white md:text-6xl">
-            Cultura
+            Historia
           </h1>
           <p className="mt-4 max-w-xl text-white/80">
             Conheça um pouco mais da tradição saquaremense.
@@ -182,7 +182,7 @@ export default function HistoriaPage() {
               Artesanato Local
             </h2>
             <div className="mt-4 h-48 w-full md:h-64">
-              <CarroselCultura />
+              <CarroselArtesanato />
             </div>
           </article>
         </div>
