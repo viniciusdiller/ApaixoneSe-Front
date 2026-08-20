@@ -8,11 +8,17 @@ import type { Evento, CreateEventoDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { AdminDateTimeField } from "@/components/admin/AdminDateTimeField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Plus, Eye, Pencil, Search, X } from "lucide-react";
+import {
+  formatarPeriodoEvento,
+  formatarPeriodoEventoCurto,
+  temHorarioReal,
+} from "@/lib/eventoPeriodo";
 
 const PAGE_SIZE = 10;
 
@@ -20,37 +26,29 @@ const empty: CreateEventoDto = {
   titulo: "",
   descricao: "",
   data: "",
+  dataFim: "",
   local: "",
   endereco: "",
   fotoUrl: "",
 };
 
+/** Converte um valor de <input type="datetime-local"> para ISO 8601 (UTC) */
+function fromDatetimeLocal(value: string): string {
+  return new Date(value).toISOString();
+}
+
 /**
- * Máscara visual: transforma input bruto em DD/MM/AAAA
- * - Aceita apenas dígitos, insere "/" automaticamente
- * - Limita o ano a 4 dígitos (máx 10 chars no total)
+ * Converte um ISO 8601 vindo da API para o formato aceito por
+ * <input type="datetime-local"> ("YYYY-MM-DDTHH:mm").
+ * Eventos legados (sem horário real, gravados como meia-noite UTC) mantêm o
+ * dia exatamente como gravado, sem passar pela conversão de fuso do browser.
  */
-function maskDate(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 8); // máx 8 dígitos
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-}
-
-/** Converte DD/MM/AAAA → YYYY-MM-DD para enviar à API */
-function toISO(display: string): string {
-  const [d, m, y] = display.split("/");
-  if (!d || !m || !y || y.length !== 4) return display;
-  return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-}
-
-/** Converte YYYY-MM-DD (ou ISO string) → DD/MM/AAAA para exibir no campo */
-function toDisplay(iso: string): string {
+function toDatetimeLocal(iso?: string | null): string {
   if (!iso) return "";
-  const clean = iso.slice(0, 10); // descarta hora se vier junto
-  const [y, m, d] = clean.split("-");
-  if (!y || !m || !d) return "";
-  return `${d}/${m}/${y}`;
+  if (!temHorarioReal(iso)) return `${iso.slice(0, 10)}T00:00`;
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export default function AdminEventosPage() {
@@ -62,7 +60,7 @@ export default function AdminEventosPage() {
     { open: false, editing: null },
   );
   const [viewing, setViewing] = useState<Evento | null>(null);
-  // form.data armazena DD/MM/AAAA (valor do campo visual)
+  // form.data / form.dataFim armazenam o valor no formato de <input type="datetime-local">
   const [form, setForm] = useState<CreateEventoDto>(empty);
   const [files, setFiles] = useState<{ foto?: File }>({});
   const [saving, setSaving] = useState(false);
@@ -113,8 +111,8 @@ export default function AdminEventosPage() {
     setForm({
       titulo: item.titulo,
       descricao: item.descricao,
-      // Converte YYYY-MM-DD para DD/MM/AAAA para exibir no campo com máscara
-      data: toDisplay(item.data ?? ""),
+      data: toDatetimeLocal(item.data),
+      dataFim: toDatetimeLocal(item.dataFim),
       local: item.local,
       endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
@@ -129,13 +127,25 @@ export default function AdminEventosPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!form.data) {
+      setError("Selecione a data de início.");
+      return;
+    }
+    if (form.dataFim && form.dataFim < form.data) {
+      setError("A data final do evento não pode ser anterior à data de início.");
+      return;
+    }
+
     setSaving(true);
     try {
       const formData = new FormData();
       formData.append("titulo", form.titulo);
       formData.append("descricao", form.descricao);
-      // Converte DD/MM/AAAA → YYYY-MM-DD antes de enviar à API
-      formData.append("data", toISO(form.data));
+      formData.append("data", fromDatetimeLocal(form.data));
+      if (form.dataFim) {
+        formData.append("dataFim", fromDatetimeLocal(form.dataFim));
+      }
       formData.append("local", form.local);
       if (form.endereco) formData.append("endereco", form.endereco);
       if (files.foto) formData.append("foto", files.foto);
@@ -245,7 +255,8 @@ export default function AdminEventosPage() {
               {
                 key: "data",
                 label: "Data",
-                render: (_val, row) => toDisplay(row.data),
+                render: (_val, row) =>
+                  formatarPeriodoEventoCurto(row.data, row.dataFim),
               },
             ]}
             extraActions={(row) => (
@@ -298,7 +309,7 @@ export default function AdminEventosPage() {
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow
               label="Data"
-              value={toDisplay(viewing.data)}
+              value={formatarPeriodoEvento(viewing.data, viewing.dataFim)}
             />
             <ViewRow label="Descrição" value={viewing.descricao} />
           </dl>
@@ -330,17 +341,28 @@ export default function AdminEventosPage() {
             onChange={set("endereco")}
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
-          <AdminFormField
-            label="Data"
-            value={form.data}
-            onChange={set("data")}
-            type="text"
-            inputMode="numeric"
-            placeholder="DD/MM/AAAA"
-            maxLength={10}
-            mask={maskDate}
-            required
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <AdminDateTimeField
+              label="Data e hora de início"
+              value={form.data}
+              onChange={(v) => setField("data", v)}
+              required
+            />
+            <AdminDateTimeField
+              label="Data e hora de fim (opcional)"
+              value={form.dataFim ?? ""}
+              onChange={(v) => setField("dataFim", v)}
+              minDate={form.data || undefined}
+            />
+          </div>
+          {!form.dataFim && modal.editing?.dataFim && (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+              Limitação atual da API: limpar a data de fim aqui não remove o
+              período já salvo — o backend ainda não tem um sinal explícito de
+              &ldquo;remover período&rdquo; no PUT parcial. O evento continuará
+              sendo tratado como um período até isso ser resolvido no backend.
+            </p>
+          )}
           <AdminFormField
             label="Descrição"
             value={form.descricao}
