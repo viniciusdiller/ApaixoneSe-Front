@@ -8,11 +8,13 @@ import {
   Languages,
   Route,
   Globe,
+  Tag,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { ROTEIROS } from "@/lib/roteiros";
+import { MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 
 const TIPO_LABEL: Record<TipoServicoTurista, string> = {
   GUIA_TURISMO: "Guia de Turismo",
@@ -53,6 +55,11 @@ export function ServicoTuristaCard({ servico, index }: Props) {
   const siteLabel = siteUrl
     ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
     : null;
+
+  const modalidades =
+    servico.tipo === "ESPORTE_LAZER" && Array.isArray(servico.modalidades)
+      ? servico.modalidades
+      : [];
 
   return (
     <motion.article
@@ -160,6 +167,20 @@ export function ServicoTuristaCard({ servico, index }: Props) {
                 {roteiroLabel}
               </span>
             </span>
+          </div>
+        )}
+
+        {modalidades.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Tag className="h-4 w-4 shrink-0 text-primary" />
+            {modalidades.map((m) => (
+              <span
+                key={m}
+                className="rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent-foreground"
+              >
+                {MODALIDADE_LABELS[m as keyof typeof MODALIDADE_LABELS] ?? m}
+              </span>
+            ))}
           </div>
         )}
 
