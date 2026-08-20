@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     "eventos Saquarema",
     "gastronomia Saquarema",
     "lagoas Saquarema",
-    "cultura Saquarema",
+    "história de Saquarema",
     "Rio de Janeiro turismo",
   ],
   authors: [{ name: "ApaixoneSe" }],

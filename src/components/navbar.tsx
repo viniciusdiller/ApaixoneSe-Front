@@ -23,7 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
   { label: "Praias & Lagoas", to: "/praias" },
-  { label: "Cultura", to: "/cultura" },
+  { label: "História", to: "/historia" },
   { label: "Eventos", to: "/eventos" },
   { label: "Gastronomia", to: "/gastronomia" },
   { label: "Hospedagem", to: "/hospedagens" },

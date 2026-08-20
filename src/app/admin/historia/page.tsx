@@ -21,7 +21,7 @@ const empty = {
   endereco: "",
 };
 
-export default function AdminCulturaPage() {
+export default function AdminHistoriaPage() {
   const [items, setItems] = useState<LocalCultural[]>([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState<{

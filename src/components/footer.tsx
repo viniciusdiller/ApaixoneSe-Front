@@ -75,10 +75,11 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/cultura"
+                  href="/historia"
                   className="transition-colors hover:text-primary-foreground"
                 >
-                  Cultura
+                                    História
+
                 </Link>
               </li>
               <li>

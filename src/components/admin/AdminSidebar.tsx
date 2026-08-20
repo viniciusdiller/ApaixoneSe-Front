@@ -33,7 +33,7 @@ const links = [
   },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
   { label: "Praias e Lagoas", href: "/admin/praias-lagoas", icon: Waves },
-  { label: "Cultura", href: "/admin/cultura", icon: Palette },
+  { label: "História", href: "/admin/historia", icon: Palette },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
   {
     label: "Evento Principal",
