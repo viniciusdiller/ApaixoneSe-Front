@@ -8,11 +8,19 @@ import { servicoTuristaApi } from "@/lib/api";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { ROTEIROS } from "@/lib/roteiros";
+import { CadasturSection } from "@/components/CadasturSection";
 
 // Tipos que exigem comprovante Cadastur (mesmos exigidos no cadastro admin)
 const EXIGE_CADASTUR: TipoServicoTurista[] = [
   "GUIA_TURISMO",
   "AGENCIA_TURISMO",
+  "LOCADORA_VEICULOS",
+];
+
+const EXIBE_CADASTUR: TipoServicoTurista[] = [
+  "GUIA_TURISMO",
+  "AGENCIA_TURISMO",
+  "ESPORTE_LAZER",
   "LOCADORA_VEICULOS",
 ];
 
@@ -77,6 +85,7 @@ export function ServicoTuristaListPage({
     s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.slug ?? null : null;
 
   const exigeCadastur = EXIGE_CADASTUR.includes(tipo);
+  const exibeCadastur = EXIBE_CADASTUR.includes(tipo);
 
   // Coleta apenas os roteiros presentes nesta lista de serviços
   const roteirosDisponiveis = useMemo(() => {
@@ -272,7 +281,14 @@ export function ServicoTuristaListPage({
         </div>
       </section>
 
+            {exibeCadastur && (
+        <section className="container mx-auto px-4 pb-14 pt-2">
+          <CadasturSection />
+        </section>
+      )}
+
       {/* Modal */}
+
       <AnimatePresence>
         {selecionado && (() => {
           const siteHref = buildSiteHref(selecionado.site);

@@ -19,6 +19,7 @@ import { pratosTipicos } from "@/lib/data";
 import { GastronomiaCard } from "./GastronomiaCard";
 import { useVisitas } from "@/hooks/useVisitas";
 import Link from "next/link";
+import { CadasturSection } from "@/components/CadasturSection";
 
 export function GastronomiaListPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
@@ -171,7 +172,12 @@ export function GastronomiaListPage() {
         </div>
       </section>
 
+            <section className="container mx-auto px-4 pb-14 pt-2">
+        <CadasturSection />
+      </section>
+
       {/* Modal */}
+
       <AnimatePresence>
         {selecionado && (
           <div
