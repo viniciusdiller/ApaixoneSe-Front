@@ -8,7 +8,7 @@ import type { Evento, CreateEventoDto } from "@/lib/api";
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
-import { AdminDateTimeField } from "@/components/admin/AdminDateTimeField";
+import { AdminDateField } from "@/components/admin/AdminDateField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
@@ -17,7 +17,6 @@ import { Plus, Eye, Pencil, Search, X } from "lucide-react";
 import {
   formatarPeriodoEvento,
   formatarPeriodoEventoCurto,
-  temHorarioReal,
 } from "@/lib/eventoPeriodo";
 
 const PAGE_SIZE = 10;
@@ -32,23 +31,14 @@ const empty: CreateEventoDto = {
   fotoUrl: "",
 };
 
-/** Converte um valor de <input type="datetime-local"> para ISO 8601 (UTC) */
-function fromDatetimeLocal(value: string): string {
-  return new Date(value).toISOString();
+/** Converte um valor "YYYY-MM-DD" para ISO 8601 em UTC (sem horário) */
+function fromDateValue(value: string): string {
+  return `${value}T00:00:00.000Z`;
 }
 
-/**
- * Converte um ISO 8601 vindo da API para o formato aceito por
- * <input type="datetime-local"> ("YYYY-MM-DDTHH:mm").
- * Eventos legados (sem horário real, gravados como meia-noite UTC) mantêm o
- * dia exatamente como gravado, sem passar pela conversão de fuso do browser.
- */
-function toDatetimeLocal(iso?: string | null): string {
-  if (!iso) return "";
-  if (!temHorarioReal(iso)) return `${iso.slice(0, 10)}T00:00`;
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+/** Converte um ISO 8601 vindo da API para "YYYY-MM-DD" (descarta horário) */
+function toDateValue(iso?: string | null): string {
+  return iso ? iso.slice(0, 10) : "";
 }
 
 export default function AdminEventosPage() {
@@ -111,8 +101,8 @@ export default function AdminEventosPage() {
     setForm({
       titulo: item.titulo,
       descricao: item.descricao,
-      data: toDatetimeLocal(item.data),
-      dataFim: toDatetimeLocal(item.dataFim),
+      data: toDateValue(item.data),
+      dataFim: toDateValue(item.dataFim),
       local: item.local,
       endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
@@ -142,9 +132,9 @@ export default function AdminEventosPage() {
       const formData = new FormData();
       formData.append("titulo", form.titulo);
       formData.append("descricao", form.descricao);
-      formData.append("data", fromDatetimeLocal(form.data));
+      formData.append("data", fromDateValue(form.data));
       if (form.dataFim) {
-        formData.append("dataFim", fromDatetimeLocal(form.dataFim));
+        formData.append("dataFim", fromDateValue(form.dataFim));
       }
       formData.append("local", form.local);
       if (form.endereco) formData.append("endereco", form.endereco);
@@ -341,20 +331,18 @@ export default function AdminEventosPage() {
             onChange={set("endereco")}
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <AdminDateTimeField
-              label="Data e hora de início"
-              value={form.data}
-              onChange={(v) => setField("data", v)}
-              required
-            />
-            <AdminDateTimeField
-              label="Data e hora de fim (opcional)"
-              value={form.dataFim ?? ""}
-              onChange={(v) => setField("dataFim", v)}
-              minDate={form.data || undefined}
-            />
-          </div>
+          <AdminDateField
+            label="Data de início"
+            value={form.data}
+            onChange={(v) => setField("data", v)}
+            required
+          />
+          <AdminDateField
+            label="Data de fim (opcional)"
+            value={form.dataFim ?? ""}
+            onChange={(v) => setField("dataFim", v)}
+            minDate={form.data || undefined}
+          />
           {!form.dataFim && modal.editing?.dataFim && (
             <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
               Limitação atual da API: limpar a data de fim aqui não remove o
