@@ -212,12 +212,14 @@ export interface ServicoTurista {
   cnpj?: string | null;
   roteiro?: TipoRoteiro | null;
   idiomas?: string | null;
+  modalidades?: string[] | null;
   logoUrl?: string | null;
   fotoUrl?: string | null;
   status: StatusEstabelecimento;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   comprovanteUrl?: string | null;
+  documentoCnpjUrl?: string | null;
   validade?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -234,10 +236,12 @@ export interface CreateServicoTuristaDto {
   cnpj?: string;
   roteiro?: TipoRoteiro;
   idiomas?: string;
+  modalidades?: string[];
   logoUrl?: string;
   fotoUrl?: string;
   usuarioId: string;
   comprovanteUrl?: string;
+  documentoCnpjUrl?: string;
   validade?: string;
 }
 

@@ -5,6 +5,16 @@ import type {
   UpdateServicoTuristaDto,
 } from "./types";
 
+export const MODALIDADES_ESPORTE = ["AEREO", "AQUATICO", "TERRESTRE"] as const;
+
+export type ModalidadeEsporte = (typeof MODALIDADES_ESPORTE)[number];
+
+export const MODALIDADE_LABELS: Record<ModalidadeEsporte, string> = {
+  AEREO: "Aéreo",
+  AQUATICO: "Aquático",
+  TERRESTRE: "Terrestre",
+};
+
 export const servicoTuristaApi = {
   getAll: () => apiFetch<ServicoTurista[]>("/servico-turista"),
   getById: (id: string) => apiFetch<ServicoTurista>(`/servico-turista/${id}`),
