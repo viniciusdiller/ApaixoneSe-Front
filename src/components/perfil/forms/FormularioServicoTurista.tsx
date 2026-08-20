@@ -70,7 +70,7 @@ const emptyForm = {
   instagram: "",
   site: "",
   idiomas: "",
-  roteiro: "",
+  roteiros: [] as string[],
   modalidades: [] as string[],
   logoUrl: "",
   fotoUrl: "",
@@ -103,16 +103,18 @@ export function FormularioServico({
 
   useEffect(() => {
     if (modo === "editar" && dadosIniciais) {
-      const existingModalidades: string[] = (() => {
-        const raw = dadosIniciais.modalidades;
+      const parseArrayField = (raw: unknown): string[] => {
         if (!raw) return [];
         if (Array.isArray(raw)) return raw as string[];
         try {
-          return JSON.parse(raw as unknown as string) as string[];
+          return JSON.parse(raw as string) as string[];
         } catch {
           return [];
         }
-      })();
+      };
+
+      const existingModalidades = parseArrayField(dadosIniciais.modalidades);
+      const existingRoteiros = parseArrayField(dadosIniciais.roteiros);
 
       setForm({
         tipo: dadosIniciais.tipo ?? "GUIA_TURISMO",
@@ -124,7 +126,7 @@ export function FormularioServico({
         instagram: dadosIniciais.instagram ?? "",
         site: dadosIniciais.site ?? "",
         idiomas: dadosIniciais.idiomas ?? "",
-        roteiro: dadosIniciais.roteiro ?? "",
+        roteiros: existingRoteiros,
         modalidades: existingModalidades,
         logoUrl: dadosIniciais.logoUrl ?? "",
         fotoUrl: dadosIniciais.fotoUrl ?? "",
@@ -162,6 +164,18 @@ export function FormularioServico({
         modalidades: current.includes(modalidade)
           ? current.filter((m) => m !== modalidade)
           : [...current, modalidade],
+      };
+    });
+  };
+
+  const toggleRoteiro = (roteiro: string) => {
+    setForm((prev) => {
+      const current = prev.roteiros ?? [];
+      return {
+        ...prev,
+        roteiros: current.includes(roteiro)
+          ? current.filter((r) => r !== roteiro)
+          : [...current, roteiro],
       };
     });
   };
@@ -209,6 +223,11 @@ export function FormularioServico({
       return;
     }
 
+    if (form.tipo === "GUIA_TURISMO" && form.roteiros.length === 0) {
+      setError("Selecione ao menos um roteiro especializado.");
+      return;
+    }
+
     const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
     if (isEsporteLazer && form.modalidades.length === 0) {
       setError("Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).");
@@ -236,7 +255,8 @@ export function FormularioServico({
       if (form.instagram) fd.append("instagram", form.instagram);
       if (form.site) fd.append("site", form.site);
       if (form.idiomas) fd.append("idiomas", form.idiomas);
-      if (form.roteiro) fd.append("roteiro", form.roteiro);
+      if (form.roteiros.length > 0)
+        fd.append("roteiros", JSON.stringify(form.roteiros));
       if (form.modalidades.length > 0)
         fd.append("modalidades", JSON.stringify(form.modalidades));
 
@@ -449,24 +469,32 @@ export function FormularioServico({
               rows={4}
             />
 
-            {/* Roteiro */}
+            {/* Roteiros */}
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Route className="h-3.5 w-3.5 text-primary" />
-                ROTEIRO (OPCIONAL)
+                ROTEIROS{" "}
+                {form.tipo === "GUIA_TURISMO" ? "*" : "(OPCIONAL)"}
               </label>
-              <select
-                value={form.roteiro}
-                onChange={set("roteiro")}
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
-              >
-                <option value="">Nenhum</option>
-                {ROTEIROS.map((r) => (
-                  <option key={r.value} value={r.value}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-wrap gap-2.5">
+                {ROTEIROS.map((r) => {
+                  const active = form.roteiros.includes(r.value);
+                  return (
+                    <button
+                      key={r.value}
+                      type="button"
+                      onClick={() => toggleRoteiro(r.value)}
+                      className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {r.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Modalidades (apenas Esporte/Lazer) */}
