@@ -82,6 +82,7 @@ const empty: CreateServicoTuristaDto & { site?: string } = {
   endereco: "",
   cnpj: "",
   idiomas: "",
+  roteiros: [],
   modalidades: [],
   logoUrl: "",
   fotoUrl: "",
@@ -245,7 +246,7 @@ export default function AdminServicosPage() {
       descricao: item.descricao ?? "",
       endereco: item.endereco ?? "",
       cnpj: item.cnpj ?? "",
-      roteiro: item.roteiro ?? undefined,
+      roteiros: Array.isArray(item.roteiros) ? item.roteiros : [],
       idiomas: item.idiomas ?? "",
       modalidades: Array.isArray(item.modalidades) ? item.modalidades : [],
       logoUrl: item.logoUrl ?? "",
@@ -272,6 +273,10 @@ export default function AdminServicosPage() {
       );
       return;
     }
+    if (form.tipo === "GUIA_TURISMO" && (form.roteiros ?? []).length === 0) {
+      setError("Selecione ao menos um roteiro especializado.");
+      return;
+    }
     const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
     if (isEsporteLazer && (form.modalidades ?? []).length === 0) {
       setError("Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).");
@@ -294,8 +299,9 @@ export default function AdminServicosPage() {
       formData.append("endereco", form.endereco || "");
       formData.append("cnpj", form.cnpj || "");
       formData.append("descricao", form.descricao || "");
-      formData.append("roteiro", form.roteiro || "");
       formData.append("idiomas", form.idiomas || "");
+      if (form.roteiros && form.roteiros.length > 0)
+        formData.append("roteiros", JSON.stringify(form.roteiros));
       formData.append("instagram", form.instagram || "");
       if (form.modalidades && form.modalidades.length > 0)
         formData.append("modalidades", JSON.stringify(form.modalidades));
@@ -351,8 +357,10 @@ export default function AdminServicosPage() {
 
   const tipoLabel = (v: TipoServicoTurista) =>
     TIPOS_SERVICO.find((t) => t.value === v)?.label ?? v;
-  const roteiroLabel = (v?: TipoRoteiro | null) =>
-    v ? (ROTEIROS.find((r) => r.value === v)?.label ?? v) : "—";
+  const roteiroLabels = (v?: TipoRoteiro[] | null) =>
+    v && v.length > 0
+      ? v.map((r) => ROTEIROS.find((rt) => rt.value === r)?.label ?? r).join(", ")
+      : "—";
 
   const requerComprovante = REQUER_COMPROVANTE.includes(
     form.tipo as TipoServicoTurista,
@@ -523,7 +531,7 @@ export default function AdminServicosPage() {
               />
               <ViewRow label="Idiomas" value={viewing.idiomas} />
               <ViewRow label="Instagram" value={viewing.instagram} />
-              <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
+              <ViewRow label="Roteiros" value={roteiroLabels(viewing.roteiros)} />
               {(viewing as ServicoTurista & { site?: string }).site && (
                 <div className="flex flex-col gap-0.5">
                   <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
@@ -715,27 +723,34 @@ export default function AdminServicosPage() {
           />
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Roteiro (opcional)
+              Roteiros {form.tipo === "GUIA_TURISMO" ? "*" : "(opcional)"}
             </label>
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
+            <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
               {ROTEIROS.map((roteiro) => {
-                const isSelected = form.roteiro === roteiro.value;
+                const active = (form.roteiros ?? []).includes(roteiro.value);
                 return (
-                  <label
+                  <button
                     key={roteiro.value}
-                    className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors"
+                    type="button"
+                    onClick={() =>
+                      setForm((prev) => {
+                        const current = prev.roteiros ?? [];
+                        return {
+                          ...prev,
+                          roteiros: current.includes(roteiro.value)
+                            ? current.filter((r) => r !== roteiro.value)
+                            : [...current, roteiro.value],
+                        };
+                      })
+                    }
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                    }`}
                   >
-                    <input
-                      type="radio"
-                      name="roteiro"
-                      value={roteiro.value}
-                      className="rounded-full border-border text-primary focus:ring-primary h-4 w-4"
-                      checked={isSelected}
-                      required={form.tipo === "GUIA_TURISMO"}
-                      onChange={() => setField("roteiro", roteiro.value)}
-                    />
                     {roteiro.label}
-                  </label>
+                  </button>
                 );
               })}
             </div>
