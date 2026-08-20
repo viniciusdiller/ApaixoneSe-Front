@@ -95,6 +95,7 @@ export interface Evento {
   titulo: string;
   descricao: string;
   data: string;
+  dataFim?: string | null;
   local: string;
   endereco?: string | null;
   fotoUrl?: string | null;
@@ -106,6 +107,7 @@ export interface CreateEventoDto {
   titulo: string;
   descricao: string;
   data: string;
+  dataFim?: string;
   local: string;
   endereco?: string;
   fotoUrl?: string;
