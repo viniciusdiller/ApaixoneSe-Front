@@ -6,6 +6,8 @@ export interface ClickStat {
   pagina: string;
   /** Nome real resolvido no backend — sempre use isso pra exibir, nunca `pagina` */
   paginaLabel: string;
+  /** Slug do "pai" quando o item pertence a outro (hoje só atividades → slug do roteiro) */
+  paginaPai?: string;
   total: number;
 }
 
