@@ -56,7 +56,7 @@ export function ServicoTuristaListPage({
   const [erro, setErro] = useState(false);
   const [selecionado, setSelecionado] = useState<ServicoTurista | null>(null);
   const [roteiroAtivo, setRoteiroAtivo] = useState<string | null>(null);
-  const [modalidadeAtiva, setModalidadeAtiva] = useState<string | null>(null);
+  const [modalidadesAtivas, setModalidadesAtivas] = useState<string[]>([]);
 
   useEffect(() => {
     servicoTuristaApi
@@ -111,22 +111,35 @@ export function ServicoTuristaListPage({
     return MODALIDADES_ESPORTE.filter((m) => presentes.has(m));
   }, [servicos, ehEsporteLazer]);
 
-  // Filtra serviços pelo roteiro/modalidade ativo, conforme o tipo da página
+  const toggleModalidadeAtiva = (modalidade: string) => {
+    setModalidadesAtivas((prev) =>
+      prev.includes(modalidade)
+        ? prev.filter((m) => m !== modalidade)
+        : [...prev, modalidade],
+    );
+  };
+
+  // Filtra serviços pelo roteiro/modalidade ativo, conforme o tipo da página.
+  // Modalidade é multi-seleção: o serviço aparece se tiver AO MENOS UMA das selecionadas.
   const servicosFiltrados = useMemo(() => {
     if (podeTerRoteiro && roteiroAtivo) {
       return servicos.filter((s) =>
         (s.roteiros ?? []).some((r) => r === roteiroAtivo),
       );
     }
-    if (ehEsporteLazer && modalidadeAtiva) {
+    if (ehEsporteLazer && modalidadesAtivas.length > 0) {
       return servicos.filter((s) =>
-        (s.modalidades ?? []).some((m) => m === modalidadeAtiva),
+        (s.modalidades ?? []).some((m) => modalidadesAtivas.includes(m)),
       );
     }
     return servicos;
-  }, [servicos, roteiroAtivo, modalidadeAtiva, podeTerRoteiro, ehEsporteLazer]);
+  }, [servicos, roteiroAtivo, modalidadesAtivas, podeTerRoteiro, ehEsporteLazer]);
 
-  const filtroAtivo = podeTerRoteiro ? roteiroAtivo : ehEsporteLazer ? modalidadeAtiva : null;
+  const filtroAtivo = podeTerRoteiro
+    ? roteiroAtivo
+    : ehEsporteLazer
+      ? modalidadesAtivas.length > 0
+      : false;
 
   return (
     <div className="min-h-screen bg-background">
@@ -213,9 +226,9 @@ export function ServicoTuristaListPage({
               Filtrar por modalidade:
             </span>
             <button
-              onClick={() => setModalidadeAtiva(null)}
+              onClick={() => setModalidadesAtivas([])}
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                modalidadeAtiva === null
+                modalidadesAtivas.length === 0
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
               }`}
@@ -225,13 +238,9 @@ export function ServicoTuristaListPage({
             {modalidadesDisponiveis.map((modalidade) => (
               <button
                 key={modalidade}
-                onClick={() =>
-                  setModalidadeAtiva(
-                    modalidadeAtiva === modalidade ? null : modalidade,
-                  )
-                }
+                onClick={() => toggleModalidadeAtiva(modalidade)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                  modalidadeAtiva === modalidade
+                  modalidadesAtivas.includes(modalidade)
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-accent/20 text-accent-foreground border-accent/30 hover:bg-accent/40"
                 }`}
