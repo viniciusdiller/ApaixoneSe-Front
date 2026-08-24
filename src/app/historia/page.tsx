@@ -9,7 +9,7 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { X, ArrowLeft, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import CarroselArtesanato from "@/components/CarroselArtesanato";
+import CarroselCultura from "@/components/CarroselCultura";
 
 export default function HistoriaPage() {
   const [locais, setLocais] = useState<LocalCultural[]>([]);
@@ -31,7 +31,7 @@ export default function HistoriaPage() {
     <div className="min-h-screen bg-background">
       <section
         className="relative bg-cover bg-center px-4 pb-12 pt-32"
-        style={{ backgroundImage: "url('/images/header/historia.jpeg')" }}
+        style={{ backgroundImage: "url('/images/header/cultura.jpeg')" }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <motion.div
@@ -48,7 +48,7 @@ export default function HistoriaPage() {
             Voltar para página inicial
           </Link>
           <h1 className="font-display text-5xl font-bold uppercase text-white md:text-6xl">
-            Historia
+            Cultura
           </h1>
           <p className="mt-4 max-w-xl text-white/80">
             Conheça um pouco mais da tradição saquaremense.
@@ -57,81 +57,6 @@ export default function HistoriaPage() {
         </motion.div>
       </section>
 
-      <section className="bg-muted px-4 py-14">
-        <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
-          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
-            <h2 className="font-display text-3xl uppercase text-primary">
-              História de Saquarema
-            </h2>
-            <p className="mt-5 text-muted-foreground">
-              A história de Saquarema é escrita pelo constante encontro entre a
-              terra e o oceano. Das raízes milenares preservadas nos sambaquis e
-              a rica herança das pacatas vilas de pescadores, a cidade evoluiu
-              até ser eternizada mundialmente como a Capital Nacional do
-              Esporte. Aqui, o patrimônio histórico abraça a religiosidade,
-              simbolizada pelo Círio mais antigo do Brasil e pela clássica
-              Igreja de Nossa Senhora de Nazareth. Seja pelas ondas perfeitas de
-              Itaúna, pelo legado musical do Templo do Rock ou pela energia de
-              sua natureza, Saquarema oferece uma verdadeira viagem no tempo em
-              total sintonia com o mar.
-            </p>
-          </article>
-          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-2xl md:border md:border-border md:bg-card md:p-8 md:shadow-sm">
-            <h2 className="font-display text-3xl uppercase text-primary">
-              Destaques Visuais
-            </h2>
-            <div className="mt-4 grid w-full grid-cols-2 gap-3 md:grid-cols-3">
-              {[
-                "/images/destaques-visuais/Esquadrilha-Fumaça.jpg",
-                "/images/destaques-visuais/WSL.jpg",
-                "/images/destaques-visuais/Miguel-Pupo.jpg",
-                "/images/destaques-visuais/Fusca.jpg",
-                "/images/hero-saquarema.jpeg",
-                "/images/destaques-visuais/Meca-Igreja.jpg",
-              ].map((imagem) => (
-                <div
-                  key={imagem}
-                  className="h-28 md:h-48 rounded-md bg-cover bg-center"
-                  style={{ backgroundImage: `url(${imagem})` }}
-                />
-              ))}
-            </div>
-          </article>
-        </div>
-      </section>
-
-      
-      <section className=" px-4 py-14">
-        <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
-          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
-            <h2 className="font-display text-3xl uppercase text-primary">
-              Casa da Pedra - O Artesanato que Conta a História de Saquarema
-            </h2>
-            <p className="mt-5 text-muted-foreground">
-              A Casa da Pedra é um espaço onde a identidade cultural de
-              Saquarema ganha forma pelas mãos de seus artesãos. O local
-              valoriza os saberes tradicionais, a criatividade e a economia
-              criativa, reunindo peças únicas que transformam materiais,
-              memórias e inspirações do território em arte. Cada artesanato
-              carrega a essência de Saquarema, representando as cores do mar, a
-              cultura caiçara, a riqueza da natureza e tradições que atravessam
-              gerações. Ao prestigiar o artesanato local, moradores e turistas
-              conhecem a cultura do município, fortalecem os artistas da cidade
-              e contribuem para a preservação de suas tradições e para o
-              desenvolvimento da economia criativa.
-            </p>
-          </article>
-          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-2xl md:border md:border-border md:bg-card md:p-8 md:shadow-sm">
-            <h2 className="font-display text-3xl uppercase text-primary">
-              Artesanato Local
-            </h2>
-            <div className="mt-4 h-48 w-full md:h-64">
-              <CarroselArtesanato />
-            </div>
-          </article>
-        </div>
-      </section>
-      
       <section className="container mx-auto px-4 py-16">
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
           Lugares Culturais
@@ -187,6 +112,80 @@ export default function HistoriaPage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="bg-muted px-4 py-14">
+        <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
+          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
+            <h2 className="font-display text-3xl uppercase text-primary">
+              História de Saquarema
+            </h2>
+            <p className="mt-5 text-muted-foreground">
+              A história de Saquarema é escrita pelo constante encontro entre a
+              terra e o oceano. Das raízes milenares preservadas nos sambaquis e
+              a rica herança das pacatas vilas de pescadores, a cidade evoluiu
+              até ser eternizada mundialmente como a Capital Nacional do
+              Esporte. Aqui, o patrimônio histórico abraça a religiosidade,
+              simbolizada pelo Círio mais antigo do Brasil e pela clássica
+              Igreja de Nossa Senhora de Nazareth. Seja pelas ondas perfeitas de
+              Itaúna, pelo legado musical do Templo do Rock ou pela energia de
+              sua natureza, Saquarema oferece uma verdadeira viagem no tempo em
+              total sintonia com o mar.
+            </p>
+          </article>
+          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-2xl md:border md:border-border md:bg-card md:p-8 md:shadow-sm">
+            <h2 className="font-display text-3xl uppercase text-primary">
+              Destaques Visuais
+            </h2>
+            <div className="mt-4 grid w-full grid-cols-2 gap-3 md:grid-cols-3">
+              {[
+                "/images/destaques-visuais/Esquadrilha-Fumaça.jpg",
+                "/images/destaques-visuais/WSL.jpg",
+                "/images/destaques-visuais/Miguel-Pupo.jpg",
+                "/images/destaques-visuais/Fusca.jpg",
+                "/images/hero-saquarema.jpeg",
+                "/images/destaques-visuais/Meca-Igreja.jpg",
+              ].map((imagem) => (
+                <div
+                  key={imagem}
+                  className="h-28 md:h-48 rounded-md bg-cover bg-center"
+                  style={{ backgroundImage: `url(${imagem})` }}
+                />
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section className=" px-4 py-14">
+        <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
+          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
+            <h2 className="font-display text-3xl uppercase text-primary">
+              Casa da Pedra - O Artesanato que Conta a História de Saquarema
+            </h2>
+            <p className="mt-5 text-muted-foreground">
+              A Casa da Pedra é um espaço onde a identidade cultural de
+              Saquarema ganha forma pelas mãos de seus artesãos. O local
+              valoriza os saberes tradicionais, a criatividade e a economia
+              criativa, reunindo peças únicas que transformam materiais,
+              memórias e inspirações do território em arte. Cada artesanato
+              carrega a essência de Saquarema, representando as cores do mar, a
+              cultura caiçara, a riqueza da natureza e tradições que atravessam
+              gerações. Ao prestigiar o artesanato local, moradores e turistas
+              conhecem a cultura do município, fortalecem os artistas da cidade
+              e contribuem para a preservação de suas tradições e para o
+              desenvolvimento da economia criativa.
+            </p>
+          </article>
+          <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-2xl md:border md:border-border md:bg-card md:p-8 md:shadow-sm">
+            <h2 className="font-display text-3xl uppercase text-primary">
+              Artesanato Local
+            </h2>
+            <div className="mt-4 h-48 w-full md:h-64">
+              <CarroselCultura />
+            </div>
+          </article>
+        </div>
       </section>
 
       <AnimatePresence>

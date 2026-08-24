@@ -17,7 +17,6 @@ import { hospedagemApi } from "@/lib/api";
 import type { Hospedagem } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import Link from "next/link";
-import { CadasturSection } from "@/components/CadasturSection";
 
 function parseTags(raw: string[] | null | undefined): string[] {
   if (!raw) return [];
@@ -287,12 +286,7 @@ export function HospedagemListPage() {
         </div>
       </section>
 
-            <section className="container mx-auto px-4 pb-14 pt-2">
-        <CadasturSection />
-      </section>
-
       {/* Modal */}
-
       <AnimatePresence>
         {selecionada &&
           (() => {

@@ -8,11 +8,13 @@ import {
   Languages,
   Route,
   Globe,
+  Tag,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { ROTEIROS } from "@/lib/roteiros";
+import { MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 
 const TIPO_LABEL: Record<TipoServicoTurista, string> = {
   GUIA_TURISMO: "Guia de Turismo",
@@ -40,9 +42,14 @@ export function ServicoTuristaCard({ servico, index }: Props) {
     ? `https://instagram.com/${instagramHandle}`
     : null;
 
-  const roteiroLabel = servico.roteiro
-    ? ROTEIROS.find((r) => r.enum === servico.roteiro)?.label
-    : null;
+  const podeExibirRoteiro =
+    servico.tipo === "GUIA_TURISMO" || servico.tipo === "AGENCIA_TURISMO";
+  const roteiroLabels =
+    podeExibirRoteiro && Array.isArray(servico.roteiros)
+      ? servico.roteiros
+          .map((r) => ROTEIROS.find((rt) => rt.enum === r)?.label)
+          .filter((label): label is string => Boolean(label))
+      : [];
 
   const siteUrl = (servico as ServicoTurista & { site?: string }).site;
   const siteHref = siteUrl
@@ -53,6 +60,11 @@ export function ServicoTuristaCard({ servico, index }: Props) {
   const siteLabel = siteUrl
     ? siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
     : null;
+
+  const modalidades =
+    servico.tipo === "ESPORTE_LAZER" && Array.isArray(servico.modalidades)
+      ? servico.modalidades
+      : [];
 
   return (
     <motion.article
@@ -102,11 +114,18 @@ export function ServicoTuristaCard({ servico, index }: Props) {
           {TIPO_LABEL[servico.tipo]}
         </div>
 
-        {/* Badge roteiro */}
-        {roteiroLabel && (
-          <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground shadow">
-            <Route className="h-3 w-3" />
-            {roteiroLabel}
+        {/* Badge(s) roteiro */}
+        {roteiroLabels.length > 0 && (
+          <div className="absolute right-3 top-3 flex flex-col items-end gap-1">
+            {roteiroLabels.map((label) => (
+              <div
+                key={label}
+                className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground shadow"
+              >
+                <Route className="h-3 w-3" />
+                {label}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -150,16 +169,30 @@ export function ServicoTuristaCard({ servico, index }: Props) {
           </div>
         )}
 
-        {/* Roteiro vinculado — também no corpo do card */}
-        {roteiroLabel && (
-          <div className="flex items-center gap-2">
-            <Route className="h-4 w-4 shrink-0 text-primary" />
+        {/* Roteiros vinculados — também no corpo do card */}
+        {roteiroLabels.length > 0 && (
+          <div className="flex items-start gap-2">
+            <Route className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <span className="text-sm text-muted-foreground">
-              Roteiro:{" "}
+              Roteiros:{" "}
               <span className="font-medium text-foreground">
-                {roteiroLabel}
+                {roteiroLabels.join(", ")}
               </span>
             </span>
+          </div>
+        )}
+
+        {modalidades.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Tag className="h-4 w-4 shrink-0 text-primary" />
+            {modalidades.map((m) => (
+              <span
+                key={m}
+                className="rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-accent-foreground"
+              >
+                {MODALIDADE_LABELS[m as keyof typeof MODALIDADE_LABELS] ?? m}
+              </span>
+            ))}
           </div>
         )}
 

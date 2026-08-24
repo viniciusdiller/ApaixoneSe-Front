@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmAction } from "@/lib/feedback";
+import { confirmAction, notify } from "@/lib/feedback";
 
 import { useEffect, useState } from "react";
 import { culturaApi } from "@/lib/api";
