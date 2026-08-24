@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { maskCnpj, maskPhone, numericInputProps } from "@/lib/masks";
+import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 
 const PAGE_SIZE = 10;
 
@@ -71,6 +72,11 @@ const REQUER_COMPROVANTE: TipoServicoTurista[] = [
   "LOCADORA_VEICULOS",
 ];
 
+const PODE_ESCOLHER_ROTEIRO: TipoServicoTurista[] = [
+  "GUIA_TURISMO",
+  "AGENCIA_TURISMO",
+];
+
 const empty: CreateServicoTuristaDto & { site?: string } = {
   tipo: "GUIA_TURISMO",
   nome: "",
@@ -81,6 +87,8 @@ const empty: CreateServicoTuristaDto & { site?: string } = {
   endereco: "",
   cnpj: "",
   idiomas: "",
+  roteiros: [],
+  modalidades: [],
   logoUrl: "",
   fotoUrl: "",
   validade: "",
@@ -133,7 +141,13 @@ function ValidityBadge({ validade }: { validade?: string | null }) {
   );
 }
 
-function ComprovanteBotao({ url }: { url?: string | null }) {
+function ComprovanteBotao({
+  url,
+  label = "Ver Comprovante",
+}: {
+  url?: string | null;
+  label?: string;
+}) {
   const src = safeMediaUrl(url);
   if (!src) return <span className="text-xs text-muted-foreground">—</span>;
   return (
@@ -143,7 +157,7 @@ function ComprovanteBotao({ url }: { url?: string | null }) {
       rel="noopener noreferrer"
       className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-muted hover:text-primary"
     >
-      <FileText size={12} /> Ver Comprovante{" "}
+      <FileText size={12} /> {label}{" "}
       <ExternalLink size={11} className="text-muted-foreground" />
     </a>
   );
@@ -175,9 +189,11 @@ export default function AdminServicosPage() {
     logo?: File;
     foto?: File;
     comprovante?: File;
+    documentoCnpj?: File;
   }>({});
 
   const comprovanteInputRef = useRef<HTMLInputElement>(null);
+  const documentoCnpjInputRef = useRef<HTMLInputElement>(null);
 
   const load = () => {
     setLoading(true);
@@ -235,8 +251,9 @@ export default function AdminServicosPage() {
       descricao: item.descricao ?? "",
       endereco: item.endereco ?? "",
       cnpj: item.cnpj ?? "",
-      roteiro: item.roteiro ?? undefined,
+      roteiros: Array.isArray(item.roteiros) ? item.roteiros : [],
       idiomas: item.idiomas ?? "",
+      modalidades: Array.isArray(item.modalidades) ? item.modalidades : [],
       logoUrl: item.logoUrl ?? "",
       fotoUrl: item.fotoUrl ?? "",
       validade: item.validade ? item.validade.slice(0, 10) : "",
@@ -261,6 +278,23 @@ export default function AdminServicosPage() {
       );
       return;
     }
+    if (form.tipo === "GUIA_TURISMO" && (form.roteiros ?? []).length === 0) {
+      setError("Selecione ao menos um roteiro especializado.");
+      return;
+    }
+    const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
+    if (isEsporteLazer && (form.modalidades ?? []).length === 0) {
+      setError("Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).");
+      return;
+    }
+    if (
+      isEsporteLazer &&
+      !modal.editing?.documentoCnpjUrl &&
+      !files.documentoCnpj
+    ) {
+      setError("O documento do CNPJ é obrigatório para Esporte/Lazer.");
+      return;
+    }
     setSaving(true);
     try {
       const formData = new FormData();
@@ -270,14 +304,23 @@ export default function AdminServicosPage() {
       formData.append("endereco", form.endereco || "");
       formData.append("cnpj", form.cnpj || "");
       formData.append("descricao", form.descricao || "");
-      formData.append("roteiro", form.roteiro || "");
       formData.append("idiomas", form.idiomas || "");
+      if (
+        PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) &&
+        form.roteiros &&
+        form.roteiros.length > 0
+      )
+        formData.append("roteiros", JSON.stringify(form.roteiros));
       formData.append("instagram", form.instagram || "");
+      if (form.modalidades && form.modalidades.length > 0)
+        formData.append("modalidades", JSON.stringify(form.modalidades));
       if (form.site) formData.append("site", form.site);
       if (form.validade) formData.append("validade", form.validade);
       if (files.logo) formData.append("logo", files.logo);
       if (files.foto) formData.append("foto", files.foto);
       if (files.comprovante) formData.append("comprovante", files.comprovante);
+      if (files.documentoCnpj)
+        formData.append("documentoCnpj", files.documentoCnpj);
       modal.editing
         ? await servicoTuristaApi.update(modal.editing.id, formData)
         : await servicoTuristaApi.create(formData);
@@ -323,8 +366,10 @@ export default function AdminServicosPage() {
 
   const tipoLabel = (v: TipoServicoTurista) =>
     TIPOS_SERVICO.find((t) => t.value === v)?.label ?? v;
-  const roteiroLabel = (v?: TipoRoteiro | null) =>
-    v ? (ROTEIROS.find((r) => r.value === v)?.label ?? v) : "—";
+  const roteiroLabels = (v?: TipoRoteiro[] | null) =>
+    v && v.length > 0
+      ? v.map((r) => ROTEIROS.find((rt) => rt.value === r)?.label ?? r).join(", ")
+      : "—";
 
   const requerComprovante = REQUER_COMPROVANTE.includes(
     form.tipo as TipoServicoTurista,
@@ -333,6 +378,12 @@ export default function AdminServicosPage() {
   const comprovantePreviewUrl = files.comprovante
     ? URL.createObjectURL(files.comprovante)
     : safeMediaUrl(comprovanteExistente);
+
+  const requerDocumentoCnpj = form.tipo === "ESPORTE_LAZER";
+  const documentoCnpjExistente = modal.editing?.documentoCnpjUrl ?? null;
+  const documentoCnpjPreviewUrl = files.documentoCnpj
+    ? URL.createObjectURL(files.documentoCnpj)
+    : safeMediaUrl(documentoCnpjExistente);
 
   return (
     <div>
@@ -489,7 +540,9 @@ export default function AdminServicosPage() {
               />
               <ViewRow label="Idiomas" value={viewing.idiomas} />
               <ViewRow label="Instagram" value={viewing.instagram} />
-              <ViewRow label="Roteiro" value={roteiroLabel(viewing.roteiro)} />
+              {PODE_ESCOLHER_ROTEIRO.includes(viewing.tipo) && (
+                <ViewRow label="Roteiros" value={roteiroLabels(viewing.roteiros)} />
+              )}
               {(viewing as ServicoTurista & { site?: string }).site && (
                 <div className="flex flex-col gap-0.5">
                   <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
@@ -518,6 +571,26 @@ export default function AdminServicosPage() {
             <ViewRow label="Endereço" value={viewing.endereco} />
             <ViewRow label="Descrição" value={viewing.descricao} />
 
+            {viewing.tipo === "ESPORTE_LAZER" &&
+              Array.isArray(viewing.modalidades) &&
+              viewing.modalidades.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Modalidades
+                  </dt>
+                  <div className="flex flex-wrap gap-1.5">
+                    {viewing.modalidades.map((m) => (
+                      <span
+                        key={m}
+                        className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                      >
+                        {MODALIDADE_LABELS[m as keyof typeof MODALIDADE_LABELS] ?? m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             {REQUER_COMPROVANTE.includes(viewing.tipo) && (
               <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -527,6 +600,17 @@ export default function AdminServicosPage() {
                   <ComprovanteBotao url={viewing.comprovanteUrl} />
                   <ValidityBadge validade={viewing.validade} />
                 </div>
+              </div>
+            )}
+            {viewing.tipo === "ESPORTE_LAZER" && (
+              <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <FileText size={13} /> Documento do CNPJ
+                </p>
+                <ComprovanteBotao
+                  url={viewing.documentoCnpjUrl}
+                  label="Ver Documento"
+                />
               </div>
             )}
             {viewing.fotoUrl && (
@@ -648,33 +732,78 @@ export default function AdminServicosPage() {
             onChange={set("descricao")}
             multiline
           />
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Roteiro (opcional)
-            </label>
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
-              {ROTEIROS.map((roteiro) => {
-                const isSelected = form.roteiro === roteiro.value;
-                return (
-                  <label
-                    key={roteiro.value}
-                    className="flex items-center gap-2 text-sm cursor-pointer hover:text-primary transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      name="roteiro"
-                      value={roteiro.value}
-                      className="rounded-full border-border text-primary focus:ring-primary h-4 w-4"
-                      checked={isSelected}
-                      required={form.tipo === "GUIA_TURISMO"}
-                      onChange={() => setField("roteiro", roteiro.value)}
-                    />
-                    {roteiro.label}
-                  </label>
-                );
-              })}
+          {PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Roteiros {form.tipo === "GUIA_TURISMO" ? "*" : "(opcional)"}
+              </label>
+              <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
+                {ROTEIROS.map((roteiro) => {
+                  const active = (form.roteiros ?? []).includes(roteiro.value);
+                  return (
+                    <button
+                      key={roteiro.value}
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => {
+                          const current = prev.roteiros ?? [];
+                          return {
+                            ...prev,
+                            roteiros: current.includes(roteiro.value)
+                              ? current.filter((r) => r !== roteiro.value)
+                              : [...current, roteiro.value],
+                          };
+                        })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {roteiro.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
+          {form.tipo === "ESPORTE_LAZER" && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Modalidades *
+              </label>
+              <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
+                {MODALIDADES_ESPORTE.map((modalidade) => {
+                  const active = (form.modalidades ?? []).includes(modalidade);
+                  return (
+                    <button
+                      key={modalidade}
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => {
+                          const current = prev.modalidades ?? [];
+                          return {
+                            ...prev,
+                            modalidades: current.includes(modalidade)
+                              ? current.filter((m) => m !== modalidade)
+                              : [...current, modalidade],
+                          };
+                        })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {MODALIDADE_LABELS[modalidade]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <FileUploadField
               label="Logo"
@@ -773,6 +902,65 @@ export default function AdminServicosPage() {
                     <ValidityBadge validade={form.validade} />
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+          {requerDocumentoCnpj && (
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <FileText size={13} /> Documento do CNPJ
+              </p>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Arquivo <span className="text-red-500">*</span> — PDF ou
+                  imagem
+                </label>
+                {documentoCnpjPreviewUrl && (
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={documentoCnpjPreviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-muted hover:text-primary"
+                    >
+                      <FileText size={12} />
+                      {files.documentoCnpj
+                        ? files.documentoCnpj.name
+                        : "Documento atual"}
+                      <ExternalLink
+                        size={11}
+                        className="text-muted-foreground"
+                      />
+                    </a>
+                    {documentoCnpjExistente && !files.documentoCnpj && (
+                      <span className="text-xs text-muted-foreground">
+                        (existente)
+                      </span>
+                    )}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => documentoCnpjInputRef.current?.click()}
+                  className="flex items-center gap-2 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+                >
+                  <FileText size={14} />
+                  {files.documentoCnpj
+                    ? "Trocar arquivo"
+                    : documentoCnpjExistente
+                      ? "Substituir documento"
+                      : "Selecionar documento (PDF ou imagem)"}
+                </button>
+                <input
+                  ref={documentoCnpjInputRef}
+                  type="file"
+                  accept="application/pdf,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setFiles((p) => ({ ...p, documentoCnpj: f }));
+                  }}
+                />
               </div>
             </div>
           )}
