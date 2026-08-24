@@ -8,11 +8,16 @@ import {
   CalendarRange,
   ChevronDown,
   ChevronUp,
+  Search,
+  ListFilter,
+  X,
 } from "lucide-react";
 import { clicksApi } from "@/lib/api";
 import type { ClickStat } from "@/lib/api";
 import { ROTEIROS } from "@/lib/roteiros";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const ITENS_VISIVEIS_PADRAO = 8;
 // Busca tudo de uma vez (sem categoria) e agrupa no client - cardinalidade
@@ -228,8 +233,31 @@ function SecaoCategoria({
   );
 }
 
-function SecaoRoteiros({ items }: { items: ClickStat[] }) {
-  const { roteiros, orfas } = montarRoteiros(items);
+function SecaoRoteiros({ items, busca }: { items: ClickStat[]; busca: string }) {
+  const { roteiros: todosRoteiros, orfas: todasOrfas } = montarRoteiros(items);
+  const buscaNorm = busca.trim().toLowerCase();
+
+  // Com busca ativa: mantém um roteiro se o nome dele bate OU se alguma
+  // atividade dele bate (mostrando só as atividades que batem, a menos que
+  // o roteiro em si já tenha batido - aí mostra todas, pra dar contexto).
+  const roteiros = !buscaNorm
+    ? todosRoteiros
+    : todosRoteiros
+        .map((r) => {
+          const roteiroBate = r.label.toLowerCase().includes(buscaNorm);
+          const atividades = roteiroBate
+            ? r.atividades
+            : r.atividades.filter((a) =>
+                a.paginaLabel.toLowerCase().includes(buscaNorm),
+              );
+          return { ...r, atividades, roteiroBate };
+        })
+        .filter((r) => r.roteiroBate || r.atividades.length > 0);
+
+  const orfas = !buscaNorm
+    ? todasOrfas
+    : todasOrfas.filter((a) => a.paginaLabel.toLowerCase().includes(buscaNorm));
+
   if (roteiros.length === 0 && orfas.length === 0) return null;
 
   const maxRoteiros = Math.max(1, ...roteiros.map((r) => r.total));
@@ -299,6 +327,10 @@ export default function AdminClicksPage() {
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [expandidas, setExpandidas] = useState<Set<string>>(new Set());
+  const [busca, setBusca] = useState("");
+  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<Set<string>>(
+    () => new Set(CATEGORIAS.map((c) => c.valor)),
+  );
 
   const carregar = (filtro: { dataInicio?: string; dataFim?: string }) => {
     setLoading(true);
@@ -325,6 +357,8 @@ export default function AdminClicksPage() {
   const limparFiltros = () => {
     setDataInicio("");
     setDataFim("");
+    setBusca("");
+    setCategoriasSelecionadas(new Set(CATEGORIAS.map((c) => c.valor)));
     carregar({});
   };
 
@@ -337,21 +371,48 @@ export default function AdminClicksPage() {
     });
   };
 
+  const toggleCategoriaSelecionada = (valor: string) => {
+    setCategoriasSelecionadas((prev) => {
+      const next = new Set(prev);
+      if (next.has(valor)) next.delete(valor);
+      else next.add(valor);
+      return next;
+    });
+  };
+
   const totalCliques = items.reduce((s, i) => s + i.total, 0);
   const totalItens = items.length;
+  const buscaNorm = busca.trim().toLowerCase();
+  const correspondeABusca = (label: string) =>
+    !buscaNorm || label.toLowerCase().includes(buscaNorm);
 
-  // Agrupa por categoria (roteiros/atividades tratados à parte, aninhados)
+  // Só itens de categorias marcadas no filtro (roteiros/atividades seguem
+  // juntos, controlados pela seleção de "roteiros")
+  const itemsCategoriaFiltrados = items.filter((item) =>
+    item.categoria === "atividades"
+      ? categoriasSelecionadas.has("roteiros")
+      : categoriasSelecionadas.has(item.categoria),
+  );
+
+  // Agrupa por categoria (roteiros/atividades tratados à parte, aninhados) -
+  // busca já aplicada aqui pras categorias "flat"; Roteiros aplica a busca
+  // sozinho (precisa da lógica de pai/filho, ver SecaoRoteiros)
   const porCategoria = new Map<string, ClickStat[]>();
-  for (const item of items) {
-    if (item.categoria === "atividades") continue;
+  for (const item of itemsCategoriaFiltrados) {
+    if (item.categoria === "atividades" || item.categoria === "roteiros") continue;
+    if (!correspondeABusca(item.paginaLabel)) continue;
     const lista = porCategoria.get(item.categoria) ?? [];
     lista.push(item);
     porCategoria.set(item.categoria, lista);
   }
 
-  const temRoteirosOuAtividades = items.some(
-    (i) => i.categoria === "roteiros" || i.categoria === "atividades",
-  );
+  const temRoteirosOuAtividades =
+    categoriasSelecionadas.has("roteiros") &&
+    itemsCategoriaFiltrados.some(
+      (i) =>
+        (i.categoria === "roteiros" || i.categoria === "atividades") &&
+        correspondeABusca(i.paginaLabel),
+    );
 
   const grupos = (Object.keys(GRUPOS) as Grupo[])
     .map((g) => {
@@ -385,42 +446,125 @@ export default function AdminClicksPage() {
           : `${totalCliques} ${totalCliques === 1 ? "clique" : "cliques"} em ${totalItens} ${totalItens === 1 ? "item diferente" : "itens diferentes"}`}
       </p>
 
-      {/* Filtro de data — discreto, sem card grande */}
-      <div className="mb-8 flex flex-wrap items-end gap-3 border-b border-border pb-6">
-        <div className="flex flex-col gap-1">
-          <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <CalendarRange className="h-3 w-3" /> Data início
-          </label>
-          <input
-            type="date"
-            value={dataInicio}
-            onChange={(e) => setDataInicio(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
+      {/* Filtros — discretos, sem card grande */}
+      <div className="mb-8 space-y-3 border-b border-border pb-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar por nome…"
+              className="w-56 rounded-lg border border-border bg-background py-1.5 pl-8 pr-7 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+            {busca && (
+              <button
+                onClick={() => setBusca("")}
+                aria-label="Limpar busca"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="outline" size="sm" className="gap-1.5">
+                <ListFilter className="h-3.5 w-3.5" />
+                {categoriasSelecionadas.size === CATEGORIAS.length
+                  ? "Todas as categorias"
+                  : categoriasSelecionadas.size === 0
+                    ? "Nenhuma categoria"
+                    : `${categoriasSelecionadas.size} categorias`}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="max-h-96 w-72 overflow-y-auto">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Categorias
+                </p>
+                <div className="flex gap-2 text-xs">
+                  <button
+                    onClick={() =>
+                      setCategoriasSelecionadas(new Set(CATEGORIAS.map((c) => c.valor)))
+                    }
+                    className="text-primary hover:underline"
+                  >
+                    Todas
+                  </button>
+                  <button
+                    onClick={() => setCategoriasSelecionadas(new Set())}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    Nenhuma
+                  </button>
+                </div>
+              </div>
+              {(Object.keys(GRUPOS) as Grupo[]).map((g) => (
+                <div key={g} className="mb-3 last:mb-0">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {GRUPOS[g].label}
+                  </p>
+                  <div className="space-y-1">
+                    {CATEGORIAS.filter((c) => c.grupo === g).map((c) => (
+                      <label
+                        key={c.valor}
+                        className="flex cursor-pointer items-center gap-2 text-sm text-foreground"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={categoriasSelecionadas.has(c.valor)}
+                          onChange={() => toggleCategoriaSelecionada(c.valor)}
+                          className="h-3.5 w-3.5 rounded border-border accent-primary"
+                        />
+                        {c.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <CalendarRange className="h-3 w-3" /> Data fim
-          </label>
-          <input
-            type="date"
-            value={dataFim}
-            onChange={(e) => setDataFim(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
+
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              <CalendarRange className="h-3 w-3" /> Data início
+            </label>
+            <input
+              type="date"
+              value={dataInicio}
+              onChange={(e) => setDataInicio(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+              <CalendarRange className="h-3 w-3" /> Data fim
+            </label>
+            <input
+              type="date"
+              value={dataFim}
+              onChange={(e) => setDataFim(e.target.value)}
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+          <button
+            onClick={aplicarFiltroData}
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+          >
+            <Filter className="h-3.5 w-3.5" /> Filtrar
+          </button>
+          <button
+            onClick={limparFiltros}
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-muted"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Limpar filtros
+          </button>
         </div>
-        <button
-          onClick={aplicarFiltroData}
-          className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-        >
-          <Filter className="h-3.5 w-3.5" /> Filtrar
-        </button>
-        <button
-          onClick={limparFiltros}
-          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-muted"
-        >
-          <RotateCcw className="h-3.5 w-3.5" /> Limpar
-        </button>
       </div>
 
       {loading ? (
@@ -433,6 +577,10 @@ export default function AdminClicksPage() {
         <div className="rounded-xl border border-dashed border-border bg-card/50 py-16 text-center text-muted-foreground">
           Nenhum clique registrado ainda para esse filtro.
         </div>
+      ) : grupos.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-card/50 py-16 text-center text-muted-foreground">
+          Nenhum resultado pra essa busca/categoria selecionada.
+        </div>
       ) : (
         <div className="space-y-10">
           {grupos.map(({ grupo, categorias }) => (
@@ -443,7 +591,11 @@ export default function AdminClicksPage() {
               <div className="space-y-6">
                 {categorias.map((c) =>
                   c.valor === "roteiros" ? (
-                    <SecaoRoteiros key="roteiros" items={items} />
+                    <SecaoRoteiros
+                      key="roteiros"
+                      items={itemsCategoriaFiltrados}
+                      busca={busca}
+                    />
                   ) : (
                     <SecaoCategoria
                       key={c.valor}
