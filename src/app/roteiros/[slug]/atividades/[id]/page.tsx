@@ -17,6 +17,7 @@ import type { Atividade } from "@/lib/api";
 import { getRoteiroBySlug } from "@/lib/roteiros";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { useVisitas } from "@/hooks/useVisitas";
+import { trackClick } from "@/lib/trackClick";
 
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
@@ -46,6 +47,7 @@ export default function AtividadeDetalhesPage() {
           return;
         }
         setAtividade(data);
+        trackClick("atividades", data.id);
       })
       .catch(() => setErro(true))
       .finally(() => setLoading(false));

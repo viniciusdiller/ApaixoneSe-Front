@@ -18,6 +18,7 @@ import { atividadesApi } from "@/lib/api";
 import type { Atividade } from "@/lib/api";
 import { useVisitas } from "@/hooks/useVisitas";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { trackClick } from "@/lib/trackClick";
 
 function AtividadeSkeleton() {
   return (
@@ -50,6 +51,10 @@ export function AtividadesClient({ roteiro }: { roteiro: RoteiroMeta }) {
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [roteiro.enum]);
+
+  useEffect(() => {
+    trackClick("roteiros", roteiro.slug);
+  }, [roteiro.slug]);
 
   const abrirAtividade = (atividade: Atividade) => {
     router.push(`/roteiros/${roteiro.slug}/atividades/${atividade.id}`);

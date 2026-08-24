@@ -19,12 +19,14 @@ import {
   Landmark,
   GalleryHorizontal,
   Palette,
+  BarChart3,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
 
 const links = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Cliques", href: "/admin/clicks", icon: BarChart3 },
   { label: "Usuários", href: "/admin/usuarios", icon: Users },
   {
     label: "Fique Por Dentro",

@@ -15,6 +15,7 @@ import {
 import { secretariaTurismoApi } from "@/lib/api/secretaria-turismo";
 import type { SecretariaTurismo } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { trackClick } from "@/lib/trackClick";
 
 function Carousel({ urls, alt }: { urls: string[]; alt: string }) {
   const [idx, setIdx] = useState(0);
@@ -156,6 +157,10 @@ export default function SecretariaTurismoPage() {
   const [error, setError] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 4;
+
+  useEffect(() => {
+    trackClick("secretaria-de-turismo", "secretaria-de-turismo");
+  }, []);
 
   useEffect(() => {
     secretariaTurismoApi

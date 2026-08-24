@@ -19,6 +19,7 @@ import { catMovelApi } from "@/lib/api/cat-movel";
 import type { Cat, CatMovel } from "@/lib/api";
 import { catMovelMidia } from "@/lib/catMovelMidia";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { trackClick } from "@/lib/trackClick";
 
 // ─── Carrossel ───────────────────────────────────────────────────────────────
 function Carousel({ urls }: { urls: string[] }) {
@@ -207,6 +208,10 @@ export default function CatPage() {
   const [catError, setCatError] = useState(false);
   const [movel, setMovel] = useState<CatMovel | null>(null);
   const [movelLoading, setMovelLoading] = useState(true);
+
+  useEffect(() => {
+    trackClick("cat", "cat");
+  }, []);
 
   useEffect(() => {
     catApi

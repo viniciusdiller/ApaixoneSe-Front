@@ -15,6 +15,7 @@ import {
 import { gastronomiaApi } from "@/lib/api/gastronomia";
 import type { Gastronomia } from "@/lib/api/types";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { trackClick } from "@/lib/trackClick";
 import { pratosTipicos } from "@/lib/data";
 import { GastronomiaCard } from "./GastronomiaCard";
 import { useVisitas } from "@/hooks/useVisitas";
@@ -55,6 +56,11 @@ export function GastronomiaListPage() {
 
   const imgUrl = (r: Gastronomia) =>
     safeMediaUrl(r.logoUrl) || "/images/gastronomia.jpg";
+
+  const handleVerDetalhes = (restaurante: Gastronomia) => {
+    trackClick("gastronomia", restaurante.id);
+    setSelecionado(restaurante);
+  };
 
   const isVisitadoModal = selecionado
     ? gastronomiasVisitadas.has(selecionado.id)
@@ -139,7 +145,7 @@ export function GastronomiaListPage() {
                 key={restaurante.id}
                 restaurante={restaurante}
                 index={i}
-                onVerDetalhes={setSelecionado}
+                onVerDetalhes={handleVerDetalhes}
                 visitado={gastronomiasVisitadas.has(restaurante.id)}
                 onToggleCheckin={
                   isMounted && isLogado ? toggleGastronomia : undefined

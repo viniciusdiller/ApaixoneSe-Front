@@ -9,6 +9,16 @@ import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { ROTEIROS } from "@/lib/roteiros";
 import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
+import { trackClick } from "@/lib/trackClick";
+
+// Mapeia o tipo de servico para a categoria usada no contador de cliques
+// (mesmo valor do slug da rota em /servicos/*)
+const TIPO_PARA_CATEGORIA_CLICK: Record<TipoServicoTurista, string> = {
+  GUIA_TURISMO: "guias",
+  AGENCIA_TURISMO: "agencias",
+  ESPORTE_LAZER: "esportes",
+  LOCADORA_VEICULOS: "locadoras",
+};
 
 // Tipos que exigem comprovante Cadastur (mesmos exigidos no cadastro admin)
 const EXIGE_CADASTUR: TipoServicoTurista[] = [
@@ -358,7 +368,10 @@ export function ServicoTuristaListPage({
                     )}
 
                     <button
-                      onClick={() => setSelecionado(servico)}
+                      onClick={() => {
+                        trackClick(TIPO_PARA_CATEGORIA_CLICK[tipo], servico.id);
+                        setSelecionado(servico);
+                      }}
                       className="mt-4 w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
                     >
                       Ver detalhes

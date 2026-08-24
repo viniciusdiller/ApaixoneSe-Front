@@ -11,6 +11,7 @@ import {
   formatarPeriodoEvento,
   formatarPeriodoEventoCurto,
 } from "@/lib/eventoPeriodo";
+import { trackClick } from "@/lib/trackClick";
 
 interface Props {
   mesAtual: MesData;
@@ -114,7 +115,10 @@ export default function MesClient({ mesAtual, eventos, error }: Props) {
                 >
                   <button
                     type="button"
-                    onClick={() => setSelectedEvento(evento)}
+                    onClick={() => {
+                      trackClick("eventos", evento.id);
+                      setSelectedEvento(evento);
+                    }}
                     className="relative flex w-full flex-col justify-between gap-6 overflow-hidden rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg sm:flex-row sm:items-center"
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-accent transform origin-left scale-y-0 transition-transform duration-300 group-hover:scale-y-100" />
