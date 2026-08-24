@@ -22,10 +22,10 @@ import { GoogleTranslate } from "./google-translate";
 import { useAuth } from "@/context/AuthContext";
 
 const navLinks = [
-  { label: "Praias & Lagoas", to: "/praias" },
   { label: "História", to: "/historia" },
-  { label: "Roteiros", to: "/roteiros" },
   { label: "Eventos", to: "/eventos" },
+  { label: "Roteiros", to: "/roteiros" },
+  { label: "Praias & Lagoas", to: "/praias" },
   { label: "Gastronomia", to: "/gastronomia" },
   { label: "Hospedagem", to: "/hospedagens" },
   { label: "Serviços Para o Turista", to: "/servicos" },
