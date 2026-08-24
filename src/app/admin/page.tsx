@@ -268,7 +268,7 @@ function PendingDetailModal({
           }}
         />
         <div
-          className="flex items-center gap-3 px-6 pt-5 pb-4"
+          className="flex items-center gap-3 px-4 pt-5 pb-4 sm:px-6"
           style={{ borderBottom: "1px solid hsl(var(--border))" }}
         >
           <div className="relative h-10 w-10 flex-shrink-0">
@@ -305,12 +305,13 @@ function PendingDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="ml-2 rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            aria-label="Fechar"
+            className="ml-2 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <X size={18} />
           </button>
         </div>
-        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-4">
+        <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6">
           <OwnerCard usuarioId={data.usuarioId} embedded={data.usuario} />
           <div
             style={{ height: "1px", backgroundColor: "hsl(var(--border))" }}
@@ -445,7 +446,7 @@ function PendingDetailModal({
           )}
         </div>
         <div
-          className="flex items-center justify-end gap-2 px-6 py-4"
+          className="flex flex-wrap items-center justify-end gap-2 px-4 py-4 sm:px-6"
           style={{ borderTop: "1px solid hsl(var(--border))" }}
         >
           <button

@@ -136,7 +136,7 @@ export default function AdminEventoPrincipalPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
+    <div className="mx-auto max-w-2xl space-y-6 p-4 sm:p-6">
       {/* Cabeçalho */}
       <div className="flex items-center gap-3">
         <Calendar className="h-7 w-7 text-primary" />

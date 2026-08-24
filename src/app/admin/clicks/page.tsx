@@ -434,7 +434,7 @@ export default function AdminClicksPage() {
           <BarChart3 className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-widest sm:text-3xl">
             Cliques
           </h1>
         </div>
@@ -462,7 +462,7 @@ export default function AdminClicksPage() {
               <button
                 onClick={() => setBusca("")}
                 aria-label="Limpar busca"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-0.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
               >
                 <X className="h-3.5 w-3.5" />
               </button>

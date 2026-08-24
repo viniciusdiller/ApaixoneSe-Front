@@ -102,7 +102,7 @@ function EmailVerificadoBadge({ userId, active, onToggle }: { userId: string; ac
     <button
       onClick={() => onToggle(userId, !active)}
       title={active ? "Verificado — clique para revogar" : "Não verificado — clique para ativar"}
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition hover:opacity-80 ${
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium transition hover:opacity-80 ${
         active
           ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
           : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
@@ -274,9 +274,9 @@ export default function AdminUsuariosPage() {
   return (
     <div>
       {/* cabeçalho */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest text-foreground">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-foreground sm:text-3xl">
             Usuários
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -309,7 +309,7 @@ export default function AdminUsuariosPage() {
           <button
             type="button"
             onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
             aria-label="Limpar pesquisa"
           >
             <X size={14} />
@@ -357,10 +357,10 @@ export default function AdminUsuariosPage() {
             ]}
             extraActions={(row) => (
               <>
-                <button onClick={() => openDetails(row)} title="Ver detalhes" className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-primary">
+                <button onClick={() => openDetails(row)} title="Ver detalhes" aria-label="Ver detalhes" className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-muted hover:text-primary">
                   <Eye size={16} />
                 </button>
-                <button onClick={() => openEdit(row)} title="Editar" className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-primary">
+                <button onClick={() => openEdit(row)} title="Editar" aria-label="Editar" className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-muted hover:text-primary">
                   <Pencil size={16} />
                 </button>
               </>
@@ -465,17 +465,17 @@ export default function AdminUsuariosPage() {
             className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl shadow-2xl"
             style={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}
           >
-            <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+            <div className="flex flex-wrap items-center gap-3 px-4 py-4 sm:px-6" style={{ borderBottom: "1px solid hsl(var(--border))" }}>
               <UserCircle size={24} className="text-primary" />
-              <div className="flex-1">
-                <h2 className="font-display text-xl font-bold uppercase tracking-widest text-foreground">{details.user.nome}</h2>
-                <p className="text-xs text-muted-foreground">@{details.user.usuario} · {details.user.email}</p>
+              <div className="min-w-0 flex-1">
+                <h2 className="font-display truncate text-xl font-bold uppercase tracking-widest text-foreground">{details.user.nome}</h2>
+                <p className="truncate text-xs text-muted-foreground">@{details.user.usuario} · {details.user.email}</p>
               </div>
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERFIL_BADGE[details.user.perfil]}`}>{details.user.perfil}</span>
-              <button onClick={() => setDetails(null)} className="ml-2 rounded p-1 text-muted-foreground hover:text-foreground"><X size={18} /></button>
+              <button onClick={() => setDetails(null)} aria-label="Fechar" className="ml-2 flex h-9 w-9 items-center justify-center rounded text-muted-foreground hover:text-foreground"><X size={18} /></button>
             </div>
 
-            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-4">
+            <div className="flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6">
               {detailsLoading ? (
                 <p className="text-sm text-muted-foreground">Carregando…</p>
               ) : (
@@ -493,9 +493,9 @@ export default function AdminUsuariosPage() {
                     {details.planos.length === 0 ? <Empty /> : (
                       <div className="space-y-2">
                         {details.planos.map((p) => (
-                          <div key={p.id} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
-                            <span className="font-medium text-foreground">{p.titulo}</span>
-                            <span className="text-xs text-muted-foreground">{new Date(p.dataInicio).toLocaleDateString("pt-BR")} {" → "} {new Date(p.dataFim).toLocaleDateString("pt-BR")}</span>
+                          <div key={p.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+                            <span className="min-w-0 truncate font-medium text-foreground">{p.titulo}</span>
+                            <span className="shrink-0 text-xs text-muted-foreground">{new Date(p.dataInicio).toLocaleDateString("pt-BR")} {" → "} {new Date(p.dataFim).toLocaleDateString("pt-BR")}</span>
                           </div>
                         ))}
                       </div>
@@ -505,7 +505,7 @@ export default function AdminUsuariosPage() {
               )}
             </div>
 
-            <div className="px-6 py-3 text-right" style={{ borderTop: "1px solid hsl(var(--border))" }}>
+            <div className="px-4 py-3 text-right sm:px-6" style={{ borderTop: "1px solid hsl(var(--border))" }}>
               <button onClick={() => setDetails(null)} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">Fechar</button>
             </div>
           </div>

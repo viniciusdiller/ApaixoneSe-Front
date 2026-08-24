@@ -135,9 +135,9 @@ export default function AdminCasaDeCambioPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-widest sm:text-3xl">
             Casas de Câmbio
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -189,14 +189,16 @@ export default function AdminCasaDeCambioPage() {
               <button
                 onClick={() => setViewing(row)}
                 title="Ver detalhes"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                aria-label="Ver detalhes"
+                className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
               >
                 <Eye size={16} />
               </button>
               <button
                 onClick={() => openEdit(row)}
                 title="Editar"
-                className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                aria-label="Editar"
+                className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
               >
                 <Pencil size={16} />
               </button>
