@@ -18,6 +18,7 @@ import type { Hospedagem } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import Link from "next/link";
 import { CadasturSection } from "@/components/CadasturSection";
+import { trackClick } from "@/lib/trackClick";
 
 function parseTags(raw: string[] | null | undefined): string[] {
   if (!raw) return [];
@@ -274,7 +275,10 @@ export function HospedagemListPage() {
                     )}
 
                     <button
-                      onClick={() => setSelecionada(h)}
+                      onClick={() => {
+                        trackClick("hospedagens", h.id);
+                        setSelecionada(h);
+                      }}
                       className="mt-4 w-fit rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/90"
                     >
                       Ver detalhes

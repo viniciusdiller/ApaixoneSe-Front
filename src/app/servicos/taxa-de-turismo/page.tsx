@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -10,6 +11,7 @@ import {
   Trophy,
   Building2,
 } from "lucide-react";
+import { trackClick } from "@/lib/trackClick";
 
 const autorizacoes = [
   {
@@ -82,6 +84,10 @@ const tabela = [
 ];
 
 export default function TaxaDeTurismoPage() {
+  useEffect(() => {
+    trackClick("taxa-de-turismo", "taxa-de-turismo");
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero — igual ao ServicoTuristaListPage */}

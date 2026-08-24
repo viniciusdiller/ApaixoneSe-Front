@@ -9,6 +9,7 @@ import { ArrowLeft, CheckCircle, Loader2, XCircle } from "lucide-react";
 import { pontosAguaApi } from "@/lib/api";
 import type { PontoAgua } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { trackClick } from "@/lib/trackClick";
 
 export default function LagoaDetalhesPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -19,7 +20,10 @@ export default function LagoaDetalhesPage() {
   useEffect(() => {
     pontosAguaApi
       .getBySlug(slug)
-      .then(setLagoa)
+      .then((l) => {
+        setLagoa(l);
+        trackClick("lagoas", slug);
+      })
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, [slug]);

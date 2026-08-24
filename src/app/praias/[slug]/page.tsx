@@ -10,6 +10,7 @@ import type { PontoAgua } from "@/lib/api";
 import { BeachConditions } from "@/components/praia/condicao-praia";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import Image from "next/image";
+import { trackClick } from "@/lib/trackClick";
 
 export default function PraiaDetalhePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -20,7 +21,10 @@ export default function PraiaDetalhePage() {
   useEffect(() => {
     pontosAguaApi
       .getBySlug(slug)
-      .then(setPraia)
+      .then((p) => {
+        setPraia(p);
+        trackClick("praias", slug);
+      })
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, [slug]);
