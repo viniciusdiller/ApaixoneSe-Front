@@ -9,6 +9,7 @@ import {
   Layers,
   Trophy,
   CalendarRange,
+  LayoutGrid,
 } from "lucide-react";
 import { clicksApi } from "@/lib/api";
 import type { ClickStat, ClickStatsResumo } from "@/lib/api";
@@ -114,6 +115,35 @@ function CategoriaBadge({ categoria }: { categoria: string }) {
   );
 }
 
+function AbaPill({
+  ativo,
+  onClick,
+  children,
+  corGrupo,
+}: {
+  ativo: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  /** classes bg/text pra quando ativo — se omitido usa o azul primário padrão */
+  corGrupo?: { bg: string; text: string; dot: string };
+}) {
+  const dot = corGrupo?.dot ?? "bg-primary";
+  const bg = corGrupo?.bg ?? "bg-primary/10";
+  const text = corGrupo?.text ?? "text-primary";
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+        ativo
+          ? `${dot} text-white shadow-sm`
+          : `${bg} ${text} hover:opacity-75`
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function StatTile({
   icon,
   label,
@@ -153,9 +183,12 @@ function StatTile({
   );
 }
 
-/** Barra de magnitude — uma única cor sequencial, largura relativa ao maior total da página atual. */
+function magnitudePct(total: number, max: number): number {
+  return max > 0 ? Math.max(4, Math.round((total / max) * 100)) : 0;
+}
+
+/** Barra de magnitude — uma única cor sequencial, largura relativa ao maior total do resultado filtrado inteiro. */
 function MagnitudeBar({ total, max }: { total: number; max: number }) {
-  const pct = max > 0 ? Math.max(4, Math.round((total / max) * 100)) : 0;
   return (
     <div className="flex items-center gap-3">
       <span className="w-10 shrink-0 text-right text-sm font-bold tabular-nums text-foreground">
@@ -164,7 +197,7 @@ function MagnitudeBar({ total, max }: { total: number; max: number }) {
       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-primary transition-all"
-          style={{ width: `${pct}%` }}
+          style={{ width: `${magnitudePct(total, max)}%` }}
         />
       </div>
     </div>
@@ -180,6 +213,50 @@ function ItemLabel({ item }: { item: ClickStat }) {
   return <span className="font-medium text-foreground">{item.paginaLabel}</span>;
 }
 
+/** Caixa individual — um item da categoria ativa, com seu próprio total de cliques. */
+function ItemBox({
+  item,
+  rank,
+  max,
+}: {
+  item: ClickStat;
+  rank: number;
+  max: number;
+}) {
+  const removido = item.paginaLabel === "Item removido";
+  return (
+    <div className="group relative overflow-hidden rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+      {rank === 1 && (
+        <Trophy
+          className="absolute right-3 top-3 h-4 w-4 text-accent"
+          aria-label="Item mais clicado da categoria"
+        />
+      )}
+      <p className="text-xs font-semibold text-muted-foreground">#{rank}</p>
+      <p
+        className={`mt-1 truncate text-base font-bold ${
+          removido ? "italic text-muted-foreground" : "text-foreground"
+        }`}
+        title={item.paginaLabel}
+      >
+        {item.paginaLabel}
+      </p>
+      <p className="mt-2 text-2xl font-bold tabular-nums text-foreground">
+        {item.total}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {item.total === 1 ? "clique" : "cliques"}
+      </p>
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary transition-all"
+          style={{ width: `${magnitudePct(item.total, max)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function AdminClicksPage() {
   const [items, setItems] = useState<ClickStat[]>([]);
   const [resumo, setResumo] = useState<ClickStatsResumo | null>(null);
@@ -187,7 +264,8 @@ export default function AdminClicksPage() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(false);
 
-  const [categoria, setCategoria] = useState("");
+  // "" = aba "Visão Geral" (tabela combinada); qualquer outro valor = uma categoria específica (grid de caixas)
+  const [abaAtiva, setAbaAtiva] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [page, setPage] = useState(1);
@@ -216,10 +294,21 @@ export default function AdminClicksPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const aplicarFiltros = () => {
+  const selecionarAba = (valor: string) => {
+    setAbaAtiva(valor);
     setPage(1);
     carregar({
-      categoria: categoria || undefined,
+      categoria: valor || undefined,
+      dataInicio: dataInicio || undefined,
+      dataFim: dataFim || undefined,
+      page: 1,
+    });
+  };
+
+  const aplicarFiltroData = () => {
+    setPage(1);
+    carregar({
+      categoria: abaAtiva || undefined,
       dataInicio: dataInicio || undefined,
       dataFim: dataFim || undefined,
       page: 1,
@@ -227,7 +316,7 @@ export default function AdminClicksPage() {
   };
 
   const limparFiltros = () => {
-    setCategoria("");
+    setAbaAtiva("");
     setDataInicio("");
     setDataFim("");
     setPage(1);
@@ -237,7 +326,7 @@ export default function AdminClicksPage() {
   const mudarPagina = (novaPagina: number) => {
     setPage(novaPagina);
     carregar({
-      categoria: categoria || undefined,
+      categoria: abaAtiva || undefined,
       dataInicio: dataInicio || undefined,
       dataFim: dataFim || undefined,
       page: novaPagina,
@@ -245,8 +334,10 @@ export default function AdminClicksPage() {
   };
 
   // Escala pelo maior total do RESULTADO FILTRADO INTEIRO (resumo.topItem),
-  // não só da página atual - senão toda página além da 1ª parece "cheia".
+  // que já vem escopado pela aba ativa - não só da página atual, senão toda
+  // página além da 1ª parece "cheia".
   const maxTotal = Math.max(1, resumo?.topItem?.total ?? 0);
+  const categoriaAtual = abaAtiva ? categoriaInfo(abaAtiva) : null;
 
   return (
     <div>
@@ -259,16 +350,18 @@ export default function AdminClicksPage() {
             Cliques
           </h1>
           <p className="text-sm text-muted-foreground">
-            Engajamento por categoria e página, agregado por dia
+            {categoriaAtual
+              ? `Cada item de ${categoriaAtual.label} com seu próprio total`
+              : "Engajamento por categoria e página, agregado por dia"}
           </p>
         </div>
       </div>
 
-      {/* Stat tiles */}
+      {/* Stat tiles — re-escopam automaticamente pra aba ativa (resumo já vem filtrado) */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatTile
           icon={<MousePointerClick className="h-5 w-5" />}
-          label="Total de cliques"
+          label={categoriaAtual ? `Cliques em ${categoriaAtual.label}` : "Total de cliques"}
           value={
             <p className="text-2xl font-bold tabular-nums text-foreground">
               {resumo ? resumo.totalCliques : "—"}
@@ -278,7 +371,7 @@ export default function AdminClicksPage() {
         />
         <StatTile
           icon={<Layers className="h-5 w-5" />}
-          label="Combinações ativas"
+          label={categoriaAtual ? "Itens com clique" : "Combinações ativas"}
           value={
             <p className="text-2xl font-bold tabular-nums text-foreground">
               {resumo ? resumo.totalCombinacoes : "—"}
@@ -307,30 +400,36 @@ export default function AdminClicksPage() {
         />
       </div>
 
-      {/* Filtros */}
-      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-muted-foreground">
-            Categoria
-          </label>
-          <select
-            value={categoria}
-            onChange={(e) => setCategoria(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Todas</option>
-            {(Object.keys(GRUPOS) as Grupo[]).map((g) => (
-              <optgroup key={g} label={GRUPOS[g].label}>
-                {CATEGORIAS.filter((c) => c.grupo === g).map((c) => (
-                  <option key={c.valor} value={c.valor}>
-                    {c.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+      {/* Abas — Visão Geral + uma por categoria, agrupadas pelos mesmos 4 grupos temáticos */}
+      <div className="mb-6 space-y-3 rounded-xl border border-border bg-card p-4 shadow-sm">
+        <div className="flex flex-wrap gap-2">
+          <AbaPill ativo={abaAtiva === ""} onClick={() => selecionarAba("")}>
+            <LayoutGrid className="h-3.5 w-3.5" /> Visão Geral
+          </AbaPill>
         </div>
+        {(Object.keys(GRUPOS) as Grupo[]).map((g) => (
+          <div key={g}>
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {GRUPOS[g].label}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIAS.filter((c) => c.grupo === g).map((c) => (
+                <AbaPill
+                  key={c.valor}
+                  ativo={abaAtiva === c.valor}
+                  onClick={() => selecionarAba(c.valor)}
+                  corGrupo={GRUPOS[g]}
+                >
+                  {c.label}
+                </AbaPill>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
+      {/* Filtro de data — se aplica em qualquer aba */}
+      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-1">
           <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
             <CalendarRange className="h-3 w-3" /> Data início
@@ -356,7 +455,7 @@ export default function AdminClicksPage() {
         </div>
 
         <button
-          onClick={aplicarFiltros}
+          onClick={aplicarFiltroData}
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
         >
           <Filter className="h-4 w-4" /> Filtrar
@@ -366,7 +465,7 @@ export default function AdminClicksPage() {
           onClick={limparFiltros}
           className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground transition hover:bg-muted"
         >
-          <RotateCcw className="h-4 w-4" /> Limpar
+          <RotateCcw className="h-4 w-4" /> Limpar tudo
         </button>
       </div>
 
@@ -378,8 +477,29 @@ export default function AdminClicksPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-card/50 py-16 text-center text-muted-foreground">
-          Nenhum clique registrado ainda para esse filtro.
+          {categoriaAtual
+            ? `Nenhum clique registrado ainda em ${categoriaAtual.label}.`
+            : "Nenhum clique registrado ainda para esse filtro."}
         </div>
+      ) : categoriaAtual ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((item, i) => (
+              <ItemBox
+                key={`${item.categoria}::${item.pagina}`}
+                item={item}
+                rank={(page - 1) * PAGE_SIZE + i + 1}
+                max={maxTotal}
+              />
+            ))}
+          </div>
+
+          <AdminPagination
+            page={page}
+            totalPages={totalPaginas}
+            onPageChange={mudarPagina}
+          />
+        </>
       ) : (
         <>
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
