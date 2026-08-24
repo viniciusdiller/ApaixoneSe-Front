@@ -62,10 +62,15 @@ function buildFormData(texto: string, images: ManagedImage[], newVideo: File | n
 }
 
 // ─── ImageManager ────────────────────────────────────────────────────────────
+// Reordenação via Pointer Events (não HTML5 Drag and Drop) — DnD nativo não
+// dispara em telas de toque, então arrastar pra reordenar simplesmente não
+// funcionava no mobile. Pointer Events cobrem mouse/toque/caneta com o mesmo
+// código, então o comportamento no desktop fica idêntico ao anterior.
 function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: (images: ManagedImage[]) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dragIdx = useRef<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
 
   const visible = images
     .map((img, idx) => ({ img, idx }))
@@ -100,6 +105,29 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
     onChange(next);
   };
 
+  const handlePointerDown = (idx: number) => (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragIdx.current = idx;
+    setDraggingIdx(idx);
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (dragIdx.current === null) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const cell = el?.closest<HTMLElement>("[data-img-idx]");
+    if (!cell) return;
+    const idx = Number(cell.dataset.imgIdx);
+    if (!Number.isNaN(idx) && idx !== overIdx) setOverIdx(idx);
+  };
+
+  const finishDrag = () => {
+    if (dragIdx.current !== null && overIdx !== null) move(dragIdx.current, overIdx);
+    dragIdx.current = null;
+    setOverIdx(null);
+    setDraggingIdx(null);
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -122,25 +150,26 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
             return src ? (
               <div
                 key={idx}
-                draggable
-                onDragStart={() => { dragIdx.current = idx; }}
-                onDragOver={(e) => { e.preventDefault(); if (overIdx !== idx) setOverIdx(idx); }}
-                onDragLeave={() => setOverIdx((v) => (v === idx ? null : v))}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (dragIdx.current !== null) move(dragIdx.current, idx);
-                  dragIdx.current = null;
-                  setOverIdx(null);
-                }}
-                onDragEnd={() => { dragIdx.current = null; setOverIdx(null); }}
-                className={`group relative aspect-square cursor-grab overflow-hidden rounded-xl border-2 active:cursor-grabbing ${
-                  overIdx === idx ? "border-primary ring-2 ring-primary/40" : img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"
+                data-img-idx={idx}
+                onPointerDown={handlePointerDown(idx)}
+                onPointerMove={handlePointerMove}
+                onPointerUp={finishDrag}
+                onPointerCancel={finishDrag}
+                style={{ touchAction: "none" }}
+                className={`group relative aspect-square cursor-grab select-none overflow-hidden rounded-xl border-2 active:cursor-grabbing ${
+                  overIdx === idx && draggingIdx !== null ? "border-primary ring-2 ring-primary/40" : img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"
                 }`}
               >
                 <Image src={src} alt={`Imagem ${visPos + 1}`} fill className="pointer-events-none object-cover" />
                 {img.mode === "new" && <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">NOVA</span>}
-                <button type="button" onClick={() => remove(idx)} title="Remover imagem" className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600">
-                  <Trash2 size={11} />
+                <button
+                  type="button"
+                  onClick={() => remove(idx)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  title="Remover imagem"
+                  className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
+                >
+                  <Trash2 size={12} />
                 </button>
                 <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
                   <GripVertical size={10} className="opacity-70" />{visPos + 1}
@@ -337,7 +366,7 @@ export default function AdminCatPage() {
       {/* ── ABA: CAT FIXO ── */}
       {activeTab === "cat" && (
         <div>
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">Central de Atendimento ao Turista — {items.length} registros</p>
             <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
               <Plus className="h-4 w-4" /> Novo Registro
@@ -348,13 +377,13 @@ export default function AdminCatPage() {
             <AdminTable
               data={items}
               columns={[
-                { key: "texto", label: "Texto", render: (_val, row) => <span className="line-clamp-2 max-w-sm text-sm">{row.texto}</span> },
+                { key: "texto", label: "Texto", render: (_val, row) => <span className="line-clamp-2 max-w-[160px] text-sm sm:max-w-sm">{row.texto}</span> },
                 { key: "imagensUrl", label: "Mídia", render: (_val, row) => <CatThumb cat={row} /> },
               ]}
               extraActions={(row) => (
                 <>
-                  <button onClick={() => setViewing(row)} title="Ver detalhes" className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Eye size={16} /></button>
-                  <button onClick={() => openEdit(row)} title="Editar" className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Pencil size={16} /></button>
+                  <button onClick={() => setViewing(row)} title="Ver detalhes" aria-label="Ver detalhes" className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Eye size={16} /></button>
+                  <button onClick={() => openEdit(row)} title="Editar" aria-label="Editar" className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Pencil size={16} /></button>
                 </>
               )}
               onDelete={handleDelete}
@@ -372,7 +401,7 @@ export default function AdminCatPage() {
                 {viewing.imagensUrl?.length > 0 && (
                   <div className="flex flex-col gap-2">
                     <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imagens ({viewing.imagensUrl.length})</span>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                       {viewing.imagensUrl.map((url, i) => { const src = safeMediaUrl(url); return src ? (<div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border"><Image src={src} alt={`Imagem ${i + 1}`} fill className="object-cover" /></div>) : null; })}
                     </div>
                   </div>
@@ -471,7 +500,7 @@ export default function AdminCatPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
               <h2 className="text-base font-semibold">{movel ? "Editar CAT Móvel" : "Configurar CAT Móvel"}</h2>
-              <button onClick={() => setMovelModal(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"><X className="w-4 h-4" /></button>
+              <button onClick={() => setMovelModal(false)} aria-label="Fechar" className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground"><X className="w-4 h-4" /></button>
             </div>
             <form onSubmit={handleSaveMovel} className="px-6 py-5 space-y-5">
               <div>

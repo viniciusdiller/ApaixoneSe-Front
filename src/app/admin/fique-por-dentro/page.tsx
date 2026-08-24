@@ -198,7 +198,7 @@ export default function AdminFiquePorDentroPage() {
       )}
 
       {/* Ações */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {items.length}/5 imagem{items.length !== 1 ? "ns" : ""} cadastrada{items.length !== 1 ? "s" : ""}
         </p>
@@ -235,7 +235,8 @@ export default function AdminFiquePorDentroPage() {
                 className="group relative aspect-[3/4] overflow-hidden rounded-2xl border-2 border-border bg-muted">
                 {src && <Image src={src} alt={`Posição ${item.ordem}`} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />}
                 <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-white">#{item.ordem}</span>
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                {/* No touch (sem :hover real) os controles ficam sempre visíveis; a partir de md, reserva o hover-reveal original */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
                   <button onClick={() => openEdit(item)}
                     className="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-white transition-colors">
                     <Pencil size={13} /> Editar
