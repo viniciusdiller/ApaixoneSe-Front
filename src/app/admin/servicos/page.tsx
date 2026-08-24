@@ -72,6 +72,11 @@ const REQUER_COMPROVANTE: TipoServicoTurista[] = [
   "LOCADORA_VEICULOS",
 ];
 
+const PODE_ESCOLHER_ROTEIRO: TipoServicoTurista[] = [
+  "GUIA_TURISMO",
+  "AGENCIA_TURISMO",
+];
+
 const empty: CreateServicoTuristaDto & { site?: string } = {
   tipo: "GUIA_TURISMO",
   nome: "",
@@ -300,7 +305,11 @@ export default function AdminServicosPage() {
       formData.append("cnpj", form.cnpj || "");
       formData.append("descricao", form.descricao || "");
       formData.append("idiomas", form.idiomas || "");
-      if (form.roteiros && form.roteiros.length > 0)
+      if (
+        PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) &&
+        form.roteiros &&
+        form.roteiros.length > 0
+      )
         formData.append("roteiros", JSON.stringify(form.roteiros));
       formData.append("instagram", form.instagram || "");
       if (form.modalidades && form.modalidades.length > 0)
@@ -531,7 +540,9 @@ export default function AdminServicosPage() {
               />
               <ViewRow label="Idiomas" value={viewing.idiomas} />
               <ViewRow label="Instagram" value={viewing.instagram} />
-              <ViewRow label="Roteiros" value={roteiroLabels(viewing.roteiros)} />
+              {PODE_ESCOLHER_ROTEIRO.includes(viewing.tipo) && (
+                <ViewRow label="Roteiros" value={roteiroLabels(viewing.roteiros)} />
+              )}
               {(viewing as ServicoTurista & { site?: string }).site && (
                 <div className="flex flex-col gap-0.5">
                   <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
@@ -721,40 +732,42 @@ export default function AdminServicosPage() {
             onChange={set("descricao")}
             multiline
           />
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Roteiros {form.tipo === "GUIA_TURISMO" ? "*" : "(opcional)"}
-            </label>
-            <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
-              {ROTEIROS.map((roteiro) => {
-                const active = (form.roteiros ?? []).includes(roteiro.value);
-                return (
-                  <button
-                    key={roteiro.value}
-                    type="button"
-                    onClick={() =>
-                      setForm((prev) => {
-                        const current = prev.roteiros ?? [];
-                        return {
-                          ...prev,
-                          roteiros: current.includes(roteiro.value)
-                            ? current.filter((r) => r !== roteiro.value)
-                            : [...current, roteiro.value],
-                        };
-                      })
-                    }
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
-                      active
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-background text-muted-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {roteiro.label}
-                  </button>
-                );
-              })}
+          {PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Roteiros {form.tipo === "GUIA_TURISMO" ? "*" : "(opcional)"}
+              </label>
+              <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
+                {ROTEIROS.map((roteiro) => {
+                  const active = (form.roteiros ?? []).includes(roteiro.value);
+                  return (
+                    <button
+                      key={roteiro.value}
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => {
+                          const current = prev.roteiros ?? [];
+                          return {
+                            ...prev,
+                            roteiros: current.includes(roteiro.value)
+                              ? current.filter((r) => r !== roteiro.value)
+                              : [...current, roteiro.value],
+                          };
+                        })
+                      }
+                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {roteiro.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
           {form.tipo === "ESPORTE_LAZER" && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

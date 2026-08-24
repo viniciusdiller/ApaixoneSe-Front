@@ -60,6 +60,8 @@ const REQUER_COMPROVANTE = [
   "LOCADORA_VEICULOS",
 ];
 
+const PODE_ESCOLHER_ROTEIRO = ["GUIA_TURISMO", "AGENCIA_TURISMO"];
+
 const emptyForm = {
   tipo: "GUIA_TURISMO",
   nome: "",
@@ -255,7 +257,7 @@ export function FormularioServico({
       if (form.instagram) fd.append("instagram", form.instagram);
       if (form.site) fd.append("site", form.site);
       if (form.idiomas) fd.append("idiomas", form.idiomas);
-      if (form.roteiros.length > 0)
+      if (PODE_ESCOLHER_ROTEIRO.includes(form.tipo) && form.roteiros.length > 0)
         fd.append("roteiros", JSON.stringify(form.roteiros));
       if (form.modalidades.length > 0)
         fd.append("modalidades", JSON.stringify(form.modalidades));
@@ -469,33 +471,35 @@ export function FormularioServico({
               rows={4}
             />
 
-            {/* Roteiros */}
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <Route className="h-3.5 w-3.5 text-primary" />
-                ROTEIROS{" "}
-                {form.tipo === "GUIA_TURISMO" ? "*" : "(OPCIONAL)"}
-              </label>
-              <div className="flex flex-wrap gap-2.5">
-                {ROTEIROS.map((r) => {
-                  const active = form.roteiros.includes(r.value);
-                  return (
-                    <button
-                      key={r.value}
-                      type="button"
-                      onClick={() => toggleRoteiro(r.value)}
-                      className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
-                        active
-                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
-                      }`}
-                    >
-                      {r.label}
-                    </button>
-                  );
-                })}
+            {/* Roteiros (apenas Guia e Agência) */}
+            {PODE_ESCOLHER_ROTEIRO.includes(form.tipo) && (
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Route className="h-3.5 w-3.5 text-primary" />
+                  ROTEIROS{" "}
+                  {form.tipo === "GUIA_TURISMO" ? "*" : "(OPCIONAL)"}
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  {ROTEIROS.map((r) => {
+                    const active = form.roteiros.includes(r.value);
+                    return (
+                      <button
+                        key={r.value}
+                        type="button"
+                        onClick={() => toggleRoteiro(r.value)}
+                        className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
+                          active
+                            ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                            : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                        }`}
+                      >
+                        {r.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Modalidades (apenas Esporte/Lazer) */}
             {form.tipo === "ESPORTE_LAZER" && (
