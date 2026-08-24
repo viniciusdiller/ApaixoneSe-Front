@@ -42,11 +42,14 @@ export function ServicoTuristaCard({ servico, index }: Props) {
     ? `https://instagram.com/${instagramHandle}`
     : null;
 
-  const roteiroLabels = Array.isArray(servico.roteiros)
-    ? servico.roteiros
-        .map((r) => ROTEIROS.find((rt) => rt.enum === r)?.label)
-        .filter((label): label is string => Boolean(label))
-    : [];
+  const podeExibirRoteiro =
+    servico.tipo === "GUIA_TURISMO" || servico.tipo === "AGENCIA_TURISMO";
+  const roteiroLabels =
+    podeExibirRoteiro && Array.isArray(servico.roteiros)
+      ? servico.roteiros
+          .map((r) => ROTEIROS.find((rt) => rt.enum === r)?.label)
+          .filter((label): label is string => Boolean(label))
+      : [];
 
   const siteUrl = (servico as ServicoTurista & { site?: string }).site;
   const siteHref = siteUrl
