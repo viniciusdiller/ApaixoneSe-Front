@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Loader2, Map } from "lucide-react";
+import { Plus, Loader2, Map, LogIn } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
 import type { PlanoViagem } from "@/lib/api/types";
 import { useAuth } from "@/context/AuthContext";
 import { PlanoViagemCard } from "./PlanoViagemCard";
 import { PlanoViagemForm } from "./PlanoViagemForm";
+import Link from "next/link";
 
 export function PlanoViagemList() {
   const { user } = useAuth();
@@ -52,8 +53,15 @@ export function PlanoViagemList() {
             Entre na sua conta
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Faça login para criar e gerenciar seus planos de viagem.
+            Faça login para criar e gerenciar seus planos de viagem!
           </p>
+          <Link
+            href="/login"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <LogIn className="h-4 w-4" />
+            Fazer login
+          </Link>
         </div>
       </div>
     );
