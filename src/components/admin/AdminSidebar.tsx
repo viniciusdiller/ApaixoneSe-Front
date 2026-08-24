@@ -20,6 +20,7 @@ import {
   GalleryHorizontal,
   Palette,
   BarChart3,
+  X,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
 import { useAuth } from "@/context/AuthContext";
@@ -54,7 +55,13 @@ const links = [
   { label: "CAT", href: "/admin/cat", icon: Tag },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  /** Controla a gaveta no mobile (abaixo de md); ignorado em telas md+ onde a sidebar já fica sempre visível */
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+export function AdminSidebar({ mobileOpen = false, onMobileClose }: AdminSidebarProps) {
   const router = useRouter();
   const { logout } = useAuth();
   const pathname = usePathname();
@@ -66,13 +73,24 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside
-      className="sticky top-0 flex h-screen w-64 flex-shrink-0 flex-col border-r border-border"
-      style={{
-        background:
-          "linear-gradient(175deg, hsl(var(--primary) / 0.14) 0%, hsl(var(--card)) 30%)",
-      }}
-    >
+    <>
+      {/* Backdrop — só no mobile, quando a gaveta está aberta */}
+      {mobileOpen && (
+        <div
+          aria-hidden="true"
+          onClick={onMobileClose}
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+        />
+      )}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-screen w-64 flex-shrink-0 flex-col border-r border-border transition-transform duration-300 md:sticky md:top-0 md:z-auto md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+        style={{
+          background:
+            "linear-gradient(175deg, hsl(var(--primary) / 0.14) 0%, hsl(var(--card)) 30%)",
+        }}
+      >
       {/* reflexo de luz no topo */}
       <div
         aria-hidden="true"
@@ -107,7 +125,7 @@ export function AdminSidebar() {
         >
           <Waves className="h-5 w-5 text-primary" />
         </div>
-        <div>
+        <div className="flex-1">
           <span className="font-display block text-sm font-bold uppercase tracking-widest text-primary">
             Apaixone-se
           </span>
@@ -115,6 +133,15 @@ export function AdminSidebar() {
             Painel Admin
           </span>
         </div>
+        {/* Fechar gaveta — só no mobile */}
+        <button
+          type="button"
+          onClick={onMobileClose}
+          aria-label="Fechar menu"
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-primary/10 hover:text-foreground md:hidden"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Nav */}
@@ -129,6 +156,7 @@ export function AdminSidebar() {
               <li key={href}>
                 <Link
                   href={href}
+                  onClick={onMobileClose}
                   className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                     isActive
                       ? "text-primary-foreground shadow-sm"
@@ -191,6 +219,7 @@ export function AdminSidebar() {
           Ver site público
         </Link>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

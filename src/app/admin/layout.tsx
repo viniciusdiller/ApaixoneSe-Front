@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { Menu, Waves } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
@@ -13,6 +14,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isLoginPage = pathname === "/admin/login";
 
@@ -24,12 +26,20 @@ export default function AdminLayout({
     }
   }, [user, isLoading, isLoginPage, router]);
 
+  // fecha a gaveta mobile automaticamente ao trocar de rota
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   if (isLoginPage) return <>{children}</>;
   if (isLoading || !user || user.perfil !== "ADMIN") return null;
 
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
+      <AdminSidebar
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
       {/* faixa decorativa no topo da área de conteúdo */}
       <div className="relative flex flex-1 flex-col overflow-hidden">
         <div
@@ -50,8 +60,25 @@ export default function AdminLayout({
             backgroundSize: "28px 28px",
           }}
         />
+        {/* Barra superior — só no mobile, onde a sidebar fica escondida por padrão */}
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur-sm md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Abrir menu"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition hover:bg-muted"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <Waves className="h-4 w-4 text-primary" />
+          <span className="font-display text-sm font-bold uppercase tracking-widest text-primary">
+            Painel Admin
+          </span>
+        </header>
         <main className="relative flex-1 overflow-auto">
-          <div className="container mx-auto max-w-7xl px-6 py-8">{children}</div>
+          <div className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+            {children}
+          </div>
         </main>
       </div>
     </div>
