@@ -21,6 +21,6 @@ export const clicksApi = {
     if (filtro.dataInicio) params.set("dataInicio", filtro.dataInicio);
     if (filtro.dataFim) params.set("dataFim", filtro.dataFim);
     const query = params.toString();
-    return apiFetch<ClickStat[]>(`clicks/stats${query ? `?${query}` : ""}`);
+    return apiFetch<ClickStat[]>(`/clicks/stats${query ? `?${query}` : ""}`);
   },
 };
