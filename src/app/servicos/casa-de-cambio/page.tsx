@@ -69,22 +69,25 @@ export default function CasaDeCambioPage() {
             <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center shadow-sm">
               <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
               <p className="font-display text-2xl font-bold text-foreground">
-                Ops! Tivemos um imprevisto.
+                Não há casas de câmbio ativas em Saquarema no momento.
               </p>
               <p className="mt-2 text-muted-foreground">
-                Não conseguimos carregar os dados. Tente novamente mais tarde.
+                Para realizar operações de câmbio, recomendamos procurar opções
+                nos municípios vizinhos antes de se deslocar.
               </p>
             </div>
-          ) : items.length === 0 ? (
-            <div className="col-span-full py-10 text-center">
-              <span className="mb-3 block text-5xl">💱</span>
-              <p className="font-display text-2xl text-foreground">
-                Nenhuma casa de câmbio disponível no momento.
+                    ) : items.length === 0 ? (
+            <div className="col-span-full rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+              <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
+              <p className="font-display text-2xl font-bold text-foreground">
+                Não há casas de câmbio ativas em Saquarema no momento.
               </p>
               <p className="mt-2 text-muted-foreground">
-                Em breve novos parceiros serão adicionados.
+                Para realizar operações de câmbio, recomendamos procurar opções
+                nos municípios vizinhos antes de se deslocar.
               </p>
             </div>
+
           ) : (
             items.map((item) => {
               const logo = safeMediaUrl(item.logoUrl);

@@ -3,12 +3,12 @@
 import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe, Filter, Star, Tag } from "lucide-react";
+import { ArrowLeft, AlertCircle, MapPin, Phone, Instagram, X, Route, Globe, Filter, Star } from "lucide-react";
 import { servicoTuristaApi } from "@/lib/api";
 import type { ServicoTurista, TipoServicoTurista } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { ROTEIROS } from "@/lib/roteiros";
-import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
+import { CadasturSection } from "@/components/CadasturSection";
 
 // Tipos que exigem comprovante Cadastur (mesmos exigidos no cadastro admin)
 const EXIGE_CADASTUR: TipoServicoTurista[] = [
@@ -17,10 +17,11 @@ const EXIGE_CADASTUR: TipoServicoTurista[] = [
   "LOCADORA_VEICULOS",
 ];
 
-// Apenas Guia e Agência podem ser vinculados a roteiros
-const PODE_TER_ROTEIRO: TipoServicoTurista[] = [
+const EXIBE_CADASTUR: TipoServicoTurista[] = [
   "GUIA_TURISMO",
   "AGENCIA_TURISMO",
+  "ESPORTE_LAZER",
+  "LOCADORA_VEICULOS",
 ];
 
 interface Props {
@@ -56,7 +57,6 @@ export function ServicoTuristaListPage({
   const [erro, setErro] = useState(false);
   const [selecionado, setSelecionado] = useState<ServicoTurista | null>(null);
   const [roteiroAtivo, setRoteiroAtivo] = useState<string | null>(null);
-  const [modalidadesAtivas, setModalidadesAtivas] = useState<string[]>([]);
 
   useEffect(() => {
     servicoTuristaApi
@@ -78,68 +78,26 @@ export function ServicoTuristaListPage({
   const imgUrl = (s: ServicoTurista) =>
     safeMediaUrl(s.logoUrl ?? s.fotoUrl) || imagemFallback;
 
-  const podeTerRoteiro = PODE_TER_ROTEIRO.includes(tipo);
-  const ehEsporteLazer = tipo === "ESPORTE_LAZER";
+  const getRoteiroLabel = (s: ServicoTurista) =>
+    s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.label ?? null : null;
 
-  const getRoteirosMeta = (s: ServicoTurista) =>
-    podeTerRoteiro && Array.isArray(s.roteiros)
-      ? s.roteiros
-          .map((r) => ROTEIROS.find((rt) => rt.enum === r))
-          .filter((r): r is (typeof ROTEIROS)[number] => Boolean(r))
-      : [];
-
-  const getModalidadesLabels = (s: ServicoTurista) =>
-    ehEsporteLazer && Array.isArray(s.modalidades)
-      ? s.modalidades.map(
-          (m) => MODALIDADE_LABELS[m as keyof typeof MODALIDADE_LABELS] ?? m,
-        )
-      : [];
+  const getRoteiroSlug = (s: ServicoTurista) =>
+    s.roteiro ? ROTEIROS.find((r) => r.enum === s.roteiro)?.slug ?? null : null;
 
   const exigeCadastur = EXIGE_CADASTUR.includes(tipo);
+  const exibeCadastur = EXIBE_CADASTUR.includes(tipo);
 
   // Coleta apenas os roteiros presentes nesta lista de serviços
   const roteirosDisponiveis = useMemo(() => {
-    if (!podeTerRoteiro) return [];
-    const enums = new Set(servicos.flatMap((s) => s.roteiros ?? []));
+    const enums = new Set(servicos.map((s) => s.roteiro).filter(Boolean));
     return ROTEIROS.filter((r) => enums.has(r.enum));
-  }, [servicos, podeTerRoteiro]);
+  }, [servicos]);
 
-  // Coleta apenas as modalidades presentes nesta lista (só Esporte/Lazer)
-  const modalidadesDisponiveis = useMemo(() => {
-    if (!ehEsporteLazer) return [];
-    const presentes = new Set(servicos.flatMap((s) => s.modalidades ?? []));
-    return MODALIDADES_ESPORTE.filter((m) => presentes.has(m));
-  }, [servicos, ehEsporteLazer]);
-
-  const toggleModalidadeAtiva = (modalidade: string) => {
-    setModalidadesAtivas((prev) =>
-      prev.includes(modalidade)
-        ? prev.filter((m) => m !== modalidade)
-        : [...prev, modalidade],
-    );
-  };
-
-  // Filtra serviços pelo roteiro/modalidade ativo, conforme o tipo da página.
-  // Modalidade é multi-seleção: o serviço aparece se tiver AO MENOS UMA das selecionadas.
+  // Filtra serviços pelo roteiro ativo
   const servicosFiltrados = useMemo(() => {
-    if (podeTerRoteiro && roteiroAtivo) {
-      return servicos.filter((s) =>
-        (s.roteiros ?? []).some((r) => r === roteiroAtivo),
-      );
-    }
-    if (ehEsporteLazer && modalidadesAtivas.length > 0) {
-      return servicos.filter((s) =>
-        (s.modalidades ?? []).some((m) => modalidadesAtivas.includes(m)),
-      );
-    }
-    return servicos;
-  }, [servicos, roteiroAtivo, modalidadesAtivas, podeTerRoteiro, ehEsporteLazer]);
-
-  const filtroAtivo = podeTerRoteiro
-    ? roteiroAtivo
-    : ehEsporteLazer
-      ? modalidadesAtivas.length > 0
-      : false;
+    if (!roteiroAtivo) return servicos;
+    return servicos.filter((s) => s.roteiro === roteiroAtivo);
+  }, [servicos, roteiroAtivo]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -181,8 +139,8 @@ export function ServicoTuristaListPage({
           {titulo}
         </h2>
 
-        {/* Filtro por Roteiro (Guia/Agência) ou Modalidade (Esporte/Lazer) */}
-        {!loading && !erro && podeTerRoteiro && roteirosDisponiveis.length > 0 && (
+        {/* Filtro por tipo de Roteiro */}
+        {!loading && !erro && roteirosDisponiveis.length > 0 && (
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
               <Filter className="h-4 w-4" />
@@ -219,39 +177,6 @@ export function ServicoTuristaListPage({
           </div>
         )}
 
-        {!loading && !erro && ehEsporteLazer && modalidadesDisponiveis.length > 0 && (
-          <div className="mt-6 flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-              <Filter className="h-4 w-4" />
-              Filtrar por modalidade:
-            </span>
-            <button
-              onClick={() => setModalidadesAtivas([])}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                modalidadesAtivas.length === 0
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-background text-muted-foreground border-border hover:border-primary hover:text-primary"
-              }`}
-            >
-              Todas
-            </button>
-            {modalidadesDisponiveis.map((modalidade) => (
-              <button
-                key={modalidade}
-                onClick={() => toggleModalidadeAtiva(modalidade)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                  modalidadesAtivas.includes(modalidade)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-accent/20 text-accent-foreground border-accent/30 hover:bg-accent/40"
-                }`}
-              >
-                <Tag className="h-3 w-3" />
-                {MODALIDADE_LABELS[modalidade]}
-              </button>
-            ))}
-          </div>
-        )}
-
         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
           {loading ? (
             <p className="col-span-full text-center text-muted-foreground">
@@ -271,13 +196,13 @@ export function ServicoTuristaListPage({
             <div className="col-span-full py-10 text-center">
               <span className="mb-3 block text-5xl">{emoji}</span>
               <p className="font-display text-2xl text-foreground">
-                {filtroAtivo
-                  ? `Nenhum ${labelSingular} encontrado para ${podeTerRoteiro ? "este roteiro" : "esta modalidade"}.`
+                {roteiroAtivo
+                  ? `Nenhum ${labelSingular} encontrado para este roteiro.`
                   : `Nenhum ${labelSingular} disponível no momento.`}
               </p>
               <p className="mt-2 text-muted-foreground">
-                {filtroAtivo
-                  ? `Tente selecionar ${podeTerRoteiro ? "outro roteiro" : "outra modalidade"} ou veja todos.`
+                {roteiroAtivo
+                  ? "Tente selecionar outro roteiro ou veja todos."
                   : "Em breve novos parceiros serão adicionados."}
               </p>
             </div>
@@ -313,29 +238,14 @@ export function ServicoTuristaListPage({
                         `Telefone: ${servico.telefone}`}
                     </p>
 
-                    {/* Roteiros vinculados (Guia/Agência) */}
-                    {getRoteirosMeta(servico).length > 0 && (
-                      <div className="mt-3 flex items-start gap-1.5">
-                        <Route className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                    {/* Roteiro vinculado */}
+                    {getRoteiroLabel(servico) && (
+                      <div className="mt-3 flex items-center gap-1.5">
+                        <Route className="h-3.5 w-3.5 shrink-0 text-primary" />
                         <span className="text-xs text-muted-foreground">
-                          Roteiros:{" "}
+                          Roteiro:{" "}
                           <span className="font-semibold text-foreground">
-                            {getRoteirosMeta(servico)
-                              .map((r) => r.label)
-                              .join(", ")}
-                          </span>
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Modalidades (Esporte/Lazer) */}
-                    {getModalidadesLabels(servico).length > 0 && (
-                      <div className="mt-3 flex items-start gap-1.5">
-                        <Tag className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                        <span className="text-xs text-muted-foreground">
-                          Modalidades:{" "}
-                          <span className="font-semibold text-foreground">
-                            {getModalidadesLabels(servico).join(", ")}
+                            {getRoteiroLabel(servico)}
                           </span>
                         </span>
                       </div>
@@ -371,7 +281,14 @@ export function ServicoTuristaListPage({
         </div>
       </section>
 
+            {exibeCadastur && (
+        <section className="container mx-auto px-4 pb-14 pt-2">
+          <CadasturSection />
+        </section>
+      )}
+
       {/* Modal */}
+
       <AnimatePresence>
         {selecionado && (() => {
           const siteHref = buildSiteHref(selecionado.site);
@@ -404,27 +321,17 @@ export function ServicoTuristaListPage({
                     {selecionado.nome}
                   </h3>
 
-                  {/* Badges: roteiros / modalidades + idiomas */}
+                  {/* Badges: roteiro + idiomas */}
                   <div className="mb-4 flex flex-wrap gap-2">
-                    {getRoteirosMeta(selecionado).map((r) => (
+                    {getRoteiroLabel(selecionado) && (
                       <Link
-                        key={r.enum}
-                        href={`/roteiros/${r.slug}`}
+                        href={`/roteiros/${getRoteiroSlug(selecionado)}`}
                         className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
                       >
                         <Route className="h-3 w-3" />
-                        Roteiro {r.label}
+                        Roteiro {getRoteiroLabel(selecionado)}
                       </Link>
-                    ))}
-                    {getModalidadesLabels(selecionado).map((label) => (
-                      <span
-                        key={label}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground"
-                      >
-                        <Tag className="h-3 w-3" />
-                        {label}
-                      </span>
-                    ))}
+                    )}
                     {selecionado.idiomas && (
                       <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                         Idiomas: {selecionado.idiomas}

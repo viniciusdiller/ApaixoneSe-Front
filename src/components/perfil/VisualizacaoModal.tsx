@@ -19,7 +19,7 @@ export type NegocioModal = {
   descricao?: string | null;
   especialidade?: string | null;
   idiomas?: string | null;
-  roteiros?: string[] | string | null;
+  roteiro?: string | null;
   tipo?: string | null;
   tags?: string[] | string | null;
   documentoPdfUrl?: string | null;
@@ -76,22 +76,6 @@ const renderTags = (tagsRaw?: string[] | string | null) => {
       </div>
     </div>
   );
-};
-
-const formatRoteiros = (raw?: string[] | string | null): string | undefined => {
-  if (!raw) return undefined;
-  let arr: string[] = [];
-  if (Array.isArray(raw)) {
-    arr = raw;
-  } else {
-    try {
-      arr = JSON.parse(raw);
-    } catch {
-      return undefined;
-    }
-  }
-  if (arr.length === 0) return undefined;
-  return arr.map((r) => r.replace(/_/g, " ")).join(", ");
 };
 
 export function VisualizacaoModal({ item, onClose }: VisualizacaoModalProps) {
@@ -158,9 +142,7 @@ export function VisualizacaoModal({ item, onClose }: VisualizacaoModalProps) {
             {/* Específico de Serviços */}
             <Field label="Tipo de Serviço" value={item.tipo?.replace("_", " ")} />
             <Field label="Idiomas" value={item.idiomas} />
-            {(item.tipo === "GUIA_TURISMO" || item.tipo === "AGENCIA_TURISMO") && (
-              <Field label="Roteiros" value={formatRoteiros(item.roteiros)} />
-            )}
+            <Field label="Roteiro" value={item.roteiro?.replace(/_/g, " ")} />
           </div>
 
           {/* Textos longos */}

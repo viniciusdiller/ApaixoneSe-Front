@@ -125,6 +125,14 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/roteiros"
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  Roteiros
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/eventos"
                   className="transition-colors hover:text-primary-foreground"
                 >
