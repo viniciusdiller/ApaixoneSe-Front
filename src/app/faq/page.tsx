@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft, ChevronDown, HelpCircle } from "lucide-react";
+import { trackClick } from "@/lib/trackClick";
 
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    trackClick("institucional", "faq");
+  }, []);
 
   const faqs = [
     {

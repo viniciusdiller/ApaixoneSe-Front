@@ -22,3 +22,10 @@ export {
 export { ondasNewsletterApi } from "./ondas-newsletter";
 export { pontosAguaApi } from "./pontos-agua";
 export { culturaApi } from "./cultura";
+export { clicksApi } from "./clicks";
+export type {
+  ClickStat,
+  ClickStatsFiltro,
+  ClickStatsPage,
+  ClickStatsResumo,
+} from "./clicks";

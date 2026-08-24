@@ -6,6 +6,7 @@ import { casaDeCambioApi } from "@/lib/api";
 import type { CasaDeCambio } from "@/lib/api";
 import { ArrowLeft, Phone, MapPin, Instagram, Globe, AlertCircle, ZoomIn, X } from "lucide-react";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { trackClick } from "@/lib/trackClick";
 
 export default function CasaDeCambioPage() {
   const [items, setItems] = useState<CasaDeCambio[]>([]);
@@ -94,6 +95,7 @@ export default function CasaDeCambioPage() {
               return (
                 <article
                   key={item.id}
+                  onClick={() => trackClick("casa-de-cambio", item.id)}
                   className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card"
                 >
                   <div className="flex grow flex-col p-5">
