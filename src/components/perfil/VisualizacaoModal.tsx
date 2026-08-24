@@ -158,7 +158,9 @@ export function VisualizacaoModal({ item, onClose }: VisualizacaoModalProps) {
             {/* Específico de Serviços */}
             <Field label="Tipo de Serviço" value={item.tipo?.replace("_", " ")} />
             <Field label="Idiomas" value={item.idiomas} />
-            <Field label="Roteiros" value={formatRoteiros(item.roteiros)} />
+            {(item.tipo === "GUIA_TURISMO" || item.tipo === "AGENCIA_TURISMO") && (
+              <Field label="Roteiros" value={formatRoteiros(item.roteiros)} />
+            )}
           </div>
 
           {/* Textos longos */}
