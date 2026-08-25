@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { fiquePorDentroApi } from "@/lib/api/fique-por-dentro";
 import { eventosApi } from "@/lib/api/eventos";
 import type { FiquePorDentro, Evento } from "@/lib/api/types";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { formatarPeriodoEventoCurto } from "@/lib/eventoPeriodo";
+import { mesSlugFromData } from "@/lib/eventos";
 import {
   Carousel,
   CarouselContent,
@@ -25,6 +27,7 @@ type FiqueSlide =
       src: string;
       titulo: string;
       periodo: string;
+      mes: string;
     };
 
 const NAV_BUTTON_CLASS =
@@ -55,7 +58,7 @@ export function FiquePorDentroSection() {
   const [slides, setSlides] = useState<FiqueSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [api, setApi] = useState<CarouselApi>();
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardRefs = useRef<(HTMLDivElement | HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
     Promise.allSettled([fiquePorDentroApi.getAll(), eventosApi.getDestaques()])
@@ -85,6 +88,7 @@ export function FiquePorDentroSection() {
               src: safeMediaUrl(ev.fotoUrl ?? "") ?? "",
               titulo: ev.titulo,
               periodo: formatarPeriodoEventoCurto(ev.data, ev.dataFim),
+              mes: mesSlugFromData(ev.data),
             }),
           )
           .filter((s) => s.src);
@@ -182,17 +186,9 @@ export function FiquePorDentroSection() {
             className="w-full"
           >
             <CarouselContent className="-ml-4">
-              {slides.map((slide, i) => (
-                <CarouselItem
-                  key={slide.id}
-                  className="basis-[70%] pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
-                >
-                  <div
-                    ref={(el) => {
-                      cardRefs.current[i] = el;
-                    }}
-                    className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-border shadow-lg"
-                  >
+              {slides.map((slide, i) => {
+                const cardContent = (
+                  <>
                     <Image
                       src={slide.src}
                       alt={
@@ -217,9 +213,35 @@ export function FiquePorDentroSection() {
                         </div>
                       </>
                     )}
-                  </div>
-                </CarouselItem>
-              ))}
+                  </>
+                );
+                const cardClassName =
+                  "group relative block aspect-[3/4] w-full overflow-hidden rounded-2xl border border-border shadow-lg";
+                const setRef = (el: HTMLDivElement | HTMLAnchorElement | null) => {
+                  cardRefs.current[i] = el;
+                };
+
+                return (
+                  <CarouselItem
+                    key={slide.id}
+                    className="basis-[70%] pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                  >
+                    {slide.kind === "evento" ? (
+                      <Link
+                        href={`/eventos/${slide.mes}?evento=${slide.id}`}
+                        ref={setRef}
+                        className={cardClassName}
+                      >
+                        {cardContent}
+                      </Link>
+                    ) : (
+                      <div ref={setRef} className={cardClassName}>
+                        {cardContent}
+                      </div>
+                    )}
+                  </CarouselItem>
+                );
+              })}
             </CarouselContent>
 
             {slides.length > 1 && (
