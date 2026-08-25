@@ -312,7 +312,7 @@ export function HospedagemListPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 20 }}
                   onClick={(e) => e.stopPropagation()}
-                  className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+                  className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
                 >
                   <button
                     onClick={() => setSelecionada(null)}
@@ -321,79 +321,81 @@ export function HospedagemListPage() {
                     <X className="h-5 w-5" />
                   </button>
 
-                  <div
-                    className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
-                    style={{ backgroundImage: `url(${imgUrl(selecionada)})` }}
-                  />
+                  <div className="overflow-y-auto">
+                    <div
+                      className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
+                      style={{ backgroundImage: `url(${imgUrl(selecionada)})` }}
+                    />
 
-                  <div className="p-6 sm:p-8">
-                    <h3 className="mb-2 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
-                      {selecionada.nome}
-                    </h3>
+                    <div className="p-6 sm:p-8">
+                      <h3 className="mb-2 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
+                        {selecionada.nome}
+                      </h3>
 
-                    {selecionada.textoDiferencial && (
-                      <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                        {selecionada.textoDiferencial}
-                      </p>
-                    )}
+                      {selecionada.textoDiferencial && (
+                        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                          {selecionada.textoDiferencial}
+                        </p>
+                      )}
 
-                    {tags.length > 0 && (
-                      <div className="mb-5 flex flex-wrap items-center gap-1.5">
-                        <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-                        {tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                      {tags.length > 0 && (
+                        <div className="mb-5 flex flex-wrap items-center gap-1.5">
+                          <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
+                          {tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
-                    <div className="space-y-4 text-muted-foreground">
-                      <div className="flex items-start gap-3">
-                        <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                        <p>{selecionada.endereco}</p>
-                      </div>
+                      <div className="space-y-4 text-muted-foreground">
+                        <div className="flex items-start gap-3">
+                          <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                          <p>{selecionada.endereco}</p>
+                        </div>
 
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-5 w-5 shrink-0 text-primary" />
-                        <a
-                          href={`tel:${selecionada.telefone.replace(/\D/g, "")}`}
-                          className="transition-colors hover:text-primary hover:underline"
-                        >
-                          {selecionada.telefone}
-                        </a>
-                      </div>
-
-                      {selecionada.instagram && (
                         <div className="flex items-center gap-3">
-                          <Instagram className="h-5 w-5 shrink-0 text-primary" />
+                          <Phone className="h-5 w-5 shrink-0 text-primary" />
                           <a
-                            href={`https://instagram.com/${selecionada.instagram.replace("@", "")}`}
-                            target="_blank"
-                            rel="noreferrer"
+                            href={`tel:${selecionada.telefone.replace(/\D/g, "")}`}
                             className="transition-colors hover:text-primary hover:underline"
                           >
-                            {selecionada.instagram}
+                            {selecionada.telefone}
                           </a>
                         </div>
-                      )}
 
-                      {siteHref && (
-                        <div className="flex items-center gap-3">
-                          <Globe className="h-5 w-5 shrink-0 text-primary" />
-                          <a
-                            href={siteHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="transition-colors hover:text-primary hover:underline truncate"
-                          >
-                            {selecionada.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                          </a>
-                        </div>
-                      )}
+                        {selecionada.instagram && (
+                          <div className="flex items-center gap-3">
+                            <Instagram className="h-5 w-5 shrink-0 text-primary" />
+                            <a
+                              href={`https://instagram.com/${selecionada.instagram.replace("@", "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="transition-colors hover:text-primary hover:underline"
+                            >
+                              {selecionada.instagram}
+                            </a>
+                          </div>
+                        )}
+
+                        {siteHref && (
+                          <div className="flex items-center gap-3">
+                            <Globe className="h-5 w-5 shrink-0 text-primary" />
+                            <a
+                              href={siteHref}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="transition-colors hover:text-primary hover:underline truncate"
+                            >
+                              {selecionada.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                            </a>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
