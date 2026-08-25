@@ -21,6 +21,7 @@ import { GastronomiaCard } from "./GastronomiaCard";
 import { useVisitas } from "@/hooks/useVisitas";
 import Link from "next/link";
 import { CadasturSection } from "@/components/CadasturSection";
+import { BusinessPartnerCta } from "@/components/business-partner-cta";
 
 export function GastronomiaListPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
@@ -156,6 +157,7 @@ export function GastronomiaListPage() {
         </div>
       </section>
 
+      <BusinessPartnerCta categoria="Gastronomia" />
       {/* Seção Pratos Típicos */}
       <section className="bg-muted px-4 py-14">
         <div className="container mx-auto">
@@ -178,7 +180,8 @@ export function GastronomiaListPage() {
         </div>
       </section>
 
-            <section className="container mx-auto px-4 pb-14 pt-2">
+
+      <section className="container mx-auto px-4 pb-14 pt-2">
         <CadasturSection />
       </section>
 
