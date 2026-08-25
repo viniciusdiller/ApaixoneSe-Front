@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmAction } from "@/lib/feedback";
+import { confirmAction, notify } from "@/lib/feedback";
 
 import { useEffect, useState, useMemo } from "react";
 import { eventosApi } from "@/lib/api";
@@ -48,6 +48,10 @@ export default function AdminEventosPage() {
   const [items, setItems] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filtroDestaque, setFiltroDestaque] = useState<
+    "todos" | "destaque" | "sem-destaque"
+  >("todos");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{ open: boolean; editing: Evento | null }>(
     { open: false, editing: null },
@@ -71,18 +75,37 @@ export default function AdminEventosPage() {
   // ── filtro + paginação ──
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (i) =>
-        i.titulo.toLowerCase().includes(q) ||
-        i.local.toLowerCase().includes(q) ||
-        (i.endereco ?? "").toLowerCase().includes(q) ||
-        (i.descricao ?? "").toLowerCase().includes(q),
-    );
-  }, [items, search]);
+    return items
+      .filter((i) =>
+        filtroDestaque === "destaque"
+          ? !!i.destaque
+          : filtroDestaque === "sem-destaque"
+            ? !i.destaque
+            : true,
+      )
+      .filter(
+        (i) =>
+          !q ||
+          i.titulo.toLowerCase().includes(q) ||
+          i.local.toLowerCase().includes(q) ||
+          (i.endereco ?? "").toLowerCase().includes(q) ||
+          (i.descricao ?? "").toLowerCase().includes(q),
+      );
+  }, [items, search, filtroDestaque]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
+  // Total de eventos em destaque agora mesmo (sem excluir nada) — usado
+  // pros pills de filtro e pra travar a estrela de uma linha que ainda
+  // não é destaque.
+  const destaqueCountBase = useMemo(
+    () => items.filter((i) => i.destaque).length,
+    [items],
+  );
+
+  // Exclui o item em edição — usado só pelo switch dentro do modal, onde
+  // re-salvar um evento já-destaque sem mudar esse campo não pode contar
+  // contra o próprio limite.
   const destaqueCount = useMemo(
     () =>
       items.filter((i) => i.destaque && i.id !== modal.editing?.id).length,
@@ -92,6 +115,30 @@ export default function AdminEventosPage() {
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
+  };
+
+  const handleFiltroChange = (value: typeof filtroDestaque) => {
+    setFiltroDestaque(value);
+    setPage(1);
+  };
+
+  const toggleDestaque = async (item: Evento) => {
+    setTogglingId(item.id);
+    try {
+      const formData = new FormData();
+      formData.append("destaque", String(!item.destaque));
+      await eventosApi.update(item.id, formData);
+      load();
+    } catch (err: unknown) {
+      try {
+        const p = JSON.parse((err as Error).message);
+        notify.error(Array.isArray(p.message) ? p.message.join(" ") : p.message);
+      } catch {
+        notify.error("Não foi possível atualizar o destaque.");
+      }
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const paged = useMemo(() => {
@@ -237,6 +284,36 @@ export default function AdminEventosPage() {
         )}
       </div>
 
+      {/* filtro por destaque */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {(
+          [
+            { value: "todos", label: "Todos" },
+            {
+              value: "destaque",
+              label: `Em destaque (${destaqueCountBase})`,
+            },
+            {
+              value: "sem-destaque",
+              label: `Sem destaque (${items.length - destaqueCountBase})`,
+            },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => handleFiltroChange(opt.value)}
+            className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+              filtroDestaque === opt.value
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
@@ -254,17 +331,44 @@ export default function AdminEventosPage() {
               {
                 key: "titulo",
                 label: "Título",
-                render: (_val, row) => (
-                  <span className="inline-flex items-center gap-1.5">
-                    {row.destaque && (
-                      <Star
-                        className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400"
-                        aria-label="Em destaque"
-                      />
-                    )}
-                    {row.titulo}
-                  </span>
-                ),
+                render: (_val, row) => {
+                  const podeMarcar =
+                    row.destaque || destaqueCountBase < MAX_DESTAQUES;
+                  return (
+                    <span className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDestaque(row);
+                        }}
+                        disabled={togglingId === row.id || !podeMarcar}
+                        title={
+                          row.destaque
+                            ? "Remover destaque"
+                            : podeMarcar
+                              ? "Marcar como destaque"
+                              : `Limite de ${MAX_DESTAQUES} eventos em destaque atingido`
+                        }
+                        aria-label={
+                          row.destaque
+                            ? "Remover destaque"
+                            : "Marcar como destaque"
+                        }
+                        className="shrink-0 rounded p-0.5 transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                      >
+                        <Star
+                          className={`h-3.5 w-3.5 ${
+                            row.destaque
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-muted-foreground/40"
+                          }`}
+                        />
+                      </button>
+                      {row.titulo}
+                    </span>
+                  );
+                },
               },
               { key: "local", label: "Local" },
               {
