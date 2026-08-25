@@ -13,13 +13,15 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil, Search, X } from "lucide-react";
+import { Plus, Eye, Pencil, Search, X, Star } from "lucide-react";
 import {
   formatarPeriodoEvento,
   formatarPeriodoEventoCurto,
 } from "@/lib/eventoPeriodo";
 
 const PAGE_SIZE = 10;
+
+const MAX_DESTAQUES = 4;
 
 const empty: CreateEventoDto = {
   titulo: "",
@@ -29,6 +31,7 @@ const empty: CreateEventoDto = {
   local: "",
   endereco: "",
   fotoUrl: "",
+  destaque: false,
 };
 
 /** Converte um valor "YYYY-MM-DD" para ISO 8601 em UTC (sem horário) */
@@ -80,6 +83,12 @@ export default function AdminEventosPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
+  const destaqueCount = useMemo(
+    () =>
+      items.filter((i) => i.destaque && i.id !== modal.editing?.id).length,
+    [items, modal.editing],
+  );
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -106,6 +115,7 @@ export default function AdminEventosPage() {
       local: item.local,
       endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
+      destaque: item.destaque ?? false,
     });
     setFiles({});
     setError("");
@@ -139,6 +149,7 @@ export default function AdminEventosPage() {
       formData.append("local", form.local);
       if (form.endereco) formData.append("endereco", form.endereco);
       if (files.foto) formData.append("foto", files.foto);
+      formData.append("destaque", String(form.destaque ?? false));
 
       modal.editing
         ? await eventosApi.update(modal.editing.id, formData)
@@ -240,7 +251,21 @@ export default function AdminEventosPage() {
                   <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
                 ),
               },
-              { key: "titulo", label: "Título" },
+              {
+                key: "titulo",
+                label: "Título",
+                render: (_val, row) => (
+                  <span className="inline-flex items-center gap-1.5">
+                    {row.destaque && (
+                      <Star
+                        className="h-3.5 w-3.5 shrink-0 fill-amber-400 text-amber-400"
+                        aria-label="Em destaque"
+                      />
+                    )}
+                    {row.titulo}
+                  </span>
+                ),
+              },
               { key: "local", label: "Local" },
               {
                 key: "data",
@@ -374,6 +399,39 @@ export default function AdminEventosPage() {
               setFiles((prev) => ({ ...prev, foto: undefined }));
             }}
           />
+
+          {/* ── Destaque (toggle) ── */}
+          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-foreground">
+                Deixar em destaque
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {form.destaque
+                  ? "Aparece no carrossel \"Fique Por Dentro\" da home"
+                  : destaqueCount >= MAX_DESTAQUES
+                    ? `Limite de ${MAX_DESTAQUES} eventos em destaque atingido — remova um antes de adicionar este`
+                    : `Aparece no carrossel "Fique Por Dentro" da home (máx. ${MAX_DESTAQUES} eventos)`}
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!form.destaque}
+              disabled={!form.destaque && destaqueCount >= MAX_DESTAQUES}
+              onClick={() =>
+                setForm((f) => ({ ...f, destaque: !f.destaque }))
+              }
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${
+                form.destaque ? "bg-green-500" : "bg-muted-foreground/30"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.destaque ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </button>
+          </div>
+
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}
