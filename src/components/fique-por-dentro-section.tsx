@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { fiquePorDentroApi } from "@/lib/api/fique-por-dentro";
@@ -19,10 +19,24 @@ import {
 
 type FiqueSlide =
   | { kind: "imagem"; id: string; src: string }
-  | { kind: "evento"; id: string; src: string; titulo: string; periodo: string };
+  | {
+      kind: "evento";
+      id: string;
+      src: string;
+      titulo: string;
+      periodo: string;
+    };
 
 const NAV_BUTTON_CLASS =
   "static h-10 w-10 translate-x-0 translate-y-0 rounded-full border-white/20 bg-black/40 text-white backdrop-blur-sm transition hover:bg-black/60 hover:text-white active:scale-95";
+
+// Efeito de profundidade: cards mais perto do centro do carrossel ficam em
+// escala cheia e brilho normal; os que vão saindo pras bordas encolhem e
+// escurecem — com 4 visíveis, destaca os 2 do meio; com 3, destaca o do
+// meio. Contínuo (baseado na posição real medida no DOM), não fixo por
+// índice, então acompanha o arrasto/scroll em vez de travar num layout só.
+const SHRINK_AMOUNT = 0.2;
+const DARKEN_AMOUNT = 0.7;
 
 function SkeletonRow() {
   return (
@@ -41,6 +55,7 @@ export function FiquePorDentroSection() {
   const [slides, setSlides] = useState<FiqueSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [api, setApi] = useState<CarouselApi>();
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     Promise.allSettled([fiquePorDentroApi.getAll(), eventosApi.getDestaques()])
@@ -103,6 +118,40 @@ export function FiquePorDentroSection() {
     };
   }, [api, slides.length]);
 
+  // Escala cada card conforme a distância do centro do carrossel — recalcula
+  // a cada frame de scroll/arrasto pra acompanhar o movimento de verdade.
+  useEffect(() => {
+    if (!api) return;
+    const container = api.rootNode();
+
+    const updateScale = () => {
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+
+      cardRefs.current.forEach((node) => {
+        if (!node) return;
+        const rect = node.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(cardCenter - containerCenter);
+        const maxDistance = containerRect.width / 2 + rect.width / 2;
+        const t = Math.min(distance / maxDistance, 1);
+        node.style.transform = `scale(${1 - t * SHRINK_AMOUNT})`;
+        node.style.filter = `brightness(${1 - t * DARKEN_AMOUNT})`;
+      });
+    };
+
+    updateScale();
+    api.on("scroll", updateScale);
+    api.on("reInit", updateScale);
+    api.on("resize", updateScale);
+
+    return () => {
+      api.off("scroll", updateScale);
+      api.off("reInit", updateScale);
+      api.off("resize", updateScale);
+    };
+  }, [api, slides.length]);
+
   if (!loading && slides.length === 0) return null;
 
   return (
@@ -128,20 +177,29 @@ export function FiquePorDentroSection() {
           <SkeletonRow />
         ) : (
           <Carousel
-            opts={{ align: "start", loop: slides.length > 1 }}
+            opts={{ align: "center", loop: slides.length > 1 }}
             setApi={setApi}
             className="w-full"
           >
             <CarouselContent className="-ml-4">
-              {slides.map((slide) => (
+              {slides.map((slide, i) => (
                 <CarouselItem
                   key={slide.id}
                   className="basis-[70%] pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
                 >
-                  <div className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-border shadow-lg">
+                  <div
+                    ref={(el) => {
+                      cardRefs.current[i] = el;
+                    }}
+                    className="group relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-border shadow-lg"
+                  >
                     <Image
                       src={slide.src}
-                      alt={slide.kind === "evento" ? slide.titulo : "Fique Por Dentro"}
+                      alt={
+                        slide.kind === "evento"
+                          ? slide.titulo
+                          : "Fique Por Dentro"
+                      }
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 640px) 70vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"

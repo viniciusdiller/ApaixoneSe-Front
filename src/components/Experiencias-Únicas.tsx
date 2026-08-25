@@ -61,7 +61,7 @@ const roteiros = [
 
 export function BentoGrid() {
   return (
-    <section className="px-4 py-20">
+    <section className="px-4 pb-12">
       <div className="container mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
