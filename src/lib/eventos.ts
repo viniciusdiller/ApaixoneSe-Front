@@ -12,6 +12,32 @@ export type MesData = {
   eventos: EventoDetalhe[];
 };
 
+const MESES_ORDEM = [
+  "janeiro",
+  "fevereiro",
+  "marco",
+  "abril",
+  "maio",
+  "junho",
+  "julho",
+  "agosto",
+  "setembro",
+  "outubro",
+  "novembro",
+  "dezembro",
+];
+
+/**
+ * Slug do mês (pt-BR, sem acento) a partir da data ISO de um evento — mesma
+ * lógica de MesPageClient.tsx (slice do mês na string, não Date.getUTCMonth),
+ * pra garantir que o slug gerado aqui sempre bata com o que a rota /eventos/[mes]
+ * espera.
+ */
+export function mesSlugFromData(dataIso: string): string {
+  const mesNumero = Number(dataIso.slice(5, 7));
+  return MESES_ORDEM[mesNumero - 1] ?? "";
+}
+
 export const dadosDosMeses: Record<string, MesData> = {
   janeiro: {
     titulo: "Janeiro",
