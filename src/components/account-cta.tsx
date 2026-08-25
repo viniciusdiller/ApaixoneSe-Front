@@ -30,7 +30,7 @@ export function AccountCta() {
   return (
     <section
       aria-labelledby="account-cta-title"
-      className="bg-background px-4 py-14 sm:py-20"
+      className="bg-background px-4 py-10 sm:py-14"
     >
       <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary/80 px-5 py-10 text-center shadow-xl shadow-primary/10 sm:px-10 sm:py-12"
       >

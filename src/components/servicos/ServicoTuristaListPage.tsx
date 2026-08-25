@@ -386,7 +386,7 @@ export function ServicoTuristaListPage({
         </div>
       </section>
 
-      <BusinessPartnerCta categoria={titulo} />
+      <BusinessPartnerCta categoria="Serviços ao turista" />
 
       <section className="container mx-auto px-4 pb-14 pt-2">
         <CadasturSection />

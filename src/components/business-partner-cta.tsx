@@ -8,7 +8,7 @@ interface BusinessPartnerCtaProps {
   categoria?: string;
 }
 
-export function BusinessPartnerCta({ categoria }: BusinessPartnerCtaProps) {
+export function BusinessPartnerCta({ categoria }:  BusinessPartnerCtaProps) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) return null;
@@ -32,18 +32,16 @@ export function BusinessPartnerCta({ categoria }: BusinessPartnerCtaProps) {
                 <Building2 className="h-5 w-5" aria-hidden="true" />
               </span>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                  Para empreendedores locais
-                </p>
+                
                 <h2 className="mt-1 font-display text-2xl font-bold uppercase leading-tight text-foreground sm:text-3xl">
                   Seu negócio também pode estar aqui
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  Cadastre seu estabelecimento ou serviço{categoriaTexto} e torne-se parceiro do Apaixone-se por Saquarema.
+                  Tem um negócio em Saquarema? cadastre-o{categoriaTexto} e torne-se parceiro.
                 </p>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground/80">
                   {user
-                    ? "No seu perfil, você encontra as opções para cadastrar seu negócio."
+                    ? "No seu perfil, você encontra as opções para cadastrar e gerenciar seu negócio."
                     : "Entre na sua conta para acessar o perfil e iniciar o cadastro."}
                 </p>
               </div>
