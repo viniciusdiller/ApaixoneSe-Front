@@ -398,7 +398,7 @@ export function ServicoTuristaListPage({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
+                className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl"
               >
                 <button
                   onClick={() => setSelecionado(null)}
@@ -407,92 +407,94 @@ export function ServicoTuristaListPage({
                   <X className="h-5 w-5" />
                 </button>
 
-                <div
-                  className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
-                  style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
-                />
+                <div className="overflow-y-auto">
+                  <div
+                    className="h-48 w-full bg-contain bg-center bg-no-repeat bg-muted sm:h-64"
+                    style={{ backgroundImage: `url(${imgUrl(selecionado)})` }}
+                  />
 
-                <div className="p-6 sm:p-8">
-                  <h3 className="mb-1 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
-                    {selecionado.nome}
-                  </h3>
+                  <div className="p-6 sm:p-8">
+                    <h3 className="mb-1 font-display text-3xl font-bold uppercase text-foreground sm:text-4xl">
+                      {selecionado.nome}
+                    </h3>
 
-                  {/* Badges: roteiros / modalidades + idiomas */}
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {getRoteirosMeta(selecionado).map((r) => (
-                      <Link
-                        key={r.enum}
-                        href={`/roteiros/${r.slug}`}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
-                      >
-                        <Route className="h-3 w-3" />
-                        Roteiro {r.label}
-                      </Link>
-                    ))}
-                    {getModalidadesLabels(selecionado).map((label) => (
-                      <span
-                        key={label}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground"
-                      >
-                        <Tag className="h-3 w-3" />
-                        {label}
-                      </span>
-                    ))}
-                    {selecionado.idiomas && (
-                      <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                        Idiomas: {selecionado.idiomas}
-                      </span>
-                    )}
-                  </div>
-
-                  {selecionado.descricao && (
-                    <p className="mb-4 text-sm text-muted-foreground">
-                      {selecionado.descricao}
-                    </p>
-                  )}
-
-                  <div className="mt-4 space-y-4 text-muted-foreground">
-                    {selecionado.endereco && (
-                      <div className="flex items-start gap-3">
-                        <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                        <p>{selecionado.endereco}</p>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 shrink-0 text-primary" />
-                      <p>{selecionado.telefone || "Telefone não informado"}</p>
+                    {/* Badges: roteiros / modalidades + idiomas */}
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {getRoteirosMeta(selecionado).map((r) => (
+                        <Link
+                          key={r.enum}
+                          href={`/roteiros/${r.slug}`}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground transition-colors hover:bg-accent/40"
+                        >
+                          <Route className="h-3 w-3" />
+                          Roteiro {r.label}
+                        </Link>
+                      ))}
+                      {getModalidadesLabels(selecionado).map((label) => (
+                        <span
+                          key={label}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-foreground"
+                        >
+                          <Tag className="h-3 w-3" />
+                          {label}
+                        </span>
+                      ))}
+                      {selecionado.idiomas && (
+                        <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                          Idiomas: {selecionado.idiomas}
+                        </span>
+                      )}
                     </div>
 
-                    {selecionado.instagram && (
-                      <div className="flex items-center gap-3">
-                        <Instagram className="h-5 w-5 shrink-0 text-primary" />
-                        <a
-                          href={`https://instagram.com/${
-                            selecionado.instagram.replace("@", "")
-                          }`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="transition-colors hover:text-primary hover:underline"
-                        >
-                          {selecionado.instagram}
-                        </a>
-                      </div>
+                    {selecionado.descricao && (
+                      <p className="mb-4 text-sm text-muted-foreground">
+                        {selecionado.descricao}
+                      </p>
                     )}
 
-                    {siteHref && (
+                    <div className="mt-4 space-y-4 text-muted-foreground">
+                      {selecionado.endereco && (
+                        <div className="flex items-start gap-3">
+                          <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                          <p>{selecionado.endereco}</p>
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-3">
-                        <Globe className="h-5 w-5 shrink-0 text-primary" />
-                        <a
-                          href={siteHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="transition-colors hover:text-primary hover:underline truncate"
-                        >
-                          {selecionado.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                        </a>
+                        <Phone className="h-5 w-5 shrink-0 text-primary" />
+                        <p>{selecionado.telefone || "Telefone não informado"}</p>
                       </div>
-                    )}
+
+                      {selecionado.instagram && (
+                        <div className="flex items-center gap-3">
+                          <Instagram className="h-5 w-5 shrink-0 text-primary" />
+                          <a
+                            href={`https://instagram.com/${
+                              selecionado.instagram.replace("@", "")
+                            }`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="transition-colors hover:text-primary hover:underline"
+                          >
+                            {selecionado.instagram}
+                          </a>
+                        </div>
+                      )}
+
+                      {siteHref && (
+                        <div className="flex items-center gap-3">
+                          <Globe className="h-5 w-5 shrink-0 text-primary" />
+                          <a
+                            href={siteHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="transition-colors hover:text-primary hover:underline truncate"
+                          >
+                            {selecionado.site!.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>
