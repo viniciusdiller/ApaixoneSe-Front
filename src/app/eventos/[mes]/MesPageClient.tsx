@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { eventosApi } from "@/lib/api";
 import type { Evento } from "@/lib/api";
 import type { MesData } from "@/lib/eventos";
@@ -29,6 +30,8 @@ interface Props {
 
 export function MesPageClient({ mes, mesAtual }: Props) {
   const mesNumero = MES_NUMERO[mes];
+  const searchParams = useSearchParams();
+  const eventoIdFromUrl = searchParams.get("evento");
 
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,5 +93,12 @@ export function MesPageClient({ mes, mesAtual }: Props) {
     );
   }
 
-  return <MesClient mesAtual={mesAtual} eventos={eventos} error={error} />;
+  return (
+    <MesClient
+      mesAtual={mesAtual}
+      eventos={eventos}
+      error={error}
+      initialEventoId={eventoIdFromUrl}
+    />
+  );
 }
