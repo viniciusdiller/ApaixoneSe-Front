@@ -200,26 +200,39 @@ export default function SecretariaTurismoAdminPage() {
     }
   }
 
-  // ── DRAG-AND-DROP (opera nos índices globais da lista, não nos locais da página) ──
-  function handleDragStart(globalIndex: number) {
-    dragIndexRef.current = globalIndex;
+  // ── REORDENAÇÃO (opera nos índices globais da lista, não nos locais da página) ──
+  // Pointer Events em vez de HTML5 Drag and Drop: DnD nativo não dispara em
+  // telas de toque, então arrastar pra reordenar não funcionava no mobile.
+  // Pointer Events cobrem mouse/toque/caneta com o mesmo código - desktop
+  // continua com a mesma UX de arrastar.
+  function handlePointerDownRow(globalIndex: number) {
+    return (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      dragIndexRef.current = globalIndex;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    };
   }
 
-  function handleDragOver(e: React.DragEvent, globalIndex: number) {
-    e.preventDefault();
+  function handlePointerMoveRow(e: React.PointerEvent<HTMLDivElement>) {
     const from = dragIndexRef.current;
-    if (from === null || from === globalIndex) return;
+    if (from === null) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const row = el?.closest<HTMLElement>("[data-turistando-idx]");
+    if (!row) return;
+    const to = Number(row.dataset.turistandoIdx);
+    if (Number.isNaN(to) || to === from) return;
 
     setTuristandoList((prev) => {
       const next = [...prev];
       const [moved] = next.splice(from, 1);
-      next.splice(globalIndex, 0, moved);
-      dragIndexRef.current = globalIndex;
+      next.splice(to, 0, moved);
       return next;
     });
+    dragIndexRef.current = to;
   }
 
-  function handleDragEnd() {
+  function handlePointerUpRow() {
+    if (dragIndexRef.current === null) return;
     dragIndexRef.current = null;
     persistReorder();
   }
@@ -369,7 +382,7 @@ export default function SecretariaTurismoAdminPage() {
       {/* ── TURISTANDO (Projetos) ── */}
       {activeTab === "projetos" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
               {turistandoList.length} bloco(s) cadastrado(s)
               {reordering && (
@@ -411,11 +424,13 @@ export default function SecretariaTurismoAdminPage() {
                 return (
                   <div
                     key={t.id}
-                    draggable
-                    onDragStart={() => handleDragStart(globalIndex)}
-                    onDragOver={(e) => handleDragOver(e, globalIndex)}
-                    onDragEnd={handleDragEnd}
-                    className="flex cursor-grab select-none items-start gap-4 rounded-2xl border border-border bg-white p-4 shadow-sm transition-all active:cursor-grabbing active:scale-[0.98] active:opacity-50"
+                    data-turistando-idx={globalIndex}
+                    onPointerDown={handlePointerDownRow(globalIndex)}
+                    onPointerMove={handlePointerMoveRow}
+                    onPointerUp={handlePointerUpRow}
+                    onPointerCancel={handlePointerUpRow}
+                    style={{ touchAction: "none" }}
+                    className="flex cursor-grab select-none items-start gap-3 rounded-2xl border border-border bg-white p-4 shadow-sm transition-all active:cursor-grabbing active:scale-[0.98] active:opacity-50 sm:gap-4"
                   >
                     {/* Indicador de posição global */}
                     <div className="flex shrink-0 flex-col items-center gap-1 self-stretch pr-1 text-muted-foreground/40 transition-colors hover:text-muted-foreground">
@@ -429,7 +444,7 @@ export default function SecretariaTurismoAdminPage() {
                       <img
                         src={img(t.imagensUrl[0]) ?? ""}
                         alt=""
-                        className="h-16 w-16 shrink-0 rounded-xl border border-border object-cover"
+                        className="h-12 w-12 shrink-0 rounded-xl border border-border object-cover sm:h-16 sm:w-16"
                       />
                     )}
                     <div className="min-w-0 flex-1">
@@ -448,6 +463,7 @@ export default function SecretariaTurismoAdminPage() {
                     <div className="flex shrink-0 gap-1">
                       <button
                         onClick={() => openEditTuristando(t)}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                         title="Editar"
                       >
@@ -455,6 +471,7 @@ export default function SecretariaTurismoAdminPage() {
                       </button>
                       <button
                         onClick={() => handleDeleteTuristando(t.id)}
+                        onPointerDown={(e) => e.stopPropagation()}
                         className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-red-50 hover:text-red-500"
                         title="Remover"
                       >
@@ -467,7 +484,7 @@ export default function SecretariaTurismoAdminPage() {
 
               {/* Controles de paginação do admin */}
               {totalAdminPages > 1 && (
-                <div className="mt-2 flex items-center justify-between border-t border-border pt-4">
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4">
                   <button
                     onClick={() => setAdminPage((p) => Math.max(1, p - 1))}
                     disabled={adminPage === 1}
@@ -504,21 +521,22 @@ export default function SecretariaTurismoAdminPage() {
       {/* ── MODAL TURISTANDO ── */}
       {modalTuristandoOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-4 sm:items-center sm:pb-0">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
               <h2 className="text-base font-semibold">
                 {editingTuristandoId ? "Editar Projeto" : "Novo Projeto"}
               </h2>
               <button
                 onClick={() => setModalTuristandoOpen(false)}
-                className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+                aria-label="Fechar"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
             <form
               onSubmit={handleSaveTuristando}
-              className="space-y-4 px-6 py-5"
+              className="space-y-4 overflow-y-auto px-6 py-5"
             >
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">

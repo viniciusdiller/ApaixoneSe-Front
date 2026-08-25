@@ -192,9 +192,9 @@ export default function AdminAtividadesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-widest sm:text-3xl">
             Atividades
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -229,7 +229,7 @@ export default function AdminAtividadesPage() {
           <button
             type="button"
             onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
             aria-label="Limpar pesquisa"
           >
             <X size={14} />
@@ -264,14 +264,16 @@ export default function AdminAtividadesPage() {
                 <button
                   onClick={() => setViewing(row)}
                   title="Ver detalhes"
-                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                  aria-label="Ver detalhes"
+                  className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
                 >
                   <Eye size={16} />
                 </button>
                 <button
                   onClick={() => openEdit(row)}
                   title="Editar"
-                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                  aria-label="Editar"
+                  className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
                 >
                   <Pencil size={16} />
                 </button>
@@ -362,7 +364,7 @@ export default function AdminAtividadesPage() {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <AdminFormField
               label="Latitude (opcional)"
               value={String(form.latitude ?? "")}

@@ -37,15 +37,15 @@ export function AdminModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 p-4 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="relative w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl">
+      <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col rounded-xl border border-border bg-card shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6 sm:py-4">
           <h2 className="font-display text-base font-bold uppercase tracking-widest text-foreground">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Fechar"
           >
             <X className="h-4 w-4" />
@@ -53,13 +53,13 @@ export function AdminModal({
         </div>
 
         {/* Body */}
-        <div className="max-h-[70vh] overflow-y-auto px-6 py-5">
+        <div className="overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
           <div className="flex flex-col gap-4">{children}</div>
         </div>
 
         {/* Footer com botões — só renderiza se onSubmit for passado */}
         {onSubmit && (
-          <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
+          <div className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-border px-4 py-3 sm:px-6 sm:py-4">
             <button
               type="button"
               onClick={onClose}

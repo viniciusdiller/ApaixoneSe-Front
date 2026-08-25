@@ -32,8 +32,8 @@ export function AdminTable<T extends { id: string | number }>({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr
             className="border-b border-border"
@@ -79,7 +79,8 @@ export function AdminTable<T extends { id: string | number }>({
                       <button
                         onClick={() => onDelete(row)}
                         title="Excluir"
-                        className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                        aria-label="Excluir"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
                       >
                         <Trash2 size={15} />
                       </button>

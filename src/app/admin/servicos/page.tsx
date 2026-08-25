@@ -387,9 +387,9 @@ export default function AdminServicosPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold uppercase tracking-widest">
+          <h1 className="font-display text-2xl font-bold uppercase tracking-widest sm:text-3xl">
             Serviços ao Turista
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -424,7 +424,7 @@ export default function AdminServicosPage() {
           <button
             type="button"
             onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition hover:text-foreground"
+            className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
             aria-label="Limpar pesquisa"
           >
             <X size={14} />
@@ -479,14 +479,16 @@ export default function AdminServicosPage() {
                 <button
                   onClick={() => setViewing(row)}
                   title="Ver detalhes"
-                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                  aria-label="Ver detalhes"
+                  className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
                 >
                   <Eye size={16} />
                 </button>
                 <button
                   onClick={() => openEdit(row)}
                   title="Editar"
-                  className="rounded p-1 text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
+                  aria-label="Editar"
+                  className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"
                 >
                   <Pencil size={16} />
                 </button>
@@ -531,7 +533,7 @@ export default function AdminServicosPage() {
                 </span>
               </div>
             </div>
-            <dl className="grid grid-cols-2 gap-3 text-sm">
+            <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               <ViewRow label="Tipo" value={tipoLabel(viewing.tipo)} />
               <ViewRow label="Telefone" value={maskPhone(viewing.telefone)} />
               <ViewRow
@@ -649,7 +651,7 @@ export default function AdminServicosPage() {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <AdminFormField
               label="Nome"
               value={form.nome}
@@ -666,7 +668,7 @@ export default function AdminServicosPage() {
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <AdminFormField
               label="Instagram"
               value={form.instagram ?? ""}
@@ -677,7 +679,7 @@ export default function AdminServicosPage() {
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Idiomas
             </label>
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3">
+            <div className="grid grid-cols-1 gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
               {IDIOMAS_DISPONIVEIS.map((idioma) => {
                 const idiomasArray = form.idiomas
                   ? form.idiomas.split(", ")
@@ -804,7 +806,7 @@ export default function AdminServicosPage() {
               </div>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FileUploadField
               label="Logo"
               accept="image"
