@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmAction } from "@/lib/feedback";
+import { confirmAction, notify } from "@/lib/feedback";
 
 import { useEffect, useState, useMemo } from "react";
 import { eventosApi } from "@/lib/api";
@@ -13,13 +13,15 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { Plus, Eye, Pencil, Search, X } from "lucide-react";
+import { Plus, Eye, Pencil, Search, X, Star } from "lucide-react";
 import {
   formatarPeriodoEvento,
   formatarPeriodoEventoCurto,
 } from "@/lib/eventoPeriodo";
 
 const PAGE_SIZE = 10;
+
+const MAX_DESTAQUES = 4;
 
 const empty: CreateEventoDto = {
   titulo: "",
@@ -29,6 +31,7 @@ const empty: CreateEventoDto = {
   local: "",
   endereco: "",
   fotoUrl: "",
+  destaque: false,
 };
 
 /** Converte um valor "YYYY-MM-DD" para ISO 8601 em UTC (sem horário) */
@@ -45,6 +48,10 @@ export default function AdminEventosPage() {
   const [items, setItems] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filtroDestaque, setFiltroDestaque] = useState<
+    "todos" | "destaque" | "sem-destaque"
+  >("todos");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState<{ open: boolean; editing: Evento | null }>(
     { open: false, editing: null },
@@ -68,21 +75,70 @@ export default function AdminEventosPage() {
   // ── filtro + paginação ──
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
-      (i) =>
-        i.titulo.toLowerCase().includes(q) ||
-        i.local.toLowerCase().includes(q) ||
-        (i.endereco ?? "").toLowerCase().includes(q) ||
-        (i.descricao ?? "").toLowerCase().includes(q),
-    );
-  }, [items, search]);
+    return items
+      .filter((i) =>
+        filtroDestaque === "destaque"
+          ? !!i.destaque
+          : filtroDestaque === "sem-destaque"
+            ? !i.destaque
+            : true,
+      )
+      .filter(
+        (i) =>
+          !q ||
+          i.titulo.toLowerCase().includes(q) ||
+          i.local.toLowerCase().includes(q) ||
+          (i.endereco ?? "").toLowerCase().includes(q) ||
+          (i.descricao ?? "").toLowerCase().includes(q),
+      );
+  }, [items, search, filtroDestaque]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // Total de eventos em destaque agora mesmo (sem excluir nada) — usado
+  // pros pills de filtro e pra travar a estrela de uma linha que ainda
+  // não é destaque.
+  const destaqueCountBase = useMemo(
+    () => items.filter((i) => i.destaque).length,
+    [items],
+  );
+
+  // Exclui o item em edição — usado só pelo switch dentro do modal, onde
+  // re-salvar um evento já-destaque sem mudar esse campo não pode contar
+  // contra o próprio limite.
+  const destaqueCount = useMemo(
+    () =>
+      items.filter((i) => i.destaque && i.id !== modal.editing?.id).length,
+    [items, modal.editing],
+  );
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
+  };
+
+  const handleFiltroChange = (value: typeof filtroDestaque) => {
+    setFiltroDestaque(value);
+    setPage(1);
+  };
+
+  const toggleDestaque = async (item: Evento) => {
+    setTogglingId(item.id);
+    try {
+      const formData = new FormData();
+      formData.append("destaque", String(!item.destaque));
+      await eventosApi.update(item.id, formData);
+      load();
+    } catch (err: unknown) {
+      try {
+        const p = JSON.parse((err as Error).message);
+        notify.error(Array.isArray(p.message) ? p.message.join(" ") : p.message);
+      } catch {
+        notify.error("Não foi possível atualizar o destaque.");
+      }
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const paged = useMemo(() => {
@@ -106,6 +162,7 @@ export default function AdminEventosPage() {
       local: item.local,
       endereco: item.endereco ?? "",
       fotoUrl: item.fotoUrl ?? "",
+      destaque: item.destaque ?? false,
     });
     setFiles({});
     setError("");
@@ -139,6 +196,7 @@ export default function AdminEventosPage() {
       formData.append("local", form.local);
       if (form.endereco) formData.append("endereco", form.endereco);
       if (files.foto) formData.append("foto", files.foto);
+      formData.append("destaque", String(form.destaque ?? false));
 
       modal.editing
         ? await eventosApi.update(modal.editing.id, formData)
@@ -226,6 +284,36 @@ export default function AdminEventosPage() {
         )}
       </div>
 
+      {/* filtro por destaque */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {(
+          [
+            { value: "todos", label: "Todos" },
+            {
+              value: "destaque",
+              label: `Em destaque (${destaqueCountBase})`,
+            },
+            {
+              value: "sem-destaque",
+              label: `Sem destaque (${items.length - destaqueCountBase})`,
+            },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => handleFiltroChange(opt.value)}
+            className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+              filtroDestaque === opt.value
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <LoadingGrid count={3} />
       ) : (
@@ -240,7 +328,48 @@ export default function AdminEventosPage() {
                   <MediaPreview url={row.fotoUrl ?? ""} label={row.titulo} />
                 ),
               },
-              { key: "titulo", label: "Título" },
+              {
+                key: "titulo",
+                label: "Título",
+                render: (_val, row) => {
+                  const podeMarcar =
+                    row.destaque || destaqueCountBase < MAX_DESTAQUES;
+                  return (
+                    <span className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDestaque(row);
+                        }}
+                        disabled={togglingId === row.id || !podeMarcar}
+                        title={
+                          row.destaque
+                            ? "Remover destaque"
+                            : podeMarcar
+                              ? "Marcar como destaque"
+                              : `Limite de ${MAX_DESTAQUES} eventos em destaque atingido`
+                        }
+                        aria-label={
+                          row.destaque
+                            ? "Remover destaque"
+                            : "Marcar como destaque"
+                        }
+                        className="shrink-0 rounded p-0.5 transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                      >
+                        <Star
+                          className={`h-3.5 w-3.5 ${
+                            row.destaque
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-muted-foreground/40"
+                          }`}
+                        />
+                      </button>
+                      {row.titulo}
+                    </span>
+                  );
+                },
+              },
               { key: "local", label: "Local" },
               {
                 key: "data",
@@ -374,6 +503,39 @@ export default function AdminEventosPage() {
               setFiles((prev) => ({ ...prev, foto: undefined }));
             }}
           />
+
+          {/* ── Destaque (toggle) ── */}
+          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/40 px-4 py-3">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-foreground">
+                Deixar em destaque
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {form.destaque
+                  ? "Aparece no carrossel \"Fique Por Dentro\" da home"
+                  : destaqueCount >= MAX_DESTAQUES
+                    ? `Limite de ${MAX_DESTAQUES} eventos em destaque atingido — remova um antes de adicionar este`
+                    : `Aparece no carrossel "Fique Por Dentro" da home (máx. ${MAX_DESTAQUES} eventos)`}
+              </span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!form.destaque}
+              disabled={!form.destaque && destaqueCount >= MAX_DESTAQUES}
+              onClick={() =>
+                setForm((f) => ({ ...f, destaque: !f.destaque }))
+              }
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${
+                form.destaque ? "bg-green-500" : "bg-muted-foreground/30"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.destaque ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </button>
+          </div>
+
           {error && (
             <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-500 dark:bg-red-950/30">
               {error}

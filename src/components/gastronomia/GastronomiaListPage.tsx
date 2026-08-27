@@ -21,6 +21,7 @@ import { GastronomiaCard } from "./GastronomiaCard";
 import { useVisitas } from "@/hooks/useVisitas";
 import Link from "next/link";
 import { CadasturSection } from "@/components/CadasturSection";
+import { BusinessPartnerCta } from "@/components/business-partner-cta";
 
 export function GastronomiaListPage() {
   const [restaurantes, setRestaurantes] = useState<Gastronomia[]>([]);
@@ -178,12 +179,13 @@ export function GastronomiaListPage() {
         </div>
       </section>
 
-            <section className="container mx-auto px-4 pb-14 pt-2">
+      <BusinessPartnerCta categoria="Gastronomia" />
+
+      <section className="container mx-auto px-4 pb-14 pt-2">
         <CadasturSection />
       </section>
 
       {/* Modal */}
-
       <AnimatePresence>
         {selecionado && (
           <div

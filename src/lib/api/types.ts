@@ -99,6 +99,7 @@ export interface Evento {
   local: string;
   endereco?: string | null;
   fotoUrl?: string | null;
+  destaque?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -111,6 +112,7 @@ export interface CreateEventoDto {
   local: string;
   endereco?: string;
   fotoUrl?: string;
+  destaque?: boolean;
 }
 
 export type UpdateEventoDto = Partial<CreateEventoDto>;

@@ -17,10 +17,39 @@ interface Props {
   mesAtual: MesData;
   eventos: Evento[];
   error?: boolean;
+  initialEventoId?: string | null;
 }
 
-export default function MesClient({ mesAtual, eventos, error }: Props) {
+export default function MesClient({
+  mesAtual,
+  eventos,
+  error,
+  initialEventoId,
+}: Props) {
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+
+  // Abre direto o modal do evento vindo por link (ex: carrossel da home,
+  // ?evento=<id>) assim que a lista carregar. Se o id não bater com nenhum
+  // evento (removido, etc.), não faz nada — mesma tolerância a erro do
+  // resto do carrossel.
+  useEffect(() => {
+    if (!initialEventoId) return;
+    const encontrado = eventos.find((e) => e.id === initialEventoId);
+    if (!encontrado) return;
+
+    setSelectedEvento(encontrado);
+
+    // Preserva o history.state atual (o App Router guarda ali metadados
+    // internos de rota) — sobrescrever com {} deixa o router do Next sem
+    // esse estado e ele pode se perder na navegação seguinte.
+    const url = new URL(window.location.href);
+    url.searchParams.delete("evento");
+    window.history.replaceState(
+      window.history.state,
+      "",
+      url.pathname + url.search,
+    );
+  }, [initialEventoId, eventos]);
 
   useEffect(() => {
     if (!selectedEvento) return;

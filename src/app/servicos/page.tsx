@@ -18,6 +18,7 @@ import {
 import { catApi, secretariaTurismoApi } from "@/lib/api";
 import type { Cat, SecretariaTurismo } from "@/lib/api";
 import { motion } from "framer-motion";
+import { BusinessPartnerCta } from "@/components/business-partner-cta";
 
 function truncateWords(text: string, max = 10): string {
   const words = text.trim().split(/\s+/);
@@ -271,6 +272,8 @@ export default function ServicosPage() {
           </div>
         </div>
       </section>
+
+      <BusinessPartnerCta />
     </div>
   );
 }

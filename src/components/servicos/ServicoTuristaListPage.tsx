@@ -10,6 +10,8 @@ import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import { ROTEIROS } from "@/lib/roteiros";
 import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 import { trackClick } from "@/lib/trackClick";
+import { BusinessPartnerCta } from "@/components/business-partner-cta";
+import { CadasturSection } from "../CadasturSection";
 
 // Mapeia o tipo de servico para a categoria usada no contador de cliques
 // (mesmo valor do slug da rota em /servicos/*)
@@ -382,6 +384,12 @@ export function ServicoTuristaListPage({
             })
           )}
         </div>
+      </section>
+
+      <BusinessPartnerCta categoria="Serviços ao turista" />
+
+      <section className="container mx-auto px-4 pb-14 pt-2">
+        <CadasturSection />
       </section>
 
       {/* Modal */}
