@@ -52,12 +52,11 @@ export default function HistoriaPage() {
           </h1>
           <p className="mt-4 max-w-xl text-white/80">
             Conheça um pouco mais da tradição saquaremense.
-
           </p>
         </motion.div>
       </section>
 
-      <section className="bg-muted px-4 py-14">
+      <section className="px-4 py-14">
         <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
           <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
             <h2 className="font-display text-3xl uppercase text-primary">
@@ -100,8 +99,7 @@ export default function HistoriaPage() {
         </div>
       </section>
 
-      
-      <section className=" px-4 py-14">
+      <section className="bg-muted px-4 py-14">
         <div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2">
           <article className="flex flex-col items-center justify-center text-center p-0 md:min-h-[420px] md:rounded-xl md:border md:border-border md:bg-card md:p-6">
             <h2 className="font-display text-3xl uppercase text-primary">
@@ -131,17 +129,15 @@ export default function HistoriaPage() {
           </article>
         </div>
       </section>
-      
+
       <section className="container mx-auto px-4 py-16">
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
           Lugares Culturais
-
         </h2>
 
         {loading ? (
           <p className="mt-8 text-center text-muted-foreground">
             Carregando lugares culturais...
-
           </p>
         ) : erro ? (
           <div className="mt-8 rounded-xl border border-border bg-card p-8 text-center shadow-sm">
@@ -156,7 +152,6 @@ export default function HistoriaPage() {
         ) : locais.length === 0 ? (
           <p className="mt-8 text-center text-muted-foreground">
             Nenhum local cultural cadastrado ainda.
-
           </p>
         ) : (
           <div className="mt-8 grid auto-rows-[210px] grid-cols-1 gap-5 md:auto-rows-[230px] md:grid-cols-3">
@@ -232,7 +227,9 @@ export default function HistoriaPage() {
                 </h3>
                 <div className="mt-6 prose prose-lg dark:prose-invert max-w-none">
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                    {formatDisplayText(localSelecionado.texto || localSelecionado.descricao)}
+                    {formatDisplayText(
+                      localSelecionado.texto || localSelecionado.descricao,
+                    )}
                   </p>
                 </div>
               </div>
