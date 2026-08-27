@@ -22,6 +22,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 
 // ─── Tabs ───────────────────────────────────────────────────────────────────
 type Tab = "cat" | "cat-movel";
@@ -70,6 +71,11 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
     .map((img, idx) => ({ img, idx }))
     .filter(({ img }) => img.mode !== "deleted");
   const total = visible.length;
+
+  // Chave estável por imagem (não o índice — senão o framer-motion não
+  // consegue animar a troca de posição na reordenação).
+  const keyOf = (img: ManagedImage) =>
+    img.mode === "new" ? img.preview : img.url;
 
   const addFiles = (files: FileList | null) => {
     if (!files) return;
@@ -139,38 +145,46 @@ function ImageManager({ images, onChange }: { images: ManagedImage[]; onChange: 
         </button>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {visible.map(({ img, idx }, visPos) => {
-            const src = img.mode === "existing" ? safeMediaUrl(img.url) : img.mode === "new" ? img.preview : null;
-            return src ? (
-              <div
-                key={idx}
-                data-img-idx={idx}
-                onPointerDown={handlePointerDown(idx)}
-                onPointerMove={handlePointerMove}
-                onPointerUp={finishDrag}
-                onPointerCancel={finishDrag}
-                style={{ touchAction: "none" }}
-                className={`group relative aspect-square cursor-grab select-none overflow-hidden rounded-xl border-2 active:cursor-grabbing ${
-                  overIdx === idx && draggingIdx !== null ? "border-primary ring-2 ring-primary/40" : img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"
-                }`}
-              >
-                <Image src={src} alt={`Imagem ${visPos + 1}`} fill className="pointer-events-none object-cover" />
-                {img.mode === "new" && <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">NOVA</span>}
-                <button
-                  type="button"
-                  onClick={() => remove(idx)}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  title="Remover imagem"
-                  className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
+          <AnimatePresence initial={false}>
+            {visible.map(({ img, idx }, visPos) => {
+              const src = img.mode === "existing" ? safeMediaUrl(img.url) : img.mode === "new" ? img.preview : null;
+              if (!src) return null;
+              return (
+                <motion.div
+                  key={keyOf(img)}
+                  layout
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 38, mass: 0.6 }}
+                  data-img-idx={idx}
+                  onPointerDown={handlePointerDown(idx)}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={finishDrag}
+                  onPointerCancel={finishDrag}
+                  style={{ touchAction: "none" }}
+                  className={`group relative aspect-square cursor-grab select-none overflow-hidden rounded-xl border-2 active:cursor-grabbing ${
+                    overIdx === idx && draggingIdx !== null ? "border-primary ring-2 ring-primary/40" : img.mode === "new" ? "border-primary/60 ring-1 ring-primary/30" : "border-border"
+                  }`}
                 >
-                  <Trash2 size={12} />
-                </button>
-                <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
-                  <GripVertical size={10} className="opacity-70" />{visPos + 1}
-                </span>
-              </div>
-            ) : null;
-          })}
+                  <Image src={src} alt={`Imagem ${visPos + 1}`} fill className="pointer-events-none object-cover" />
+                  {img.mode === "new" && <span className="absolute left-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">NOVA</span>}
+                  <button
+                    type="button"
+                    onClick={() => remove(idx)}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    title="Remover imagem"
+                    className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                  <span className="absolute bottom-1 left-1 flex items-center gap-1 rounded-full bg-black/50 px-1.5 py-0.5 text-[10px] text-white">
+                    <GripVertical size={10} className="opacity-70" />{visPos + 1}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
           {total < 10 && (
             <button type="button" onClick={() => inputRef.current?.click()} className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-border bg-muted/30 text-muted-foreground transition hover:border-primary hover:text-primary">
               <Plus size={20} />
@@ -381,7 +395,7 @@ export default function AdminCatPage() {
               </div>
 
               <form onSubmit={handleSave} className="space-y-6">
-                <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 5000))} maxLength={5000} multiline required />
+                <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 5000))} maxLength={5000} multiline rows={6} required />
                 <ImageManager images={images} onChange={setImages} />
                 <VideoUpload newFile={newVideo} existingUrl={displayedVideoUrl} onChange={(f) => { setNewVideo(f); setVideoCleared(false); }} onClear={() => { setNewVideo(null); setVideoCleared(true); }} />
                 {videoCleared && !newVideo && (
