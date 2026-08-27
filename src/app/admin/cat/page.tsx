@@ -1,20 +1,15 @@
 "use client";
 
-import { confirmAction, notify } from "@/lib/feedback";
-
 import { useEffect, useRef, useState } from "react";
 import { catApi } from "@/lib/api";
 import { catMovelApi } from "@/lib/api/cat-movel";
 import type { Cat, CatMovel } from "@/lib/api";
 import { catMovelMidia } from "@/lib/catMovelMidia";
-import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
-import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
   Plus,
-  Eye,
   Pencil,
   Video,
   X,
@@ -217,29 +212,14 @@ function VideoUpload({ newFile, existingUrl, onChange, onClear }: { newFile: Fil
   );
 }
 
-// ─── CatThumb ────────────────────────────────────────────────────────────────
-function CatThumb({ cat }: { cat: Cat }) {
-  const first = cat.imagensUrl?.[0];
-  const src = safeMediaUrl(first);
-  if (src) return (
-    <div className="flex items-center gap-2">
-      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md border border-border"><Image src={src} alt="thumb" fill className="object-cover" /></div>
-      <span className="text-xs text-muted-foreground">{cat.imagensUrl.length} imagem{cat.imagensUrl.length !== 1 ? "ns" : ""}{cat.videoUrl && " + vídeo"}</span>
-    </div>
-  );
-  if (cat.videoUrl) return <span className="flex items-center gap-1 text-xs text-muted-foreground"><Video size={14} /> Vídeo</span>;
-  return <span className="text-xs text-muted-foreground">—</span>;
-}
-
 // ─── Página principal ────────────────────────────────────────────────────────
 export default function AdminCatPage() {
   const [activeTab, setActiveTab] = useState<Tab>("cat");
 
-  // CAT Fixo
-  const [items, setItems] = useState<Cat[]>([]);
+  // CAT Fixo (singleton)
+  const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; editing: Cat | null }>({ open: false, editing: null });
-  const [viewing, setViewing] = useState<Cat | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [texto, setTexto] = useState("");
   const [images, setImages] = useState<ManagedImage[]>([]);
   const [newVideo, setNewVideo] = useState<File | null>(null);
@@ -260,7 +240,7 @@ export default function AdminCatPage() {
   const movelImagemRef = useRef<HTMLInputElement>(null);
   const movelVideoRef = useRef<HTMLInputElement>(null);
 
-  const loadCat = () => { setLoading(true); catApi.getAll().then(setItems).finally(() => setLoading(false)); };
+  const loadCat = () => { setLoading(true); catApi.get().then(setCat).catch(() => setCat(null)).finally(() => setLoading(false)); };
   const loadMovel = () => {
     setMovelLoading(true);
     catMovelApi.get().then(setMovel).catch(() => setMovel(null)).finally(() => setMovelLoading(false));
@@ -275,20 +255,21 @@ export default function AdminCatPage() {
 
   // CAT Fixo handlers
   const resetForm = () => { setTexto(""); setImages([]); setNewVideo(null); setVideoCleared(false); setError(""); };
-  const openCreate = () => { resetForm(); setModal({ open: true, editing: null }); };
-  const openEdit = (item: Cat) => {
+  const openCreate = () => { resetForm(); setModalOpen(true); };
+  const openEdit = () => {
+    if (!cat) return;
     resetForm();
-    setTexto(item.texto);
-    setImages((item.imagensUrl ?? []).map((url) => ({ mode: "existing" as const, url })));
-    setModal({ open: true, editing: item });
+    setTexto(cat.texto);
+    setImages((cat.imagensUrl ?? []).map((url) => ({ mode: "existing" as const, url })));
+    setModalOpen(true);
   };
-  const closeModal = () => setModal({ open: false, editing: null });
+  const closeModal = () => setModalOpen(false);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault(); setError(""); setSaving(true);
     try {
       const fd = buildFormData(texto, images, newVideo);
-      modal.editing ? await catApi.update(modal.editing.id, fd) : await catApi.create(fd);
+      cat ? await catApi.update(fd) : await catApi.create(fd);
       closeModal(); loadCat();
     } catch (err: unknown) {
       let msg = "Erro ao salvar.";
@@ -297,12 +278,7 @@ export default function AdminCatPage() {
     } finally { setSaving(false); }
   };
 
-  const handleDelete = async (item: Cat) => {
-    if (!(await confirmAction("Excluir este registro CAT?"))) return;
-    await catApi.remove(item.id); loadCat();
-  };
-
-  const displayedVideoUrl = videoCleared || newVideo ? null : (modal.editing?.videoUrl ?? null);
+  const displayedVideoUrl = videoCleared || newVideo ? null : (cat?.videoUrl ?? null);
 
   // CAT Móvel handlers
   function openMovelModal() {
@@ -363,56 +339,62 @@ export default function AdminCatPage() {
         ))}
       </div>
 
-      {/* ── ABA: CAT FIXO ── */}
+      {/* ── ABA: CAT FIXO (singleton) ── */}
       {activeTab === "cat" && (
-        <div>
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">Central de Atendimento ao Turista — {items.length} registros</p>
-            <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4" /> Novo Registro
-            </button>
-          </div>
+        <div className="space-y-4">
+          {loading && <div className="animate-pulse"><div className="h-40 rounded-2xl bg-muted" /></div>}
 
-          {loading ? <LoadingGrid count={3} /> : (
-            <AdminTable
-              data={items}
-              columns={[
-                { key: "texto", label: "Texto", render: (_val, row) => <span className="line-clamp-2 max-w-[160px] text-sm sm:max-w-sm">{row.texto}</span> },
-                { key: "imagensUrl", label: "Mídia", render: (_val, row) => <CatThumb cat={row} /> },
-              ]}
-              extraActions={(row) => (
-                <>
-                  <button onClick={() => setViewing(row)} title="Ver detalhes" aria-label="Ver detalhes" className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Eye size={16} /></button>
-                  <button onClick={() => openEdit(row)} title="Editar" aria-label="Editar" className="flex h-9 w-9 items-center justify-center rounded text-muted-foreground transition hover:bg-surface-offset hover:text-primary"><Pencil size={16} /></button>
-                </>
-              )}
-              onDelete={handleDelete}
-            />
+          {!loading && !cat && (
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 py-20 text-center">
+              <p className="text-4xl mb-4">🏛️</p>
+              <p className="text-base font-semibold text-foreground mb-1">CAT Fixo ainda não configurado</p>
+              <p className="text-sm text-muted-foreground mb-6">Clique abaixo para configurar as informações do CAT Fixo pela primeira vez.</p>
+              <button onClick={openCreate} className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm">
+                <Plus className="w-4 h-4" /> Configurar CAT Fixo
+              </button>
+            </div>
           )}
 
-          {/* Modal Visualização */}
-          <AdminModal title="Detalhes do Registro CAT" open={!!viewing} onClose={() => setViewing(null)}>
-            {viewing && (
-              <div className="space-y-6 text-sm">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Texto</span>
-                  <p className="whitespace-pre-wrap text-foreground">{viewing.texto}</p>
-                </div>
-                {viewing.imagensUrl?.length > 0 && (
-                  <div className="flex flex-col gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Imagens ({viewing.imagensUrl.length})</span>
-                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                      {viewing.imagensUrl.map((url, i) => { const src = safeMediaUrl(url); return src ? (<div key={i} className="relative aspect-square overflow-hidden rounded-lg border border-border"><Image src={src} alt={`Imagem ${i + 1}`} fill className="object-cover" /></div>) : null; })}
-                    </div>
+          {!loading && cat && (
+            <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden">
+              {(() => {
+                const src = safeMediaUrl(cat.imagensUrl?.[0]);
+                return src ? (
+                  <div className="relative aspect-[16/9] w-full bg-muted">
+                    <Image src={src} alt="Imagem do CAT" fill className="object-cover" />
                   </div>
-                )}
-                {viewing.videoUrl && (() => { const src = safeMediaUrl(viewing.videoUrl!); return src ? (<div className="flex flex-col gap-2"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vídeo</span><video src={src} controls className="w-full rounded-xl border border-border bg-black" /></div>) : null; })()}
+                ) : null;
+              })()}
+              <div className="p-6 flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-foreground mb-1">Sobre o CAT</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 whitespace-pre-wrap">{cat.texto}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                      <ImagePlus size={11} /> {cat.imagensUrl?.length ?? 0} imagem{(cat.imagensUrl?.length ?? 0) !== 1 ? "ns" : ""}
+                    </span>
+                    {cat.videoUrl && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                        <Video size={11} /> Vídeo
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button onClick={openEdit} className="shrink-0 flex items-center gap-2 border border-border hover:bg-muted px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <Pencil className="w-4 h-4" /> Editar
+                </button>
               </div>
-            )}
-          </AdminModal>
+            </div>
+          )}
 
-          {/* Modal Criar/Editar */}
-          <AdminModal title={modal.editing ? "Editar CAT" : "Novo Registro CAT"} open={modal.open} onClose={closeModal}>
+          {!loading && (
+            <button onClick={loadCat} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <RefreshCw className="w-3 h-3" /> Recarregar
+            </button>
+          )}
+
+          {/* Modal Configurar/Editar */}
+          <AdminModal title={cat ? "Editar CAT" : "Configurar CAT Fixo"} open={modalOpen} onClose={closeModal}>
             <form onSubmit={handleSave} className="space-y-5">
               <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 5000))} maxLength={5000} multiline required />
               <ImageManager images={images} onChange={setImages} />

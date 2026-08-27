@@ -622,7 +622,7 @@ export default function AdminDashboardPage() {
       hospedagemApi.getAll(),
       servicoTuristaApi.getAll(),
       planoViagemApi.getAll(),
-      catApi.getAll(),
+      catApi.get(),
       secretariaTurismoApi.getAll(),
     ]).then(([u, a, e, g, h, s, p, c, sec]) => {
       setStats({
@@ -633,7 +633,7 @@ export default function AdminDashboardPage() {
         hospedagem: h.status === "fulfilled" ? h.value.length : "—",
         servicos: s.status === "fulfilled" ? s.value.length : "—",
         planos: p.status === "fulfilled" ? p.value.length : "—",
-        cats: c.status === "fulfilled" ? c.value.length : "—",
+        cats: c.status === "fulfilled" ? (c.value ? 1 : 0) : "—",
         secretaria: sec.status === "fulfilled" ? sec.value.length : "—",
       });
     });
