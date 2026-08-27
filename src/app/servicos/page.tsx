@@ -36,8 +36,8 @@ export default function ServicosPage() {
 
   useEffect(() => {
     catApi
-      .getAll()
-      .then((data) => setCat(data[0] ?? null))
+      .get()
+      .then(setCat)
       .catch(() => setCat(null))
       .finally(() => setCatLoading(false));
 

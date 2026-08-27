@@ -215,8 +215,8 @@ export default function CatPage() {
 
   useEffect(() => {
     catApi
-      .getAll()
-      .then((data) => setCat(data[0] ?? null))
+      .get()
+      .then(setCat)
       .catch(() => setCatError(true))
       .finally(() => setCatLoading(false));
     catMovelApi
