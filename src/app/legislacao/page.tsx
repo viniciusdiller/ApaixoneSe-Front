@@ -78,6 +78,11 @@ const spheres = [
           "Conjunto de leis e decretos que estruturam a atuação da Secretaria Municipal de Esporte, Lazer e Turismo, incluindo o cadastro de prestadores de serviços turísticos e a promoção de eventos oficiais de calendário turístico.",
       },
       {
+        name: "Decreto nº 2.572/2023 — Acesso de Veículos de Turismo",
+        content:
+          "Regulamenta os critérios de entrada, circulação e estacionamento de veículos de turismo (ônibus, micro-ônibus, vans e similares) no município. Exige autorização prévia solicitada pelo site da Prefeitura, com pagamento de boleto no mínimo 3 dias úteis antes da viagem e guia fixada no para-brisa; as tarifas variam conforme o tipo de hospedagem do grupo e a autorização vale por 1 dia. Prevê isenção para empresas de turismo locais com frota emplacada em Saquarema e para veículos de equipes técnicas e atletas de competições esportivas realizadas no município.",
+      },
+      {
         name: "Decreto nº 3.163/2026 — Cadastro de Prestadores de Serviços Turísticos",
         content:
           "Regulamenta, no âmbito municipal, o cadastro de prestadores de serviços turísticos junto ao Ministério do Turismo (Cadastur), em conformidade com a Lei Federal nº 11.771/2008.",
