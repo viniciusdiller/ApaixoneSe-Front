@@ -16,14 +16,56 @@ export default function FAQPage() {
   const faqs = [
     {
       question: "Onde encontrar informações turísticas sobre a cidade?",
-      answer:
-        "Atendimento presencial: Você pode obter informações na Secretaria Municipal de Turismo e no Centro de Atendimento ao Turista (CAT), na região central, com funcionamento até as 17:00. Informações digitais: O portal oficial da Prefeitura e as páginas da Secretaria Municipal de Esporte, Lazer e Turismo disponibilizam calendário de eventos, roteiros e atrações.",
+      answer: (
+        <>
+          Nos canais de atendimento online, pelo e-mail institucional da
+          Secretaria Municipal de Esporte, Lazer e Turismo:{" "}
+          <a
+            href="mailto:turismo@saquarema.rj.gov.br"
+            className="text-primary "
+          >
+            turismo@saquarema.rj.gov.br
+          </a>
+          .<br />
+          <br />
+          Nas redes sociais:
+          <a
+            href="https://www.instagram.com/turismosaquaremarj/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary "
+          >
+            @turismosaquaremarj
+          </a>
+          <br />
+          <br />
+          Já presencialmente no Centro de Atendimento ao Turista (CAT), Rua
+          Barão de Saquarema, 451 - Vila. Horário de funcionamento: todos os
+          dias de 9h-17h.
+        </>
+      ),
     },
     {
       question:
         "Onde posso encontrar informações sobre os eventos em Saquarema?",
-      answer:
-        "Você pode acessar a aba 'EVENTOS' no menu principal do nosso site para conferir o calendário oficial atualizado da Capital Nacional do Esporte.",
+      answer: (
+        <>
+          A solicitação para o pagamento das taxas é dividida em diferentes
+          categorias, é 100% online no site da Prefeitura e é preciso ser
+          realizada com antecedência mínima de 3 dias úteis (Decreto nº
+          2.572/2023).
+          <br />
+          <br />
+          <a
+            href="https://www.saquarema.rj.gov.br/pagamento-da-taxa-de-turismo"
+            target="_blank"
+            rel="noreferrer"
+            className="text-primary "
+          >
+            Acesse o link da taxa de turismo
+          </a>
+        </>
+      ),
     },
     {
       question: "Como funcionam as taxas de turismo de Saquarema?",
@@ -33,7 +75,7 @@ export default function FAQPage() {
     {
       question: "Onde fica e como chegar a Saquarema?",
       answer:
-        "Saquarema fica na Região dos Lagos (RJ), a cerca de 100 km da capital. De carro, a rota principal é pela Ponte Rio-Niterói, seguida pelas rodovias RJ-104 e RJ-106. De ônibus, a Auto Viação 1001 possui linhas diárias saindo da Rodoviária Novo Rio e de Niterói direto para o terminal da cidade.",
+        "Saquarema fica na Costa do Sol do Rio de Janeiro, Região dos Lagos, a cerca de 100 km da capital. De carro, a rota principal é pela Ponte Rio-Niterói, seguida pelas rodovias RJ-104 e RJ-106. De ônibus, a Auto Viação 1001 possui linhas diárias saindo da Rodoviária Novo Rio e de Niterói direto para o terminal da cidade.",
     },
     {
       question: "Qual é o aeroporto mais próximo?",
@@ -43,27 +85,27 @@ export default function FAQPage() {
     {
       question: "Qual praia é mais indicada para famílias com crianças?",
       answer:
-        "A Praia da Vila (no centro) e as margens da Lagoa de Saquarema são as mais recomendadas. O trecho perto do canal possui águas mais tranquilas e rasas, além de contar com excelente infraestrutura de calçadão e quiosques.",
+        "As praias do Centro Histórico, como a praia da Vila e o Canal da Barrinha, possuem águas mais tranquilas e rasas, além de contar com excelente infraestrutura de calçadão e quiosques.",
     },
     {
       question: "Quais são as melhores praias para a prática de surf?",
       answer:
-        "A Praia de Itaúna é a 'Capital do Surf', conhecida mundialmente por ondas fortes e constantes, sediando até o campeonato da WSL. A Praia Vilatur e o trecho aberto da Praia da Vila também são excelentes para surfistas experientes.",
+        "A Praia de Itaúna, conhecida mundialmente como o “Maracanã do Surf”, possui ondas fortes e constantes, sediando até o campeonato da World Surf League. A Laje de Manitiba também é excelente para surfistas experientes.",
     },
     {
       question: "Posso levar animais de estimação para a praia?",
       answer:
-        "Por questões de higiene pública, não é permitida a permanência de pets na faixa de areia. Porém, você pode passear com eles tranquilamente no calçadão, praças e vias públicas, sempre usando guia (e focinheira, quando exigido por lei).",
+        "Por questões de higiene pública, não é permitida a permanência de pets na faixa de areia.",
     },
     {
       question: "Saquarema é um destino apenas para surfistas?",
       answer:
-        "De forma alguma! Além do surf, a cidade oferece pontos turísticos históricos como a Igreja de Nossa Senhora de Nazareth, esportes náuticos na lagoa (stand-up paddle, kitesurf), passeios de barco, trilhas ecológicas, mirantes e uma ótima gastronomia local.",
+        "Não. Além do surf, a cidade oferece experiências turísticas diversificadas, como feiras de gastronomia local, passeio de buggy, trilhas ecológicas nas áreas de preservação ambiental com observação da fauna e flora, visitação a museus e aos templos religiosos tradicionais, como a Igreja de Nossa Senhora de Nazareth.",
     },
     {
       question: "Como funcionam os serviços de hospedagem locais?",
       answer:
-        "Saquarema oferece desde pousadas aconchegantes até grandes hotéis. Na seção 'HOSPEDAGEM' do nosso site, você encontra uma lista completa com avaliações e contatos.",
+        "Saquarema oferece desde pousadas aconchegantes até grandes hotéis. Na seção 'HOSPEDAGEM' do nosso site, você encontra uma lista completa com avaliações e contatos. Todos os hotéis aqui listados fazem parte do Cadastur.",
     },
     {
       question: "Como posso entrar em contato com o suporte?",

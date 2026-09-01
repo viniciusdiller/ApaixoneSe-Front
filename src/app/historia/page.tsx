@@ -132,12 +132,12 @@ export default function HistoriaPage() {
 
       <section className="container mx-auto px-4 py-16">
         <h2 className="font-display text-4xl font-bold uppercase text-foreground">
-          Lugares Culturais
+          Outras Histórias
         </h2>
 
         {loading ? (
           <p className="mt-8 text-center text-muted-foreground">
-            Carregando lugares culturais...
+            Carregando outras histórias...
           </p>
         ) : erro ? (
           <div className="mt-8 rounded-xl border border-border bg-card p-8 text-center shadow-sm">
