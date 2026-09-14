@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { servicoTuristaApi } from "@/lib/api";
 import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
+import { TermoAceiteField } from "@/components/perfil/forms/TermoAceiteField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
@@ -97,6 +98,8 @@ export function FormularioServico({
   }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [termoAceito, setTermoAceito] = useState(false);
+  const [termoError, setTermoError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
   const documentoCnpjRef = useRef<HTMLInputElement>(null);
 
@@ -244,6 +247,12 @@ export function FormularioServico({
       return;
     }
 
+    if (modo === "criar" && !termoAceito) {
+      setTermoError("É necessário aceitar o Termo de Adesão para enviar o cadastro.");
+      return;
+    }
+    setTermoError("");
+
     setSaving(true);
 
     try {
@@ -261,6 +270,7 @@ export function FormularioServico({
         fd.append("roteiros", JSON.stringify(form.roteiros));
       if (form.modalidades.length > 0)
         fd.append("modalidades", JSON.stringify(form.modalidades));
+      if (modo === "criar") fd.append("termoAceite", "true");
 
       if (files.logo) fd.append("logo", files.logo);
       if (files.foto) fd.append("foto", files.foto);
@@ -698,6 +708,17 @@ export function FormularioServico({
             )}
           </section>
 
+          {modo === "criar" && (
+            <TermoAceiteField
+              checked={termoAceito}
+              onChange={(v) => {
+                setTermoAceito(v);
+                if (v) setTermoError("");
+              }}
+              error={termoError}
+            />
+          )}
+
           {/* ── Erro geral ── */}
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -717,7 +738,7 @@ export function FormularioServico({
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || (modo === "criar" && !termoAceito)}
               className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50"
             >
               {saving
