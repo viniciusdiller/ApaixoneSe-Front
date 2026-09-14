@@ -6,10 +6,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { culturaApi } from "@/lib/api";
 import type { LocalCultural } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
-import { X, ArrowLeft, AlertCircle } from "lucide-react";
+import {
+  X,
+  ArrowLeft,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import CarroselArtesanato from "@/components/CarroselArtesanato";
+
+const ITEMS_PER_PAGE = 6;
 
 export default function HistoriaPage() {
   const [locais, setLocais] = useState<LocalCultural[]>([]);
@@ -18,6 +26,7 @@ export default function HistoriaPage() {
   const [clickedCard, setClickedCard] = useState<string | null>(null);
   const [localSelecionado, setLocalSelecionado] =
     useState<LocalCultural | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
 
   useEffect(() => {
     culturaApi
@@ -26,6 +35,13 @@ export default function HistoriaPage() {
       .catch(() => setErro(true))
       .finally(() => setLoading(false));
   }, []);
+
+  const totalPaginas = Math.ceil(locais.length / ITEMS_PER_PAGE);
+
+  const locaisPaginados = locais.slice(
+    (paginaAtual - 1) * ITEMS_PER_PAGE,
+    paginaAtual * ITEMS_PER_PAGE,
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -155,7 +171,7 @@ export default function HistoriaPage() {
           </p>
         ) : (
           <div className="mt-8 grid auto-rows-[210px] grid-cols-1 gap-5 md:auto-rows-[230px] md:grid-cols-3">
-            {locais.map((local, i) => (
+            {locaisPaginados.map((local, i) => (
               <motion.div
                 key={local.id}
                 initial={{ opacity: 0, y: 26 }}
@@ -180,6 +196,32 @@ export default function HistoriaPage() {
                 </article>
               </motion.div>
             ))}
+          </div>
+        )}
+
+        {totalPaginas > 1 && (
+          <div className="mt-10 flex items-center justify-center gap-4 border-t border-border pt-8">
+            <button
+              onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
+              disabled={paginaAtual === 1}
+              className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+            >
+              <ChevronLeft size={16} /> Anterior
+            </button>
+
+            <span className="text-sm font-medium text-muted-foreground">
+              Página {paginaAtual} de {totalPaginas}
+            </span>
+
+            <button
+              onClick={() =>
+                setPaginaAtual((p) => Math.min(totalPaginas, p + 1))
+              }
+              disabled={paginaAtual === totalPaginas}
+              className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+            >
+              Próxima <ChevronRight size={16} />
+            </button>
           </div>
         )}
       </section>
