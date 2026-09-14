@@ -12,6 +12,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { TermoAceiteBadge } from "@/components/admin/TermoAceiteBadge";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import {
   Plus,
@@ -435,6 +436,13 @@ export default function AdminHospedagemPage() {
                   />
                 ),
               },
+              {
+                key: "termoAceiteEm",
+                label: "Termo de Adesão",
+                render: (_val, row) => (
+                  <TermoAceiteBadge termoAceiteEm={row.termoAceiteEm} />
+                ),
+              },
             ]}
             extraActions={(row) => (
               <>
@@ -577,6 +585,13 @@ export default function AdminHospedagemPage() {
                   }
                 />
               </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <FileText size={13} /> Termo de Adesão
+              </p>
+              <TermoAceiteBadge termoAceiteEm={viewing.termoAceiteEm} />
             </div>
           </div>
         )}

@@ -131,6 +131,7 @@ export interface Gastronomia {
   documentoPdfUrl: string;
   logoUrl: string;
   status: StatusEstabelecimento;
+  termoAceiteEm?: string | null;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   validade?: string | null;
@@ -172,6 +173,7 @@ export interface Hospedagem {
   documentoPdfUrl: string;
   logoUrl: string;
   status: StatusEstabelecimento;
+  termoAceiteEm?: string | null;
   usuarioId: string;
   tags?: string[] | null;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
@@ -218,6 +220,7 @@ export interface ServicoTurista {
   logoUrl?: string | null;
   fotoUrl?: string | null;
   status: StatusEstabelecimento;
+  termoAceiteEm?: string | null;
   usuarioId: string;
   usuario?: Pick<User, "id" | "nome" | "email" | "perfil">;
   comprovanteUrl?: string | null;
