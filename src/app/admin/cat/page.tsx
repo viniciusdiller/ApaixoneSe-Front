@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { catApi } from "@/lib/api";
 import { catMovelApi } from "@/lib/api/cat-movel";
 import type { Cat, CatMovel } from "@/lib/api";
@@ -484,7 +485,9 @@ export default function AdminCatPage() {
       )}
 
       {/* ── MODAL CAT MÓVEL ── */}
-      {movelModal && (
+      {/* Via portal pro <body>: aninhado na árvore do layout admin (sidebar
+          sticky), o backdrop podia deixar uma faixa sem blur no topo. */}
+      {movelModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4 pb-4 sm:pb-0">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center px-6 py-4 border-b border-border sticky top-0 bg-white z-10">
@@ -558,7 +561,8 @@ export default function AdminCatPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

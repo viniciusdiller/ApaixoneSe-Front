@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   usersApi,
   atividadesApi,
@@ -244,7 +245,12 @@ function PendingDetailModal({
         ? "Hospedagem"
         : "Serviço Turístico";
 
-  return (
+  // Renderizado via portal direto no <body> - se ficasse aninhado na árvore
+  // do layout admin (que tem a sidebar em position: sticky), o navegador
+  // podia deixar uma faixa sem o blur no topo por causa de como o
+  // backdrop-filter compõe camadas ao lado de elementos sticky/fixed.
+  // Portal remove essa ambiguidade: o overlay fica direto sob o body.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
       onClick={(e) => {
@@ -471,7 +477,8 @@ function PendingDetailModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

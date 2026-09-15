@@ -3,6 +3,7 @@
 import { confirmAction, notify } from "@/lib/feedback";
 
 import { useEffect, useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import {
   usersApi,
   gastronomiaApi,
@@ -459,7 +460,9 @@ export default function AdminUsuariosPage() {
       </AdminModal>
 
       {/* ── Modal Detalhes ────────────────────────────────────────────── */}
-      {details && (
+      {/* Via portal pro <body>: aninhado na árvore do layout admin (sidebar
+          sticky), o overlay podia deixar uma faixa sem cobrir no topo. */}
+      {details && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div
             className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl shadow-2xl"
@@ -509,7 +512,8 @@ export default function AdminUsuariosPage() {
               <button onClick={() => setDetails(null)} className="rounded-md border border-border px-4 py-2 text-sm transition hover:bg-muted">Fechar</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
