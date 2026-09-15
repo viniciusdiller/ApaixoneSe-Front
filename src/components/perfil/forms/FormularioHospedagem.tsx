@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { hospedagemApi } from "@/lib/api";
 import { HOSPEDAGEM_TAGS } from "@/lib/api/hospedagem";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
+import { TermoAceiteField } from "@/components/perfil/forms/TermoAceiteField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
@@ -67,6 +68,8 @@ export function FormularioHospedagem({
   const [files, setFiles] = useState<{ logo?: File; comprovante?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [termoAceito, setTermoAceito] = useState(false);
+  const [termoError, setTermoError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -160,6 +163,12 @@ export function FormularioHospedagem({
       return;
     }
 
+    if (modo === "criar" && !termoAceito) {
+      setTermoError("É necessário aceitar o Termo de Adesão para enviar o cadastro.");
+      return;
+    }
+    setTermoError("");
+
     setSaving(true);
 
     try {
@@ -175,6 +184,7 @@ export function FormularioHospedagem({
       if (form.site) fd.append("site", form.site);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
+      if (modo === "criar") fd.append("termoAceite", "true");
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -384,6 +394,17 @@ export function FormularioHospedagem({
             </div>
           </section>
 
+          {modo === "criar" && (
+            <TermoAceiteField
+              checked={termoAceito}
+              onChange={(v) => {
+                setTermoAceito(v);
+                if (v) setTermoError("");
+              }}
+              error={termoError}
+            />
+          )}
+
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -394,7 +415,7 @@ export function FormularioHospedagem({
           <div className="flex flex-col-reverse gap-3 border-t border-border/70 pt-6 sm:flex-row sm:justify-end">
             <button type="button" onClick={() => router.back()}
               className="rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted">Cancelar</button>
-            <button type="submit" disabled={saving}
+            <button type="submit" disabled={saving || (modo === "criar" && !termoAceito)}
               className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50">
               {saving ? "Salvando..." : modo === "criar" ? "Enviar para Análise" : "Salvar Alterações"}
             </button>
