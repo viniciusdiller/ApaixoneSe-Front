@@ -26,6 +26,7 @@ import {
   Sparkles,
   Compass,
   Route,
+  ArrowLeft,
   Building2,
   Trash2,
   Tag,
@@ -353,26 +354,36 @@ export function FormularioServico({
               />
             </svg>
 
-            <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Solicitação de serviço · Saquarema
+            <div className="relative z-10">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-xs font-semibold text-primary-foreground/80 transition hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Voltar
+              </button>
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Solicitação de serviço · Saquarema
+                  </div>
+                  <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
+                    {modo === "criar"
+                      ? "Cadastrar Novo Serviço"
+                      : "Gerenciar Serviço"}
+                  </h2>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
+                    {modo === "criar"
+                      ? "Preencha os dados abaixo para submeter seu serviço turístico à análise da equipe."
+                      : "Atualize as informações do seu serviço cadastrado em Saquarema."}
+                  </p>
                 </div>
-                <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
-                  {modo === "criar"
-                    ? "Cadastrar Novo Serviço"
-                    : "Gerenciar Serviço"}
-                </h2>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
-                  {modo === "criar"
-                    ? "Preencha os dados abaixo para submeter seu serviço turístico à análise da equipe."
-                    : "Atualize as informações do seu serviço cadastrado em Saquarema."}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-sm text-primary-foreground/80">
-                <Compass className="h-5 w-5" />
-                <span className="hidden md:inline">Serviços Turísticos</span>
+                <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-sm text-primary-foreground/80">
+                  <Compass className="h-5 w-5" />
+                  <span className="hidden md:inline">Serviços Turísticos</span>
+                </div>
               </div>
             </div>
           </div>
