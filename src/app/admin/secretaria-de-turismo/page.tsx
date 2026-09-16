@@ -3,6 +3,7 @@
 import { confirmAction, notify } from "@/lib/feedback";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Landmark,
   ImagePlus,
@@ -519,7 +520,9 @@ export default function SecretariaTurismoAdminPage() {
       )}
 
       {/* ── MODAL TURISTANDO ── */}
-      {modalTuristandoOpen && (
+      {/* Via portal pro <body>: aninhado na árvore do layout admin (sidebar
+          sticky), o backdrop podia deixar uma faixa sem cobrir no topo. */}
+      {modalTuristandoOpen && createPortal(
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-4 sm:items-center sm:pb-0">
           <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
@@ -624,7 +627,8 @@ export default function SecretariaTurismoAdminPage() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

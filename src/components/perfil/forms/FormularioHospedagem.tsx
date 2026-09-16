@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { hospedagemApi } from "@/lib/api";
 import { HOSPEDAGEM_TAGS } from "@/lib/api/hospedagem";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
+import { TermoAceiteField } from "@/components/perfil/forms/TermoAceiteField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
@@ -67,6 +68,8 @@ export function FormularioHospedagem({
   const [files, setFiles] = useState<{ logo?: File; comprovante?: File }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [termoAceito, setTermoAceito] = useState(false);
+  const [termoError, setTermoError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -78,8 +81,11 @@ export function FormularioHospedagem({
         const raw = dadosIniciais.tags;
         if (!raw) return [];
         if (Array.isArray(raw)) return raw as string[];
-        try { return JSON.parse(raw as unknown as string) as string[]; }
-        catch { return []; }
+        try {
+          return JSON.parse(raw as unknown as string) as string[];
+        } catch {
+          return [];
+        }
       })();
 
       setForm({
@@ -106,7 +112,9 @@ export function FormularioHospedagem({
     (k: string) =>
     (
       e:
-        | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+        | React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+          >
         | string,
     ) => {
       const value = typeof e === "string" ? e : e.target.value;
@@ -160,6 +168,14 @@ export function FormularioHospedagem({
       return;
     }
 
+    if (modo === "criar" && !termoAceito) {
+      setTermoError(
+        "É necessário aceitar o Termo de Adesão para enviar o cadastro.",
+      );
+      return;
+    }
+    setTermoError("");
+
     setSaving(true);
 
     try {
@@ -175,6 +191,7 @@ export function FormularioHospedagem({
       if (form.site) fd.append("site", form.site);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
+      if (modo === "criar") fd.append("termoAceite", "true");
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -205,7 +222,7 @@ export function FormularioHospedagem({
     try {
       await hospedagemApi.delete(estabelecimentoId);
       setShowDeleteModal(false);
-      toast.success("Hospedagem excuida com Sucesso")
+      toast.success("Hospedagem excuida com Sucesso");
       router.push("/perfil");
     } catch (err) {
       notify.error("Erro ao excluir a hospedagem.");
@@ -222,7 +239,6 @@ export function FormularioHospedagem({
   return (
     <>
       <div className="mx-auto max-w-3xl overflow-hidden rounded-[28px] border border-border/70 bg-card shadow-xl shadow-black/5">
-
         {/* ── Cabeçalho branded ── */}
         <div className="relative overflow-hidden border-b border-border/70">
           <div className="relative bg-primary px-6 pb-10 pt-8 md:px-8">
@@ -262,7 +278,9 @@ export function FormularioHospedagem({
                     Solicitação de hospedagem · Saquarema
                   </div>
                   <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
-                    {modo === "criar" ? "Cadastrar Nova Hospedagem" : "Gerenciar Hospedagem"}
+                    {modo === "criar"
+                      ? "Cadastrar Nova Hospedagem"
+                      : "Gerenciar Hospedagem"}
                   </h2>
                   <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
                     {modo === "criar"
@@ -280,43 +298,115 @@ export function FormularioHospedagem({
         </div>
 
         <form onSubmit={handleSave} className="space-y-8 px-6 py-8 md:px-8">
-
           {/* ── Bloco 1: Apresentação ── */}
           <section className="space-y-5">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Apresentação da Hospedagem</p>
+              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Apresentação da Hospedagem
+              </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField label="Nome" value={form.nome} onChange={set("nome")} placeholder="Ex: Pousada Praia de Itaúna" required />
-              <PerfilFormField label="Telefone" value={form.telefone} onChange={set("telefone")} placeholder="(21) 99999-9999" mask={maskPhone} maxLength={15} error={fieldErrors.telefone} {...numericInputProps} required />
+              <PerfilFormField
+                label="Nome"
+                value={form.nome}
+                onChange={set("nome")}
+                placeholder="Ex: Pousada Praia de Itaúna"
+                required
+              />
+              <PerfilFormField
+                label="Telefone"
+                value={form.telefone}
+                onChange={set("telefone")}
+                placeholder="(21) 99999-9999"
+                mask={maskPhone}
+                maxLength={15}
+                error={fieldErrors.telefone}
+                {...numericInputProps}
+                required
+              />
             </div>
 
-            <PerfilFormField label="Endereço" value={form.endereco} onChange={set("endereco")} placeholder="Rua, número, bairro — Saquarema, RJ" required />
+            <PerfilFormField
+              label="Endereço"
+              value={form.endereco}
+              onChange={set("endereco")}
+              placeholder="Rua, número, bairro — Saquarema, RJ"
+              required
+            />
 
-            <PerfilFormField label="Texto Diferencial" value={form.textoDiferencial} onChange={set("textoDiferencial")} placeholder="Descreva os diferenciais da sua hospedagem, localização, estrutura e benefícios para o hóspede..." multiline rows={4} required />
+            <PerfilFormField
+              label="Texto Diferencial"
+              value={form.textoDiferencial}
+              onChange={set("textoDiferencial")}
+              placeholder="Descreva os diferenciais da sua hospedagem, localização, estrutura e benefícios para o hóspede..."
+              multiline
+              rows={4}
+              required
+            />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField label="CNPJ" value={form.cnpj} onChange={set("cnpj")} placeholder="00.000.000/0001-00" mask={maskCnpj} maxLength={18} error={fieldErrors.cnpj} {...numericInputProps} required />
-              <PerfilFormField label="Instagram" value={form.instagram} onChange={set("instagram")} placeholder="@suahospedagem" error={fieldErrors.instagram} />
+              <PerfilFormField
+                label="CNPJ"
+                value={form.cnpj}
+                onChange={set("cnpj")}
+                placeholder="00.000.000/0001-00"
+                mask={maskCnpj}
+                maxLength={18}
+                error={fieldErrors.cnpj}
+                {...numericInputProps}
+                required
+              />
+              <PerfilFormField
+                label="Instagram"
+                value={form.instagram}
+                onChange={set("instagram")}
+                placeholder="@suahospedagem"
+                error={fieldErrors.instagram}
+              />
             </div>
 
-            <PerfilFormField label="Site" value={form.site} onChange={set("site")} placeholder="www.suahospedagem.com.br" error={fieldErrors.site} />
+            <PerfilFormField
+              label="Site"
+              value={form.site}
+              onChange={set("site")}
+              placeholder="www.suahospedagem.com.br"
+              error={fieldErrors.site}
+            />
           </section>
 
           {/* ── Bloco 2: Responsável Legal ── */}
           <section className="space-y-5 rounded-[24px] border border-border/70 bg-background/60 p-5 md:p-6">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Responsável Legal</p>
+              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Responsável Legal
+              </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField label="Responsável (Nome)" value={form.responsavelNome} onChange={set("responsavelNome")} placeholder="Nome completo do responsável" mask={maskPersonName} required />
-              <PerfilFormField label="Responsável (CPF)" value={form.responsavelCpf} onChange={set("responsavelCpf")} placeholder="000.000.000-00" mask={maskCpf} maxLength={14} error={fieldErrors.responsavelCpf} {...numericInputProps} required />
+              <PerfilFormField
+                label="Responsável (Nome)"
+                value={form.responsavelNome}
+                onChange={set("responsavelNome")}
+                placeholder="Nome completo do responsável"
+                mask={maskPersonName}
+                required
+              />
+              <PerfilFormField
+                label="Responsável (CPF)"
+                value={form.responsavelCpf}
+                onChange={set("responsavelCpf")}
+                placeholder="000.000.000-00"
+                mask={maskCpf}
+                maxLength={14}
+                error={fieldErrors.responsavelCpf}
+                {...numericInputProps}
+                required
+              />
             </div>
           </section>
 
@@ -324,23 +414,30 @@ export function FormularioHospedagem({
           <section className="space-y-5 rounded-[24px] border border-border/70 bg-background/60 p-5 md:p-6">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Comodidades</p>
+              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Comodidades
+              </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
             <div className="space-y-3">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <Tag className="h-4 w-4 text-primary" /> Selecione as comodidades (opcional)
+                <Tag className="h-4 w-4 text-primary" /> Selecione as
+                comodidades (opcional)
               </label>
               <div className="flex flex-wrap gap-2.5">
                 {HOSPEDAGEM_TAGS.map((tag) => {
                   const active = (form.tags ?? []).includes(tag);
                   return (
-                    <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
                       className={`rounded-full border px-4 py-2 text-xs font-semibold transition-all ${
                         active
                           ? "border-primary bg-primary text-primary-foreground shadow-sm"
                           : "border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary"
-                      }`}>
+                      }`}
+                    >
                       {tag}
                     </button>
                   );
@@ -353,36 +450,78 @@ export function FormularioHospedagem({
           <section className="space-y-5 rounded-[24px] border border-border/70 bg-background/60 p-5 md:p-6">
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
-              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">Identidade Visual e Documentação</p>
+              <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
+                Identidade Visual e Documentação
+              </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
             <div className="pt-1">
-              <FileUploadField label="Logo da Hospedagem" accept="image" currentUrl={form.logoUrl} required={modo === "criar"} hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => { setField("logoUrl", url); setFiles((p) => ({ ...p, logo: file })); }}
-                onClear={() => { setField("logoUrl", ""); setFiles((p) => ({ ...p, logo: undefined })); }}
+              <FileUploadField
+                label="Logo da Hospedagem"
+                accept="image"
+                currentUrl={form.logoUrl}
+                required={modo === "criar"}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("logoUrl", url);
+                  setFiles((p) => ({ ...p, logo: file }));
+                }}
+                onClear={() => {
+                  setField("logoUrl", "");
+                  setFiles((p) => ({ ...p, logo: undefined }));
+                }}
               />
             </div>
             <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                <FileText size={13} /> Comprovante (PDF ou Imagem)
+                <FileText size={13} /> Comprovante Cadastur (PDF ou Imagem)
               </p>
               <div className="space-y-2">
                 {comprovantePreviewUrl && (
-                  <a href={comprovantePreviewUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary">
-                    <FileText size={14} /> {files.comprovante ? files.comprovante.name : "Ver comprovante atual"} <ExternalLink size={12} />
+                  <a
+                    href={comprovantePreviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+                  >
+                    <FileText size={14} />{" "}
+                    {files.comprovante
+                      ? files.comprovante.name
+                      : "Ver comprovante atual"}{" "}
+                    <ExternalLink size={12} />
                   </a>
                 )}
-                <button type="button" onClick={() => comprovanteRef.current?.click()}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary">
+                <button
+                  type="button"
+                  onClick={() => comprovanteRef.current?.click()}
+                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-primary hover:text-primary"
+                >
                   <FileText size={14} /> Selecionar arquivo
                 </button>
-                <input ref={comprovanteRef} type="file" accept="application/pdf,image/*" className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setFiles((p) => ({ ...p, comprovante: f })); }}
+                <input
+                  ref={comprovanteRef}
+                  type="file"
+                  accept="application/pdf,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                  }}
                 />
               </div>
             </div>
           </section>
+
+          {modo === "criar" && (
+            <TermoAceiteField
+              checked={termoAceito}
+              onChange={(v) => {
+                setTermoAceito(v);
+                if (v) setTermoError("");
+              }}
+              error={termoError}
+            />
+          )}
 
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -392,11 +531,23 @@ export function FormularioHospedagem({
           )}
 
           <div className="flex flex-col-reverse gap-3 border-t border-border/70 pt-6 sm:flex-row sm:justify-end">
-            <button type="button" onClick={() => router.back()}
-              className="rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted">Cancelar</button>
-            <button type="submit" disabled={saving}
-              className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50">
-              {saving ? "Salvando..." : modo === "criar" ? "Enviar para Análise" : "Salvar Alterações"}
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving || (modo === "criar" && !termoAceito)}
+              className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saving
+                ? "Salvando..."
+                : modo === "criar"
+                  ? "Enviar para Análise"
+                  : "Salvar Alterações"}
             </button>
           </div>
         </form>
@@ -405,14 +556,21 @@ export function FormularioHospedagem({
           <div className="mx-6 mb-8 mt-2 overflow-hidden rounded-2xl border border-red-200 md:mx-8">
             <div className="flex items-center gap-3 border-b border-red-200 bg-red-50 px-5 py-3">
               <Trash2 className="h-4 w-4 text-red-500" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-red-600">Zona de Perigo</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-red-600">
+                Zona de Perigo
+              </h3>
             </div>
             <div className="px-5 py-4">
               <p className="mb-4 text-sm text-muted-foreground">
-                Ao excluir esta hospedagem, todos os dados, imagens e informações serão permanentemente removidos. Esta ação não pode ser desfeita.
+                Ao excluir esta hospedagem, todos os dados, imagens e
+                informações serão permanentemente removidos. Esta ação não pode
+                ser desfeita.
               </p>
-              <button type="button" onClick={() => setShowDeleteModal(true)}
-                className="rounded-xl border border-red-300 bg-background px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="rounded-xl border border-red-300 bg-background px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
+              >
                 Excluir Hospedagem
               </button>
             </div>
@@ -427,15 +585,29 @@ export function FormularioHospedagem({
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="mb-2 text-xl font-bold text-foreground">Você tem certeza?</h3>
+              <h3 className="mb-2 text-xl font-bold text-foreground">
+                Você tem certeza?
+              </h3>
               <p className="mb-6 text-sm text-muted-foreground">
-                Esta ação é irreversível. A hospedagem <strong>{form.nome || "selecionada"}</strong> será excluída permanentemente.
+                Esta ação é irreversível. A hospedagem{" "}
+                <strong>{form.nome || "selecionada"}</strong> será excluída
+                permanentemente.
               </p>
               <div className="flex w-full gap-3">
-                <button type="button" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}
-                  className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50">Cancelar</button>
-                <button type="button" onClick={handleDelete} disabled={isDeleting}
-                  className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50">
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={isDeleting}
+                  className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition hover:bg-muted disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-50"
+                >
                   {isDeleting ? "Excluindo..." : "Sim, Excluir"}
                 </button>
               </div>

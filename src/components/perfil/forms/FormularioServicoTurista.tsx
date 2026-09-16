@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { servicoTuristaApi } from "@/lib/api";
 import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
+import { TermoAceiteField } from "@/components/perfil/forms/TermoAceiteField";
 import { FileUploadField } from "@/components/admin/FileUploadField";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
@@ -25,6 +26,7 @@ import {
   Sparkles,
   Compass,
   Route,
+  ArrowLeft,
   Building2,
   Trash2,
   Tag,
@@ -97,6 +99,8 @@ export function FormularioServico({
   }>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [termoAceito, setTermoAceito] = useState(false);
+  const [termoError, setTermoError] = useState("");
   const comprovanteRef = useRef<HTMLInputElement>(null);
   const documentoCnpjRef = useRef<HTMLInputElement>(null);
 
@@ -244,6 +248,12 @@ export function FormularioServico({
       return;
     }
 
+    if (modo === "criar" && !termoAceito) {
+      setTermoError("É necessário aceitar o Termo de Adesão para enviar o cadastro.");
+      return;
+    }
+    setTermoError("");
+
     setSaving(true);
 
     try {
@@ -261,6 +271,7 @@ export function FormularioServico({
         fd.append("roteiros", JSON.stringify(form.roteiros));
       if (form.modalidades.length > 0)
         fd.append("modalidades", JSON.stringify(form.modalidades));
+      if (modo === "criar") fd.append("termoAceite", "true");
 
       if (files.logo) fd.append("logo", files.logo);
       if (files.foto) fd.append("foto", files.foto);
@@ -343,26 +354,36 @@ export function FormularioServico({
               />
             </svg>
 
-            <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Solicitação de serviço · Saquarema
+            <div className="relative z-10">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-1.5 text-xs font-semibold text-primary-foreground/80 transition hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Voltar
+              </button>
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary-foreground/80">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Solicitação de serviço · Saquarema
+                  </div>
+                  <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
+                    {modo === "criar"
+                      ? "Cadastrar Novo Serviço"
+                      : "Gerenciar Serviço"}
+                  </h2>
+                  <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
+                    {modo === "criar"
+                      ? "Preencha os dados abaixo para submeter seu serviço turístico à análise da equipe."
+                      : "Atualize as informações do seu serviço cadastrado em Saquarema."}
+                  </p>
                 </div>
-                <h2 className="font-display text-3xl font-bold uppercase leading-none text-primary-foreground drop-shadow-sm md:text-4xl">
-                  {modo === "criar"
-                    ? "Cadastrar Novo Serviço"
-                    : "Gerenciar Serviço"}
-                </h2>
-                <p className="mt-2 max-w-md text-sm leading-relaxed text-primary-foreground/70">
-                  {modo === "criar"
-                    ? "Preencha os dados abaixo para submeter seu serviço turístico à análise da equipe."
-                    : "Atualize as informações do seu serviço cadastrado em Saquarema."}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-sm text-primary-foreground/80">
-                <Compass className="h-5 w-5" />
-                <span className="hidden md:inline">Serviços Turísticos</span>
+                <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-2 text-sm text-primary-foreground/80">
+                  <Compass className="h-5 w-5" />
+                  <span className="hidden md:inline">Serviços Turísticos</span>
+                </div>
               </div>
             </div>
           </div>
@@ -698,6 +719,17 @@ export function FormularioServico({
             )}
           </section>
 
+          {modo === "criar" && (
+            <TermoAceiteField
+              checked={termoAceito}
+              onChange={(v) => {
+                setTermoAceito(v);
+                if (v) setTermoError("");
+              }}
+              error={termoError}
+            />
+          )}
+
           {/* ── Erro geral ── */}
           {error && (
             <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -717,7 +749,7 @@ export function FormularioServico({
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || (modo === "criar" && !termoAceito)}
               className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 disabled:opacity-50"
             >
               {saving

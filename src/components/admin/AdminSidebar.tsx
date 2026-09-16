@@ -20,6 +20,7 @@ import {
   GalleryHorizontal,
   Palette,
   BarChart3,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { SessionTimer } from "./SessionTimer";
@@ -53,6 +54,7 @@ const links = [
     icon: Landmark,
   },
   { label: "CAT", href: "/admin/cat", icon: Tag },
+  { label: "Auditoria", href: "/admin/auditoria", icon: ShieldCheck },
 ];
 
 interface AdminSidebarProps {

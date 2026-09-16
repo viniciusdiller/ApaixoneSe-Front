@@ -29,3 +29,10 @@ export type {
   ClickStatsPage,
   ClickStatsResumo,
 } from "./clicks";
+export { auditLogApi } from "./audit-log";
+export type {
+  AcaoAuditoria,
+  AuditLog,
+  AuditLogFiltro,
+  AuditLogPage,
+} from "./audit-log";

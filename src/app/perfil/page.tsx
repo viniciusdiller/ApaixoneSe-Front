@@ -15,7 +15,10 @@ import {
   type ServicoTurista,
   type User as ApiUser,
 } from "@/lib/api";
-import { VisualizacaoModal, NegocioModal } from "@/components/perfil/VisualizacaoModal";
+import {
+  VisualizacaoModal,
+  NegocioModal,
+} from "@/components/perfil/VisualizacaoModal";
 import { PlanoViagemList } from "@/components/planeje-sua-viagem";
 import {
   User,
@@ -106,7 +109,9 @@ export default function PerfilPage() {
 
   const [negocios, setNegocios] = useState<NegocioModal[]>([]);
   const [loadingEstabs, setLoadingEstabs] = useState(false);
-  const [itemSelecionado, setItemSelecionado] = useState<NegocioModal | null>(null);
+  const [itemSelecionado, setItemSelecionado] = useState<NegocioModal | null>(
+    null,
+  );
 
   useEffect(() => {
     if (!isLoading && !user) router.replace("/login");
@@ -184,9 +189,7 @@ export default function PerfilPage() {
       .finally(() => setLoadingEstabs(false));
   }, [user]);
 
-  function handleChangePerfil(
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) {
+  function handleChangePerfil(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
     setPerfilForm((prev) => ({ ...prev, [name]: value }));
   }
@@ -227,7 +230,9 @@ export default function PerfilPage() {
       setPerfilForm((prev) => ({ ...prev, senha: "" }));
       setSucessoPerfil("Dados atualizados com sucesso.");
     } catch (error) {
-      setErroPerfil(parseApiErrorMessage(error, "Não foi possível salvar seu perfil."));
+      setErroPerfil(
+        parseApiErrorMessage(error, "Não foi possível salvar seu perfil."),
+      );
     } finally {
       setSalvandoPerfil(false);
     }
@@ -273,12 +278,22 @@ export default function PerfilPage() {
             <h1 className="font-display text-2xl font-bold uppercase tracking-wide text-foreground">
               {detalhesUsuario.nome}
             </h1>
-            <p className="mt-0.5 text-sm text-muted-foreground">@{detalhesUsuario.usuario}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              @{detalhesUsuario.usuario}
+            </p>
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-semibold">
-              {detalhesUsuario.perfil === "ADMIN" && <ShieldCheck className="h-3.5 w-3.5 text-primary" />}
-              {detalhesUsuario.perfil === "PARCEIRO" && <Store className="h-3.5 w-3.5 text-primary" />}
-              {detalhesUsuario.perfil === "USUARIO" && <User className="h-3.5 w-3.5 text-primary" />}
-              <span className="capitalize">{detalhesUsuario.perfil.toLowerCase()}</span>
+              {detalhesUsuario.perfil === "ADMIN" && (
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              )}
+              {detalhesUsuario.perfil === "PARCEIRO" && (
+                <Store className="h-3.5 w-3.5 text-primary" />
+              )}
+              {detalhesUsuario.perfil === "USUARIO" && (
+                <User className="h-3.5 w-3.5 text-primary" />
+              )}
+              <span className="capitalize">
+                {detalhesUsuario.perfil.toLowerCase()}
+              </span>
             </div>
           </div>
 
@@ -307,26 +322,40 @@ export default function PerfilPage() {
 
           <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-xl border border-border bg-background px-3 py-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">ID</p>
-              <p className="truncate text-xs font-medium text-foreground">{detalhesUsuario.id}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Perfil
+              </p>
+              <p className="text-xs font-medium text-foreground">
+                {detalhesUsuario.perfil}
+              </p>
             </div>
             <div className="rounded-xl border border-border bg-background px-3 py-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Perfil</p>
-              <p className="text-xs font-medium text-foreground">{detalhesUsuario.perfil}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Cadastro
+              </p>
+              <p className="text-xs font-medium text-foreground">
+                {formatDateBr(detalhesUsuario.createdAt)}
+              </p>
             </div>
             <div className="rounded-xl border border-border bg-background px-3 py-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Cadastro</p>
-              <p className="text-xs font-medium text-foreground">{formatDateBr(detalhesUsuario.createdAt)}</p>
-            </div>
-            <div className="rounded-xl border border-border bg-background px-3 py-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Atualizado em</p>
-              <p className="text-xs font-medium text-foreground">{formatDateBr(detalhesUsuario.updatedAt)}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Atualizado em
+              </p>
+              <p className="text-xs font-medium text-foreground">
+                {formatDateBr(detalhesUsuario.updatedAt)}
+              </p>
             </div>
           </div>
 
-          <form onSubmit={handleSalvarPerfil} className="grid gap-4 sm:grid-cols-2">
+          <form
+            onSubmit={handleSalvarPerfil}
+            className="grid gap-4 sm:grid-cols-2"
+          >
             <div className="sm:col-span-1">
-              <label htmlFor="nome" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="nome"
+                className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
                 Nome completo
               </label>
               <input
@@ -340,7 +369,10 @@ export default function PerfilPage() {
             </div>
 
             <div className="sm:col-span-1">
-              <label htmlFor="usuario" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="usuario"
+                className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
                 Nome de usuário
               </label>
               <input
@@ -354,7 +386,10 @@ export default function PerfilPage() {
             </div>
 
             <div className="sm:col-span-1">
-              <label htmlFor="email" className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="email"
+                className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
                 <Mail className="h-3 w-3" /> E-mail
               </label>
               <input
@@ -369,7 +404,10 @@ export default function PerfilPage() {
             </div>
 
             <div className="sm:col-span-1">
-              <label htmlFor="senha" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <label
+                htmlFor="senha"
+                className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
                 Nova senha (opcional)
               </label>
               <input
@@ -385,10 +423,14 @@ export default function PerfilPage() {
 
             <div className="sm:col-span-2 flex flex-col gap-2">
               {erroPerfil && (
-                <p className="rounded-xl bg-rose-100 px-3 py-2 text-sm text-rose-700">{erroPerfil}</p>
+                <p className="rounded-xl bg-rose-100 px-3 py-2 text-sm text-rose-700">
+                  {erroPerfil}
+                </p>
               )}
               {sucessoPerfil && (
-                <p className="rounded-xl bg-emerald-100 px-3 py-2 text-sm text-emerald-700">{sucessoPerfil}</p>
+                <p className="rounded-xl bg-emerald-100 px-3 py-2 text-sm text-emerald-700">
+                  {sucessoPerfil}
+                </p>
               )}
 
               <button
@@ -396,7 +438,11 @@ export default function PerfilPage() {
                 disabled={salvandoPerfil}
                 className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-70"
               >
-                {salvandoPerfil ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {salvandoPerfil ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 Salvar alterações
               </button>
             </div>
@@ -430,7 +476,8 @@ export default function PerfilPage() {
                 {negocios.length} cadastrado{negocios.length !== 1 ? "s" : ""}
               </span>
 
-              {(detalhesUsuario.perfil === "PARCEIRO" || detalhesUsuario.perfil === "USUARIO") && (
+              {(detalhesUsuario.perfil === "PARCEIRO" ||
+                detalhesUsuario.perfil === "USUARIO") && (
                 <Link
                   href="/perfil/parcerias"
                   className="rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
@@ -448,9 +495,12 @@ export default function PerfilPage() {
           ) : negocios.length === 0 ? (
             <div className="flex flex-col items-center rounded-2xl border border-dashed border-border bg-card py-16 text-center">
               <Building2 className="mb-3 h-10 w-10 text-muted-foreground/50" />
-              <p className="text-sm font-medium text-foreground">Nenhum estabelecimento cadastrado</p>
+              <p className="text-sm font-medium text-foreground">
+                Nenhum estabelecimento cadastrado
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Cadastre seu negócio para gerenciar tudo diretamente do seu perfil.
+                Cadastre seu negócio para gerenciar tudo diretamente do seu
+                perfil.
               </p>
 
               <Link
@@ -484,7 +534,9 @@ export default function PerfilPage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-semibold text-foreground">{item.nome}</p>
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {item.nome}
+                      </p>
                       <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                         {item.categoria}
                       </span>
