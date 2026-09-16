@@ -297,15 +297,16 @@ export function FormularioGastronomia({
               required
             />
 
+            <PerfilFormField
+              label="Especialidade"
+              value={form.especialidade}
+              onChange={set("especialidade")}
+              placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
+              maxLength={80}
+              showCharCount
+            />
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField
-                label="Especialidade"
-                value={form.especialidade}
-                onChange={set("especialidade")}
-                placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
-                maxLength={80}
-                showCharCount
-              />
               <PerfilFormField
                 label="CNPJ"
                 value={form.cnpj}
@@ -316,6 +317,15 @@ export function FormularioGastronomia({
                 error={fieldErrors.cnpj}
                 {...numericInputProps}
                 required
+              />
+              <PerfilFormField
+                label="Instagram"
+                value={form.instagram}
+                onChange={set("instagram")}
+                placeholder="@seurestaurante"
+                maxLength={60}
+                showCharCount
+                error={fieldErrors.instagram}
               />
             </div>
           </section>
@@ -353,16 +363,6 @@ export function FormularioGastronomia({
                 required
               />
             </div>
-
-            <PerfilFormField
-              label="Instagram"
-              value={form.instagram}
-              onChange={set("instagram")}
-              placeholder="@seurestaurante"
-              maxLength={60}
-              showCharCount
-              error={fieldErrors.instagram}
-            />
           </section>
 
           {/* ── Bloco 3: Arquivos ── */}
