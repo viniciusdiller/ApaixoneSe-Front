@@ -248,6 +248,7 @@ export default function AdminCasaDeCambioPage() {
             label="Nome"
             value={form.nome}
             onChange={set("nome")}
+            maxLength={120}
             required
           />
           <AdminFormField
@@ -263,6 +264,7 @@ export default function AdminCasaDeCambioPage() {
             label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
+            maxLength={191}
             required
           />
           <FileUploadField

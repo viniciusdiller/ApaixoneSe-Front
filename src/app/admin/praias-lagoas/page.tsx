@@ -387,7 +387,7 @@ export default function AdminPraiasLagoasPage() {
             label="Descrição completa"
             value={form.descricao}
             onChange={set("descricao")}
-            maxLength={3000}
+            maxLength={1000}
             multiline
             required
           />

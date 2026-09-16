@@ -277,10 +277,14 @@ export default function AdminEventoPrincipalPage() {
                 id="titulo"
                 type="text"
                 value={form.titulo}
-                onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value}))}
+                maxLength={150}
                 placeholder="ex: Saquarema Pro 2026"
                 className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
+              <div className="flex justify-end text-[10px] text-muted-foreground">
+                <span>{form.titulo.length}/150</span>
+              </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -291,10 +295,14 @@ export default function AdminEventoPrincipalPage() {
                 id="etapa"
                 type="text"
                 value={form.etapa ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, etapa: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, etapa: e.target.value.slice(0, 100) }))}
+                maxLength={100}
                 placeholder="ex: WSL Championship Tour"
                 className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
+              <div className="flex justify-end text-[10px] text-muted-foreground">
+                <span>{(form.etapa ?? "").length}/100</span>
+              </div>
             </div>
 
             <div className="flex flex-col gap-1.5">

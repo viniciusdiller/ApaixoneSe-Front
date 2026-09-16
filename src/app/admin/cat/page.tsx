@@ -396,7 +396,7 @@ export default function AdminCatPage() {
               </div>
 
               <form onSubmit={handleSave} className="space-y-6">
-                <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 5000))} maxLength={5000} multiline rows={6} required />
+                <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 1000))} maxLength={1000} multiline rows={6} required />
                 <ImageManager images={images} onChange={setImages} />
                 <VideoUpload newFile={newVideo} existingUrl={displayedVideoUrl} onChange={(f) => { setNewVideo(f); setVideoCleared(false); }} onClear={() => { setNewVideo(null); setVideoCleared(true); }} />
                 {videoCleared && !newVideo && (
@@ -502,8 +502,8 @@ export default function AdminCatPage() {
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Descrição *</label>
-                <textarea value={movelForm.descricao} onChange={(e) => setMovelForm((f) => ({ ...f, descricao: e.target.value.slice(0, 5000) }))} maxLength={5000} required rows={4} className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition" placeholder="Descrição do CAT Móvel" />
-                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground"><span>{movelForm.descricao.length}/5000</span></div>
+                <textarea value={movelForm.descricao} onChange={(e) => setMovelForm((f) => ({ ...f, descricao: e.target.value.slice(0, 1000) }))} maxLength={1000} required rows={4} className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none transition" placeholder="Descrição do CAT Móvel" />
+                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground"><span>{movelForm.descricao.length}/1000</span></div>
               </div>
 
               {/* Imagem */}

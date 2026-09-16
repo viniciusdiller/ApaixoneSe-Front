@@ -271,7 +271,7 @@ export function FormularioServico({
         fd.append("roteiros", JSON.stringify(form.roteiros));
       if (form.modalidades.length > 0)
         fd.append("modalidades", JSON.stringify(form.modalidades));
-      if (modo === "criar") fd.append("termoAceite", "true");
+      // if (modo === "criar") fd.append("termoAceite", "true");
 
       if (files.logo) fd.append("logo", files.logo);
       if (files.foto) fd.append("foto", files.foto);
@@ -426,6 +426,7 @@ export function FormularioServico({
                 value={form.nome}
                 onChange={set("nome")}
                 placeholder="Ex: Surf Experience Saquarema"
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -447,6 +448,7 @@ export function FormularioServico({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@seuservico"
+                maxLength={60}
                 error={fieldErrors.instagram}
               />
               <PerfilFormField
@@ -454,6 +456,7 @@ export function FormularioServico({
                 value={form.idiomas}
                 onChange={set("idiomas")}
                 placeholder="Ex: Português, Inglês, Espanhol"
+                maxLength={150}
               />
             </div>
 
@@ -462,6 +465,7 @@ export function FormularioServico({
               value={form.endereco}
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
             />
 
             <PerfilFormField
@@ -480,6 +484,7 @@ export function FormularioServico({
               value={form.site}
               onChange={set("site")}
               placeholder="www.seusite.com.br"
+              maxLength={191}
               error={fieldErrors.site}
             />
 
@@ -490,6 +495,7 @@ export function FormularioServico({
               placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
               multiline
               rows={4}
+              maxLength={2000}
             />
 
             {/* Roteiros (apenas Guia e Agência) */}

@@ -148,7 +148,7 @@ export function FormularioGastronomia({
       fd.append("responsavelNome", form.responsavelNome);
       fd.append("responsavelCpf", form.responsavelCpf);
       if (form.instagram) fd.append("instagram", form.instagram);
-      if (modo === "criar") fd.append("termoAceite", "true");
+      // if (modo === "criar") fd.append("termoAceite", "true");
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -270,6 +270,7 @@ export function FormularioGastronomia({
                 value={form.nome}
                 onChange={set("nome")}
                 placeholder="Ex: Restaurante Mar Aberto"
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -290,6 +291,7 @@ export function FormularioGastronomia({
               value={form.endereco}
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
               required
             />
 
@@ -299,6 +301,7 @@ export function FormularioGastronomia({
                 value={form.especialidade}
                 onChange={set("especialidade")}
                 placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
+                maxLength={80}
               />
               <PerfilFormField
                 label="CNPJ"
@@ -331,6 +334,7 @@ export function FormularioGastronomia({
                 onChange={set("responsavelNome")}
                 placeholder="Nome completo do responsável"
                 mask={maskPersonName}
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -351,6 +355,7 @@ export function FormularioGastronomia({
               value={form.instagram}
               onChange={set("instagram")}
               placeholder="@seurestaurante"
+              maxLength={60}
               error={fieldErrors.instagram}
             />
           </section>

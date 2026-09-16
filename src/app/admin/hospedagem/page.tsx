@@ -609,6 +609,7 @@ export default function AdminHospedagemPage() {
               label="Nome"
               value={form.nome}
               onChange={set("nome")}
+              maxLength={120}
               required
             />
             <AdminFormField
@@ -625,6 +626,7 @@ export default function AdminHospedagemPage() {
             label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
+            maxLength={191}
             required
           />
           <AdminFormField
@@ -632,6 +634,7 @@ export default function AdminHospedagemPage() {
             value={form.textoDiferencial}
             onChange={set("textoDiferencial")}
             multiline
+            maxLength={300}
             required
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -648,12 +651,14 @@ export default function AdminHospedagemPage() {
               label="Instagram"
               value={form.instagram ?? ""}
               onChange={set("instagram")}
+              maxLength={60}
             />
           </div>
           <AdminFormField
             label="Site"
             value={form.site ?? ""}
             onChange={set("site")}
+            maxLength={191}
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <AdminFormField
@@ -661,6 +666,7 @@ export default function AdminHospedagemPage() {
               value={form.responsavelNome}
               onChange={set("responsavelNome")}
               mask={maskPersonName}
+              maxLength={120}
               required
             />
             <AdminFormField

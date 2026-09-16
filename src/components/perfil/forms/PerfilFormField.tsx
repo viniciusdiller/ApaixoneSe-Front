@@ -37,6 +37,7 @@ export const PerfilFormField = forwardRef<
 
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+  const valueLength = typeof props.value === "string" ? props.value.length : 0;
 
   return (
     <div className="flex flex-col gap-1">
@@ -71,6 +72,13 @@ export const PerfilFormField = forwardRef<
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           )}
+        </div>
+      )}
+      {typeof props.maxLength === "number" && (
+        <div className="flex justify-end text-[10px] text-muted-foreground">
+          <span>
+            {valueLength}/{props.maxLength}
+          </span>
         </div>
       )}
       {error && <p className="text-xs text-red-500">{error}</p>}

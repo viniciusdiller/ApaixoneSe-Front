@@ -191,7 +191,7 @@ export function FormularioHospedagem({
       if (form.site) fd.append("site", form.site);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
-      if (modo === "criar") fd.append("termoAceite", "true");
+      // if (modo === "criar") fd.append("termoAceite", "true");
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 
@@ -314,6 +314,7 @@ export function FormularioHospedagem({
                 value={form.nome}
                 onChange={set("nome")}
                 placeholder="Ex: Pousada Praia de Itaúna"
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -334,6 +335,7 @@ export function FormularioHospedagem({
               value={form.endereco}
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
               required
             />
 
@@ -344,6 +346,7 @@ export function FormularioHospedagem({
               placeholder="Descreva os diferenciais da sua hospedagem, localização, estrutura e benefícios para o hóspede..."
               multiline
               rows={4}
+              maxLength={300}
               required
             />
 
@@ -364,6 +367,7 @@ export function FormularioHospedagem({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@suahospedagem"
+                maxLength={60}
                 error={fieldErrors.instagram}
               />
             </div>
@@ -373,6 +377,7 @@ export function FormularioHospedagem({
               value={form.site}
               onChange={set("site")}
               placeholder="www.suahospedagem.com.br"
+              maxLength={191}
               error={fieldErrors.site}
             />
           </section>
@@ -394,6 +399,7 @@ export function FormularioHospedagem({
                 onChange={set("responsavelNome")}
                 placeholder="Nome completo do responsável"
                 mask={maskPersonName}
+                maxLength={120}
                 required
               />
               <PerfilFormField
