@@ -335,13 +335,15 @@ export default function AdminAtividadesPage() {
             value={form.titulo}
             onChange={set("titulo")}
             maxLength={150}
+            showCharCount
             required
           />
           <AdminFormField
             label="Local"
             value={form.local}
             onChange={set("local")}
-            maxLength={150}
+            maxLength={191}
+            showCharCount
             required
           />
           <AdminFormField
@@ -349,6 +351,7 @@ export default function AdminAtividadesPage() {
             value={form.descricao}
             onChange={set("descricao")}
             maxLength={2000}
+            showCharCount
             multiline
             required
           />

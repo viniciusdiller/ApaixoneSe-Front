@@ -249,6 +249,7 @@ export default function AdminCasaDeCambioPage() {
             value={form.nome}
             onChange={set("nome")}
             maxLength={120}
+            showCharCount
             required
           />
           <AdminFormField
@@ -265,6 +266,7 @@ export default function AdminCasaDeCambioPage() {
             value={form.endereco}
             onChange={set("endereco")}
             maxLength={191}
+            showCharCount
             required
           />
           <FileUploadField

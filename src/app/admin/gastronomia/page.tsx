@@ -479,6 +479,7 @@ export default function AdminGastronomiaPage() {
               value={form.nome}
               onChange={set("nome")}
               maxLength={120}
+              showCharCount
               required
             />
             <AdminFormField
@@ -496,6 +497,7 @@ export default function AdminGastronomiaPage() {
             value={form.endereco}
             onChange={set("endereco")}
             maxLength={191}
+            showCharCount
             required
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -504,6 +506,7 @@ export default function AdminGastronomiaPage() {
               value={form.especialidade ?? ""}
               onChange={set("especialidade")}
               maxLength={80}
+              showCharCount
             />
             <AdminFormField
               label="CNPJ"
@@ -522,6 +525,7 @@ export default function AdminGastronomiaPage() {
               onChange={set("responsavelNome")}
               mask={maskPersonName}
               maxLength={120}
+              showCharCount
               required
             />
             <AdminFormField
@@ -539,6 +543,7 @@ export default function AdminGastronomiaPage() {
             value={form.instagram ?? ""}
             onChange={set("instagram")}
             maxLength={60}
+            showCharCount
           />
 
           <FileUploadField

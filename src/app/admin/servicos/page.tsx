@@ -672,6 +672,7 @@ export default function AdminServicosPage() {
               value={form.nome}
               onChange={set("nome")}
               maxLength={120}
+              showCharCount
               required
             />
             <AdminFormField
@@ -690,6 +691,7 @@ export default function AdminServicosPage() {
               value={form.instagram ?? ""}
               onChange={set("instagram")}
               maxLength={60}
+              showCharCount
             />
           </div>
           <div className="space-y-2">
@@ -732,6 +734,7 @@ export default function AdminServicosPage() {
             value={form.endereco ?? ""}
             onChange={set("endereco")}
             maxLength={191}
+            showCharCount
           />
           <AdminFormField
             label="CNPJ"
@@ -746,6 +749,7 @@ export default function AdminServicosPage() {
             value={form.site ?? ""}
             onChange={set("site")}
             maxLength={191}
+            showCharCount
           />
           <AdminFormField
             label="Descrição"
@@ -753,6 +757,7 @@ export default function AdminServicosPage() {
             onChange={set("descricao")}
             multiline
             maxLength={2000}
+            showCharCount
           />
           {PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) && (
             <div className="space-y-2">

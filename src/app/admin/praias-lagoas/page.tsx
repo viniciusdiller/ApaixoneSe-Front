@@ -374,6 +374,7 @@ export default function AdminPraiasLagoasPage() {
             value={form.nome}
             onChange={set("nome")}
             maxLength={100}
+            showCharCount
             required
           />
           <AdminFormField
@@ -381,6 +382,7 @@ export default function AdminPraiasLagoasPage() {
             value={form.descricaoCurta}
             onChange={set("descricaoCurta")}
             maxLength={191}
+            showCharCount
             required
           />
           <AdminFormField
@@ -388,6 +390,7 @@ export default function AdminPraiasLagoasPage() {
             value={form.descricao}
             onChange={set("descricao")}
             maxLength={1000}
+            showCharCount
             multiline
             required
           />
@@ -434,6 +437,7 @@ export default function AdminPraiasLagoasPage() {
             value={form.endereco}
             onChange={set("endereco")}
             maxLength={191}
+            showCharCount
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -396,7 +396,7 @@ export default function AdminCatPage() {
               </div>
 
               <form onSubmit={handleSave} className="space-y-6">
-                <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 1000))} maxLength={1000} multiline rows={6} required />
+                <AdminFormField label="Texto descritivo" value={texto} onChange={(value) => setTexto(value.slice(0, 1000))} maxLength={1000} showCharCount multiline rows={6} required />
                 <ImageManager images={images} onChange={setImages} />
                 <VideoUpload newFile={newVideo} existingUrl={displayedVideoUrl} onChange={(f) => { setNewVideo(f); setVideoCleared(false); }} onClear={() => { setNewVideo(null); setVideoCleared(true); }} />
                 {videoCleared && !newVideo && (

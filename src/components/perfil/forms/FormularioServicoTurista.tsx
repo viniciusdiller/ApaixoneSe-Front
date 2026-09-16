@@ -427,6 +427,7 @@ export function FormularioServico({
                 onChange={set("nome")}
                 placeholder="Ex: Surf Experience Saquarema"
                 maxLength={120}
+                showCharCount
                 required
               />
               <PerfilFormField
@@ -449,6 +450,7 @@ export function FormularioServico({
                 onChange={set("instagram")}
                 placeholder="@seuservico"
                 maxLength={60}
+                showCharCount
                 error={fieldErrors.instagram}
               />
               <PerfilFormField
@@ -457,6 +459,7 @@ export function FormularioServico({
                 onChange={set("idiomas")}
                 placeholder="Ex: Português, Inglês, Espanhol"
                 maxLength={150}
+                showCharCount
               />
             </div>
 
@@ -466,6 +469,7 @@ export function FormularioServico({
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
               maxLength={191}
+              showCharCount
             />
 
             <PerfilFormField
@@ -485,6 +489,7 @@ export function FormularioServico({
               onChange={set("site")}
               placeholder="www.seusite.com.br"
               maxLength={191}
+              showCharCount
               error={fieldErrors.site}
             />
 
@@ -496,6 +501,7 @@ export function FormularioServico({
               multiline
               rows={4}
               maxLength={2000}
+              showCharCount
             />
 
             {/* Roteiros (apenas Guia e Agência) */}

@@ -315,6 +315,7 @@ export function FormularioHospedagem({
                 onChange={set("nome")}
                 placeholder="Ex: Pousada Praia de Itaúna"
                 maxLength={120}
+                showCharCount
                 required
               />
               <PerfilFormField
@@ -336,6 +337,7 @@ export function FormularioHospedagem({
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
               maxLength={191}
+              showCharCount
               required
             />
 
@@ -347,6 +349,7 @@ export function FormularioHospedagem({
               multiline
               rows={4}
               maxLength={300}
+              showCharCount
               required
             />
 
@@ -368,6 +371,7 @@ export function FormularioHospedagem({
                 onChange={set("instagram")}
                 placeholder="@suahospedagem"
                 maxLength={60}
+                showCharCount
                 error={fieldErrors.instagram}
               />
             </div>
@@ -378,6 +382,7 @@ export function FormularioHospedagem({
               onChange={set("site")}
               placeholder="www.suahospedagem.com.br"
               maxLength={191}
+              showCharCount
               error={fieldErrors.site}
             />
           </section>
@@ -400,6 +405,7 @@ export function FormularioHospedagem({
                 placeholder="Nome completo do responsável"
                 mask={maskPersonName}
                 maxLength={120}
+                showCharCount
                 required
               />
               <PerfilFormField

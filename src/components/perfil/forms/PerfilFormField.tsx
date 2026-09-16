@@ -12,6 +12,7 @@ interface PerfilFormFieldProps extends Omit<
   rows?: number;
   mask?: (value: string) => string;
   onChange?: (value: string) => void;
+  showCharCount?: boolean;
 }
 
 // Trocamos o nome da Função
@@ -19,7 +20,17 @@ export const PerfilFormField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   PerfilFormFieldProps
 >(function PerfilFormField(
-  { label, error, multiline, rows = 3, mask, onChange, type, ...props },
+  {
+    label,
+    error,
+    multiline,
+    rows = 3,
+    mask,
+    onChange,
+    type,
+    showCharCount = false,
+    ...props
+  },
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
@@ -74,7 +85,7 @@ export const PerfilFormField = forwardRef<
           )}
         </div>
       )}
-      {typeof props.maxLength === "number" && (
+      {showCharCount && typeof props.maxLength === "number" && (
         <div className="flex justify-end text-[10px] text-muted-foreground">
           <span>
             {valueLength}/{props.maxLength}

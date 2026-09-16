@@ -449,6 +449,7 @@ export default function AdminEventosPage() {
             value={form.titulo}
             onChange={set("titulo")}
             maxLength={150}
+            showCharCount
             required
           />
           <AdminFormField
@@ -456,6 +457,7 @@ export default function AdminEventosPage() {
             value={form.local}
             onChange={set("local")}
             maxLength={150}
+            showCharCount
             required
           />
           <AdminFormField
@@ -463,6 +465,7 @@ export default function AdminEventosPage() {
             value={form.endereco}
             onChange={set("endereco")}
             maxLength={191}
+            showCharCount
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <AdminDateField
@@ -490,6 +493,7 @@ export default function AdminEventosPage() {
             value={form.descricao}
             onChange={set("descricao")}
             maxLength={2000}
+            showCharCount
             multiline
             required
           />

@@ -11,13 +11,25 @@ interface AdminFormFieldProps extends Omit<
   rows?: number;
   mask?: (value: string) => string;
   onChange?: (value: string) => void;
+  showCharCount?: boolean;
 }
 
 export const AdminFormField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   AdminFormFieldProps
 >(function AdminFormField(
-  { label, error, multiline, rows = 3, mask, onChange, type, maxLength, ...props },
+  {
+    label,
+    error,
+    multiline,
+    rows = 3,
+    mask,
+    onChange,
+    type,
+    maxLength,
+    showCharCount = false,
+    ...props
+  },
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
@@ -87,7 +99,7 @@ export const AdminFormField = forwardRef<
           )}
         </div>
       )}
-      {typeof maxLength === "number" && (
+      {showCharCount && typeof maxLength === "number" && (
         <div className="flex justify-end text-[10px] text-muted-foreground">
           <span>
             {valueLength}/{maxLength}
