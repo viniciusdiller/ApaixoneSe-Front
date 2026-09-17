@@ -437,7 +437,6 @@ export function FormularioServico({
                 onChange={set("nome")}
                 placeholder="Ex: Surf Experience Saquarema"
                 maxLength={120}
-                showCharCount
                 required
               />
               <PerfilFormField
@@ -460,7 +459,6 @@ export function FormularioServico({
                 onChange={set("instagram")}
                 placeholder="@seuservico"
                 maxLength={31}
-                showCharCount
                 error={fieldErrors.instagram}
               />
 
@@ -507,7 +505,6 @@ export function FormularioServico({
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
               maxLength={191}
-              showCharCount
             />
 
             <PerfilFormField
@@ -527,7 +524,6 @@ export function FormularioServico({
               onChange={set("site")}
               placeholder="www.seusite.com.br"
               maxLength={191}
-              showCharCount
               error={fieldErrors.site}
             />
 

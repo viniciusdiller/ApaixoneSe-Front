@@ -558,9 +558,6 @@ export default function SecretariaTurismoAdminPage() {
                   className="w-full rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Título do bloco"
                 />
-                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground">
-                  <span>{turistandoForm.titulo.length}/150</span>
-                </div>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">

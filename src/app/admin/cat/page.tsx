@@ -498,7 +498,6 @@ export default function AdminCatPage() {
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Título *</label>
                 <input value={movelForm.titulo} onChange={(e) => setMovelForm((f) => ({ ...f, titulo: e.target.value.slice(0, 150) }))} maxLength={150} required className="w-full border border-input rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition" placeholder="Título do CAT Móvel" />
-                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground"><span>{movelForm.titulo.length}/150</span></div>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Descrição *</label>

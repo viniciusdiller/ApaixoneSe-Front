@@ -244,7 +244,6 @@ export default function AdminHistoriaPage() {
             value={form.endereco}
             onChange={set("endereco")}
             maxLength={191}
-            showCharCount
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <FileUploadField

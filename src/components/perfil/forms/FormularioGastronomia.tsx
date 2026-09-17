@@ -271,7 +271,6 @@ export function FormularioGastronomia({
                 onChange={set("nome")}
                 placeholder="Ex: Restaurante Mar Aberto"
                 maxLength={120}
-                showCharCount
                 required
               />
               <PerfilFormField
@@ -293,7 +292,6 @@ export function FormularioGastronomia({
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
               maxLength={191}
-              showCharCount
               required
             />
 
@@ -324,7 +322,6 @@ export function FormularioGastronomia({
                 onChange={set("instagram")}
                 placeholder="@seurestaurante"
                 maxLength={31}
-                showCharCount
                 error={fieldErrors.instagram}
               />
             </div>
@@ -348,7 +345,6 @@ export function FormularioGastronomia({
                 placeholder="Nome completo do responsável"
                 mask={maskPersonName}
                 maxLength={120}
-                showCharCount
                 required
               />
               <PerfilFormField

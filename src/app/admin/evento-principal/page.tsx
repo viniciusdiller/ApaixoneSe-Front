@@ -282,9 +282,9 @@ export default function AdminEventoPrincipalPage() {
                 placeholder="ex: Saquarema Pro 2026"
                 className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <div className="flex justify-end text-[10px] text-muted-foreground">
+              {/* <div className="flex justify-end text-[10px] text-muted-foreground">
                 <span>{form.titulo.length}/150</span>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -300,9 +300,9 @@ export default function AdminEventoPrincipalPage() {
                 placeholder="ex: WSL Championship Tour"
                 className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <div className="flex justify-end text-[10px] text-muted-foreground">
+              {/* <div className="flex justify-end text-[10px] text-muted-foreground">
                 <span>{(form.etapa ?? "").length}/100</span>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex flex-col gap-1.5">

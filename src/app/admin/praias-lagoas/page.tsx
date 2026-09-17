@@ -437,7 +437,6 @@ export default function AdminPraiasLagoasPage() {
             value={form.endereco}
             onChange={set("endereco")}
             maxLength={191}
-            showCharCount
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
