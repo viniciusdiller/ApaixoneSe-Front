@@ -239,11 +239,6 @@ export function FormularioServico({
       return;
     }
 
-    if (form.tipo === "GUIA_TURISMO" && form.roteiros.length === 0) {
-      setError("Selecione ao menos um roteiro especializado.");
-      return;
-    }
-
     const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
     if (isEsporteLazer && form.modalidades.length === 0) {
       setError("Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).");
@@ -516,6 +511,7 @@ export function FormularioServico({
               maxLength={18}
               error={fieldErrors.cnpj}
               {...numericInputProps}
+              required
             />
 
             <PerfilFormField
@@ -534,8 +530,9 @@ export function FormularioServico({
               placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
               multiline
               rows={4}
-              maxLength={2000}
+              maxLength={300}
               showCharCount
+              required
             />
 
             {/* Roteiros (apenas Guia e Agência) */}
@@ -543,8 +540,7 @@ export function FormularioServico({
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Route className="h-3.5 w-3.5 text-primary" />
-                  Você é especializado em algum dos roteiros abaixo? Se sim, marque qual(is):{" "}
-                  {form.tipo === "GUIA_TURISMO" ? <span className="text-red-500" aria-hidden="true">*</span> : "(OPCIONAL)"}
+                  Você é especializado em algum dos roteiros abaixo? Se sim, marque qual(is): (OPCIONAL)
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {ROTEIROS.map((r) => {
@@ -603,7 +599,7 @@ export function FormularioServico({
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
-                Identidade Visual
+                Identidade Visual e Comprovação
               </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>

@@ -279,10 +279,6 @@ export default function AdminServicosPage() {
       );
       return;
     }
-    if (form.tipo === "GUIA_TURISMO" && (form.roteiros ?? []).length === 0) {
-      setError("Selecione ao menos um roteiro especializado.");
-      return;
-    }
     const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
     if (isEsporteLazer && (form.modalidades ?? []).length === 0) {
       setError("Selecione ao menos uma modalidade (Aéreo, Aquático ou Terrestre).");
@@ -765,7 +761,7 @@ export default function AdminServicosPage() {
           {PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Roteiros {form.tipo === "GUIA_TURISMO" ? "*" : "(opcional)"}
+                Roteiros (OPCIONAL)
               </label>
               <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
                 {ROTEIROS.map((roteiro) => {
