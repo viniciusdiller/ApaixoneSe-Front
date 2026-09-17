@@ -72,9 +72,9 @@ export const AdminFormField = forwardRef<
   return (
     <div className="flex flex-col gap-1.5">
       <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
+        {label.replace(/\s*\*\s*$/, '')}
         {props.required && (
-          <span className="text-red-400" aria-hidden="true">*</span>
+          <span className="text-red-500" aria-hidden="true">*</span>
         )}
       </label>
       {multiline ? (

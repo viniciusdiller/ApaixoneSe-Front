@@ -414,7 +414,7 @@ export function FormularioServico({
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Building2 className="h-3.5 w-3.5 text-primary" />
-                TIPO *
+                TIPO <span className="text-red-500" aria-hidden="true">*</span>
               </label>
               <select
                 value={form.tipo}
@@ -544,7 +544,7 @@ export function FormularioServico({
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Route className="h-3.5 w-3.5 text-primary" />
                   Você é especializado em algum dos roteiros abaixo? Se sim, marque qual(is):{" "}
-                  {form.tipo === "GUIA_TURISMO" ? "*" : "(OPCIONAL)"}
+                  {form.tipo === "GUIA_TURISMO" ? <span className="text-red-500" aria-hidden="true">*</span> : "(OPCIONAL)"}
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {ROTEIROS.map((r) => {
@@ -573,7 +573,7 @@ export function FormularioServico({
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Tag className="h-3.5 w-3.5 text-primary" />
-                  MODALIDADES *
+                  MODALIDADES <span className="text-red-500" aria-hidden="true">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {MODALIDADES_ESPORTE.map((modalidade) => {
