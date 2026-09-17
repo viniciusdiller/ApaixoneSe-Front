@@ -34,6 +34,18 @@ export const PerfilFormField = forwardRef<
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  const focusHandlers = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFocused(true);
+      props.onFocus?.(e as any);
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFocused(false);
+      props.onBlur?.(e as any);
+    },
+  };
 
   const base =
     "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition";
@@ -65,6 +77,7 @@ export const PerfilFormField = forwardRef<
           ref={ref as React.Ref<HTMLTextAreaElement>}
           onChange={handleChange}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+          {...focusHandlers}
           value={displayValue}
         />
       ) : (
@@ -75,6 +88,7 @@ export const PerfilFormField = forwardRef<
             ref={ref as React.Ref<HTMLInputElement>}
             onChange={handleChange}
             {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+            {...focusHandlers}
             value={displayValue}
           />
 
@@ -91,10 +105,11 @@ export const PerfilFormField = forwardRef<
         </div>
       )}
       {showCharCount && typeof props.maxLength === "number" && (
-        <div className="flex justify-end text-[10px] text-muted-foreground">
-          <span>
-            {valueLength}/{props.maxLength}
-          </span>
+        <div
+          className={`flex justify-end text-[10px] overflow-hidden transition-all duration-200 ease-in-out ${valueLength >= props.maxLength - 10 ? "text-red-500 font-medium" : "text-muted-foreground"}`}
+          style={{ opacity: focused ? 1 : 0, maxHeight: focused ? "1.25rem" : "0" }}
+        >
+          <span>{valueLength}/{props.maxLength}</span>
         </div>
       )}
       {error && <p className="text-xs text-red-500">{error}</p>}
