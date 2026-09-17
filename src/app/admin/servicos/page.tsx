@@ -313,7 +313,7 @@ export default function AdminServicosPage() {
       formData.append("nome", form.nome);
       formData.append("tipo", form.tipo);
       formData.append("telefone", form.telefone);
-      formData.append("endereco", form.endereco || "");
+      if (form.tipo !== "GUIA_TURISMO") formData.append("endereco", form.endereco || "");
       formData.append("cnpj", form.cnpj || "");
       formData.append("descricao", form.descricao || "");
       formData.append("idiomas", form.idiomas || "");
@@ -744,13 +744,15 @@ export default function AdminServicosPage() {
               })}
             </div>
           </div>
-          <AdminFormField
-            label="Endereço"
-            value={form.endereco ?? ""}
-            onChange={set("endereco")}
-            placeholder="Rua, número, bairro — Saquarema, RJ"
-            maxLength={191}
-          />
+          {form.tipo !== "GUIA_TURISMO" && (
+            <AdminFormField
+              label="Endereço"
+              value={form.endereco ?? ""}
+              onChange={set("endereco")}
+              placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
+            />
+          )}
           <AdminFormField
             label="CNPJ"
             value={form.cnpj ?? ""}

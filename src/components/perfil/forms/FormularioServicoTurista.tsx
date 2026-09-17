@@ -281,7 +281,7 @@ export function FormularioServico({
       fd.append("tipo", form.tipo);
       fd.append("nome", form.nome);
       fd.append("telefone", form.telefone);
-      if (form.endereco) fd.append("endereco", form.endereco);
+      if (form.endereco && form.tipo !== "GUIA_TURISMO") fd.append("endereco", form.endereco);
       if (form.descricao) fd.append("descricao", form.descricao);
       if (form.cnpj) fd.append("cnpj", form.cnpj);
       if (form.instagram) fd.append("instagram", form.instagram);
@@ -512,13 +512,15 @@ export function FormularioServico({
               </div>
             </div>
 
-            <PerfilFormField
-              label="ENDEREÇO"
-              value={form.endereco}
-              onChange={set("endereco")}
-              placeholder="Rua, número, bairro — Saquarema, RJ"
-              maxLength={191}
-            />
+            {form.tipo !== "GUIA_TURISMO" && (
+              <PerfilFormField
+                label="ENDEREÇO"
+                value={form.endereco}
+                onChange={set("endereco")}
+                placeholder="Rua, número, bairro — Saquarema, RJ"
+                maxLength={191}
+              />
+            )}
 
             <PerfilFormField
               label="CNPJ"
