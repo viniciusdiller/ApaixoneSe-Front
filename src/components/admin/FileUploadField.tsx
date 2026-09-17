@@ -16,7 +16,7 @@ interface FileUploadFieldProps {
   onClear?: () => void;
   accept?: Accept;
   required?: boolean;
-  hint?: string;
+  hint?: React.ReactNode;
 }
 
 const ACCEPT_MAP: Record<Accept, string> = {

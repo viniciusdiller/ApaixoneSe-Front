@@ -328,8 +328,8 @@ export default function AdminServicosPage() {
         formData.append("modalidades", JSON.stringify(form.modalidades));
       if (form.site) formData.append("site", form.site);
       if (form.validade) formData.append("validade", form.validade);
-      if (files.logo) formData.append("logo", files.logo);
-      if (files.foto) formData.append("foto", files.foto);
+      if (files.logo && form.tipo !== "GUIA_TURISMO") formData.append("logo", files.logo);
+      if (files.foto && form.tipo === "GUIA_TURISMO") formData.append("foto", files.foto);
       if (files.comprovante) formData.append("comprovante", files.comprovante);
       if (files.documentoCnpj)
         formData.append("documentoCnpj", files.documentoCnpj);
@@ -850,31 +850,41 @@ export default function AdminServicosPage() {
               </div>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <FileUploadField
-              label="Logo"
-              accept="image"
-              currentUrl={form.logoUrl ?? ""}
-              required={!modal.editing && form.tipo !== "GUIA_TURISMO"}
-              hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => {
-                setField("logoUrl", url);
-                setFiles((p) => ({ ...p, logo: file }));
-              }}
-              onClear={() => setField("logoUrl", "")}
-            />
-            <FileUploadField
-              label="Foto do Serviço"
-              accept="image"
-              currentUrl={form.fotoUrl ?? ""}
-              required={!modal.editing && form.tipo === "GUIA_TURISMO"}
-              hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => {
-                setField("fotoUrl", url);
-                setFiles((p) => ({ ...p, foto: file }));
-              }}
-              onClear={() => setField("fotoUrl", "")}
-            />
+          <div className="grid grid-cols-1 gap-3">
+            {form.tipo !== "GUIA_TURISMO" && (
+              <FileUploadField
+                label="Logo"
+                accept="image"
+                currentUrl={form.logoUrl ?? ""}
+                required={!modal.editing}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("logoUrl", url);
+                  setFiles((p) => ({ ...p, logo: file }));
+                }}
+                onClear={() => setField("logoUrl", "")}
+              />
+            )}
+            {form.tipo === "GUIA_TURISMO" && (
+              <FileUploadField
+                label="Foto"
+                accept="image"
+                currentUrl={form.fotoUrl ?? ""}
+                required={!modal.editing}
+                hint={
+                  <>
+                    Envie uma foto sua durante a atuação como Guia de Turismo
+                    <br />
+                    (PNG, JPG ou WEBP)
+                  </>
+                }
+                onFileChange={(url, file) => {
+                  setField("fotoUrl", url);
+                  setFiles((p) => ({ ...p, foto: file }));
+                }}
+                onClear={() => setField("fotoUrl", "")}
+              />
+            )}
           </div>
           {requerComprovante && (
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">

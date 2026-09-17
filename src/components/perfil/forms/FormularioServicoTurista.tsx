@@ -293,8 +293,8 @@ export function FormularioServico({
         fd.append("modalidades", JSON.stringify(form.modalidades));
       if (modo === "criar") fd.append("termoAceite", "true");
 
-      if (files.logo) fd.append("logo", files.logo);
-      if (files.foto) fd.append("foto", files.foto);
+      if (files.logo && form.tipo !== "GUIA_TURISMO") fd.append("logo", files.logo);
+      if (files.foto && form.tipo === "GUIA_TURISMO") fd.append("foto", files.foto);
       if (files.comprovante) fd.append("comprovante", files.comprovante);
       if (files.documentoCnpj)
         fd.append("documentoCnpj", files.documentoCnpj);
@@ -626,37 +626,47 @@ export function FormularioServico({
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 pt-1 md:grid-cols-2">
-              <FileUploadField
-                label="LOGO"
-                accept="image"
-                currentUrl={form.logoUrl}
-                required={modo === "criar" && form.tipo !== "GUIA_TURISMO"}
-                hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => {
-                  setField("logoUrl", url);
-                  setFiles((p) => ({ ...p, logo: file }));
-                }}
-                onClear={() => {
-                  setField("logoUrl", "");
-                  setFiles((p) => ({ ...p, logo: undefined }));
-                }}
-              />
-              <FileUploadField
-                label="FOTO DO SERVIÇO"
-                accept="image"
-                currentUrl={form.fotoUrl}
-                required={modo === "criar" && form.tipo === "GUIA_TURISMO"}
-                hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => {
-                  setField("fotoUrl", url);
-                  setFiles((p) => ({ ...p, foto: file }));
-                }}
-                onClear={() => {
-                  setField("fotoUrl", "");
-                  setFiles((p) => ({ ...p, foto: undefined }));
-                }}
-              />
+            <div className="grid grid-cols-1 gap-6 pt-1">
+              {form.tipo !== "GUIA_TURISMO" && (
+                <FileUploadField
+                  label="LOGO"
+                  accept="image"
+                  currentUrl={form.logoUrl}
+                  required={modo === "criar"}
+                  hint="PNG, JPG ou WEBP"
+                  onFileChange={(url, file) => {
+                    setField("logoUrl", url);
+                    setFiles((p) => ({ ...p, logo: file }));
+                  }}
+                  onClear={() => {
+                    setField("logoUrl", "");
+                    setFiles((p) => ({ ...p, logo: undefined }));
+                  }}
+                />
+              )}
+              {form.tipo === "GUIA_TURISMO" && (
+                <FileUploadField
+                  label="FOTO"
+                  accept="image"
+                  currentUrl={form.fotoUrl}
+                  required={modo === "criar"}
+                  hint={
+                    <>
+                      Envie uma foto sua durante a atuação como Guia de Turismo
+                      <br />
+                      (PNG, JPG ou WEBP)
+                    </>
+                  }
+                  onFileChange={(url, file) => {
+                    setField("fotoUrl", url);
+                    setFiles((p) => ({ ...p, foto: file }));
+                  }}
+                  onClear={() => {
+                    setField("fotoUrl", "");
+                    setFiles((p) => ({ ...p, foto: undefined }));
+                  }}
+                />
+              )}
             </div>
 
             {/* Comprovante Cadastur */}
