@@ -671,6 +671,7 @@ export default function AdminServicosPage() {
               label="Nome"
               value={form.nome}
               onChange={set("nome")}
+              placeholder="Ex: Surf Experience Saquarema"
               maxLength={120}
               required
             />
@@ -678,6 +679,7 @@ export default function AdminServicosPage() {
               label="Telefone"
               value={form.telefone}
               onChange={set("telefone")}
+              placeholder="(21) 99999-9999"
               mask={maskPhone}
               maxLength={15}
               {...numericInputProps}
@@ -689,6 +691,7 @@ export default function AdminServicosPage() {
               label="Instagram"
               value={form.instagram ?? ""}
               onChange={set("instagram")}
+              placeholder="@seuservico"
               maxLength={31}
             />
           </div>
@@ -731,12 +734,14 @@ export default function AdminServicosPage() {
             label="Endereço"
             value={form.endereco ?? ""}
             onChange={set("endereco")}
+            placeholder="Rua, número, bairro — Saquarema, RJ"
             maxLength={191}
           />
           <AdminFormField
             label="CNPJ"
             value={form.cnpj ?? ""}
             onChange={set("cnpj")}
+            placeholder="00.000.000/0001-00"
             mask={maskCnpj}
             maxLength={18}
             {...numericInputProps}
@@ -745,12 +750,14 @@ export default function AdminServicosPage() {
             label="Site"
             value={form.site ?? ""}
             onChange={set("site")}
+            placeholder="www.seusite.com.br"
             maxLength={191}
           />
           <AdminFormField
             label="Descrição"
             value={form.descricao ?? ""}
             onChange={set("descricao")}
+            placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
             multiline
             maxLength={2000}
             showCharCount

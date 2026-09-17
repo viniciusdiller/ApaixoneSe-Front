@@ -609,6 +609,7 @@ export default function AdminHospedagemPage() {
               label="Nome"
               value={form.nome}
               onChange={set("nome")}
+              placeholder="Ex: Pousada Praia de Itaúna"
               maxLength={120}
               required
             />
@@ -616,6 +617,7 @@ export default function AdminHospedagemPage() {
               label="Telefone"
               value={form.telefone}
               onChange={set("telefone")}
+              placeholder="(21) 99999-9999"
               mask={maskPhone}
               maxLength={15}
               {...numericInputProps}
@@ -626,6 +628,7 @@ export default function AdminHospedagemPage() {
             label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
+            placeholder="Rua, número, bairro — Saquarema, RJ"
             maxLength={191}
             required
           />
@@ -633,6 +636,7 @@ export default function AdminHospedagemPage() {
             label="Texto Diferencial"
             value={form.textoDiferencial}
             onChange={set("textoDiferencial")}
+            placeholder="Descreva os diferenciais da sua hospedagem, localização, estrutura e benefícios para o hóspede..."
             multiline
             maxLength={300}
             showCharCount
@@ -643,6 +647,7 @@ export default function AdminHospedagemPage() {
               label="CNPJ"
               value={form.cnpj}
               onChange={set("cnpj")}
+              placeholder="00.000.000/0001-00"
               mask={maskCnpj}
               maxLength={18}
               {...numericInputProps}
@@ -652,6 +657,7 @@ export default function AdminHospedagemPage() {
               label="Instagram"
               value={form.instagram ?? ""}
               onChange={set("instagram")}
+              placeholder="@suahospedagem"
               maxLength={31}
             />
           </div>
@@ -659,6 +665,7 @@ export default function AdminHospedagemPage() {
             label="Site"
             value={form.site ?? ""}
             onChange={set("site")}
+            placeholder="www.suahospedagem.com.br"
             maxLength={191}
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -666,6 +673,7 @@ export default function AdminHospedagemPage() {
               label="Responsável (Nome)"
               value={form.responsavelNome}
               onChange={set("responsavelNome")}
+              placeholder="Nome completo do responsável"
               mask={maskPersonName}
               maxLength={120}
               required
@@ -674,6 +682,7 @@ export default function AdminHospedagemPage() {
               label="Responsável (CPF)"
               value={form.responsavelCpf}
               onChange={set("responsavelCpf")}
+              placeholder="000.000.000-00"
               mask={maskCpf}
               maxLength={14}
               {...numericInputProps}
