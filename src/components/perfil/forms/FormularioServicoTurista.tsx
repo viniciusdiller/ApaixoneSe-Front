@@ -548,7 +548,7 @@ export function FormularioServico({
               placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
               multiline
               rows={4}
-              maxLength={300}
+              maxLength={400}
               showCharCount
               required
             />

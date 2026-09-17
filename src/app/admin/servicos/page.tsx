@@ -773,7 +773,7 @@ export default function AdminServicosPage() {
             onChange={set("descricao")}
             placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
             multiline
-            maxLength={2000}
+            maxLength={400}
             showCharCount
           />
           {PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) && (
