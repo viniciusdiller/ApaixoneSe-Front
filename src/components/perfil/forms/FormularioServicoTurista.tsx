@@ -560,7 +560,9 @@ export function FormularioServico({
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Route className="h-3.5 w-3.5 text-primary" />
-                  Você é especializado em algum dos roteiros abaixo? Se sim, marque qual(is): (OPCIONAL)
+                  {form.tipo === "AGENCIA_TURISMO"
+                    ? "A agência é especializada em algum dos roteiros abaixo? Se sim, selecione qual(is):"
+                    : "Você é especializado em algum dos roteiros abaixo? Se sim, selecione qual(is):"}
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {ROTEIROS.map((r) => {
