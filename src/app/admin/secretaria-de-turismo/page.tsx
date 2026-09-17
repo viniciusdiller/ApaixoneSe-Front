@@ -321,15 +321,15 @@ export default function SecretariaTurismoAdminPage() {
             </div>
             <textarea
               value={instTexto}
-              onChange={(e) => setInstTexto(e.target.value.slice(0, 5000))}
-              maxLength={5000}
+              onChange={(e) => setInstTexto(e.target.value.slice(0, 2000))}
+              maxLength={2000}
               rows={7}
               required
               className="w-full resize-none rounded-xl border border-input px-4 py-3 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
               placeholder="Descreva a Secretaria de Esporte, Lazer e Turismo..."
             />
             <div className="flex justify-end text-[10px] text-muted-foreground">
-              <span>{instTexto.length}/5000</span>
+              <span>{instTexto.length}/2000</span>
             </div>
           </div>
 
@@ -558,9 +558,6 @@ export default function SecretariaTurismoAdminPage() {
                   className="w-full rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Título do bloco"
                 />
-                <div className="mt-1 flex justify-end text-[10px] text-muted-foreground">
-                  <span>{turistandoForm.titulo.length}/150</span>
-                </div>
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -571,17 +568,17 @@ export default function SecretariaTurismoAdminPage() {
                   onChange={(e) =>
                     setTuristandoForm((f) => ({
                       ...f,
-                      texto: e.target.value.slice(0, 3000),
+                      texto: e.target.value.slice(0, 1000),
                     }))
                   }
                   required
-                  maxLength={3000}
+                  maxLength={1000}
                   rows={4}
                   className="w-full resize-none rounded-xl border border-input px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40"
                   placeholder="Descrição do bloco"
                 />
                 <div className="mt-1 flex justify-end text-[10px] text-muted-foreground">
-                  <span>{turistandoForm.texto.length}/3000</span>
+                  <span>{turistandoForm.texto.length}/1000</span>
                 </div>
               </div>
               <div>

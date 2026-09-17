@@ -374,6 +374,7 @@ export default function AdminPraiasLagoasPage() {
             value={form.nome}
             onChange={set("nome")}
             maxLength={100}
+            showCharCount
             required
           />
           <AdminFormField
@@ -381,13 +382,15 @@ export default function AdminPraiasLagoasPage() {
             value={form.descricaoCurta}
             onChange={set("descricaoCurta")}
             maxLength={191}
+            showCharCount
             required
           />
           <AdminFormField
             label="Descrição completa"
             value={form.descricao}
             onChange={set("descricao")}
-            maxLength={3000}
+            maxLength={1000}
+            showCharCount
             multiline
             required
           />

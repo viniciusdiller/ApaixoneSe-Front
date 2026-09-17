@@ -218,6 +218,7 @@ export default function AdminHistoriaPage() {
             value={form.nome}
             onChange={set("nome")}
             maxLength={60}
+            showCharCount
             required
           />
           <AdminFormField
@@ -225,6 +226,7 @@ export default function AdminHistoriaPage() {
             value={form.descricao}
             onChange={set("descricao")}
             maxLength={280}
+            showCharCount
             multiline
             required
           />
@@ -233,6 +235,7 @@ export default function AdminHistoriaPage() {
             value={form.texto}
             onChange={set("texto")}
             maxLength={5000}
+            showCharCount
             multiline
             required
           />

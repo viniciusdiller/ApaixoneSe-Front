@@ -273,14 +273,25 @@ export default function AdminServicosPage() {
     const requerComprovante = REQUER_COMPROVANTE.includes(
       form.tipo as TipoServicoTurista,
     );
+
+    if (form.tipo === "GUIA_TURISMO" && !modal.editing?.fotoUrl && !files.foto) {
+      setError("A foto é obrigatória para Guias de Turismo.");
+      return;
+    }
+
+    if (form.tipo === "GUIA_TURISMO" && !form.idiomas) {
+      setError("Os idiomas são obrigatórios para Guias.");
+      return;
+    }
+
+    if (form.tipo !== "GUIA_TURISMO" && !modal.editing?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória para este tipo de serviço.");
+      return;
+    }
     if (requerComprovante && !modal.editing && !files.comprovante) {
       setError(
         "O comprovante Cadastur é obrigatório para este tipo de serviço.",
       );
-      return;
-    }
-    if (form.tipo === "GUIA_TURISMO" && (form.roteiros ?? []).length === 0) {
-      setError("Selecione ao menos um roteiro especializado.");
       return;
     }
     const isEsporteLazer = form.tipo === "ESPORTE_LAZER";
@@ -302,7 +313,7 @@ export default function AdminServicosPage() {
       formData.append("nome", form.nome);
       formData.append("tipo", form.tipo);
       formData.append("telefone", form.telefone);
-      formData.append("endereco", form.endereco || "");
+      if (form.tipo !== "GUIA_TURISMO") formData.append("endereco", form.endereco || "");
       formData.append("cnpj", form.cnpj || "");
       formData.append("descricao", form.descricao || "");
       formData.append("idiomas", form.idiomas || "");
@@ -317,8 +328,8 @@ export default function AdminServicosPage() {
         formData.append("modalidades", JSON.stringify(form.modalidades));
       if (form.site) formData.append("site", form.site);
       if (form.validade) formData.append("validade", form.validade);
-      if (files.logo) formData.append("logo", files.logo);
-      if (files.foto) formData.append("foto", files.foto);
+      if (files.logo && form.tipo !== "GUIA_TURISMO") formData.append("logo", files.logo);
+      if (files.foto && form.tipo === "GUIA_TURISMO") formData.append("foto", files.foto);
       if (files.comprovante) formData.append("comprovante", files.comprovante);
       if (files.documentoCnpj)
         formData.append("documentoCnpj", files.documentoCnpj);
@@ -668,15 +679,18 @@ export default function AdminServicosPage() {
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <AdminFormField
-              label="Nome"
+              label={form.tipo === "GUIA_TURISMO" ? "Seu Nome" : "Nome"}
               value={form.nome}
               onChange={set("nome")}
+              placeholder={form.tipo === "GUIA_TURISMO" ? "Ex: João da Silva" : "Ex: Surf Experience Saquarema"}
+              maxLength={120}
               required
             />
             <AdminFormField
               label="Telefone"
               value={form.telefone}
               onChange={set("telefone")}
+              placeholder="(21) 99999-9999"
               mask={maskPhone}
               maxLength={15}
               {...numericInputProps}
@@ -688,11 +702,16 @@ export default function AdminServicosPage() {
               label="Instagram"
               value={form.instagram ?? ""}
               onChange={set("instagram")}
+              placeholder="@seuservico"
+              maxLength={31}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Idiomas
+              {form.tipo === "GUIA_TURISMO" && (
+                <span className="text-red-500" aria-hidden="true">*</span>
+              )}
             </label>
             <div className="grid grid-cols-1 gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
               {IDIOMAS_DISPONIVEIS.map((idioma) => {
@@ -725,15 +744,20 @@ export default function AdminServicosPage() {
               })}
             </div>
           </div>
-          <AdminFormField
-            label="Endereço"
-            value={form.endereco ?? ""}
-            onChange={set("endereco")}
-          />
+          {form.tipo !== "GUIA_TURISMO" && (
+            <AdminFormField
+              label="Endereço"
+              value={form.endereco ?? ""}
+              onChange={set("endereco")}
+              placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
+            />
+          )}
           <AdminFormField
             label="CNPJ"
             value={form.cnpj ?? ""}
             onChange={set("cnpj")}
+            placeholder="00.000.000/0001-00"
             mask={maskCnpj}
             maxLength={18}
             {...numericInputProps}
@@ -742,17 +766,22 @@ export default function AdminServicosPage() {
             label="Site"
             value={form.site ?? ""}
             onChange={set("site")}
+            placeholder="www.seusite.com.br"
+            maxLength={191}
           />
           <AdminFormField
             label="Descrição"
             value={form.descricao ?? ""}
             onChange={set("descricao")}
+            placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
             multiline
+            maxLength={400}
+            showCharCount
           />
           {PODE_ESCOLHER_ROTEIRO.includes(form.tipo as TipoServicoTurista) && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Roteiros {form.tipo === "GUIA_TURISMO" ? "*" : "(opcional)"}
+                Roteiros (OPCIONAL)
               </label>
               <div className="flex flex-wrap gap-2 rounded-lg border border-border p-3">
                 {ROTEIROS.map((roteiro) => {
@@ -821,29 +850,41 @@ export default function AdminServicosPage() {
               </div>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <FileUploadField
-              label="Logo"
-              accept="image"
-              currentUrl={form.logoUrl ?? ""}
-              hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => {
-                setField("logoUrl", url);
-                setFiles((p) => ({ ...p, logo: file }));
-              }}
-              onClear={() => setField("logoUrl", "")}
-            />
-            <FileUploadField
-              label="Foto do Serviço"
-              accept="image"
-              currentUrl={form.fotoUrl ?? ""}
-              hint="PNG, JPG ou WEBP"
-              onFileChange={(url, file) => {
-                setField("fotoUrl", url);
-                setFiles((p) => ({ ...p, foto: file }));
-              }}
-              onClear={() => setField("fotoUrl", "")}
-            />
+          <div className="grid grid-cols-1 gap-3">
+            {form.tipo !== "GUIA_TURISMO" && (
+              <FileUploadField
+                label="Logo"
+                accept="image"
+                currentUrl={form.logoUrl ?? ""}
+                required={!modal.editing}
+                hint="PNG, JPG ou WEBP"
+                onFileChange={(url, file) => {
+                  setField("logoUrl", url);
+                  setFiles((p) => ({ ...p, logo: file }));
+                }}
+                onClear={() => setField("logoUrl", "")}
+              />
+            )}
+            {form.tipo === "GUIA_TURISMO" && (
+              <FileUploadField
+                label="Foto"
+                accept="image"
+                currentUrl={form.fotoUrl ?? ""}
+                required={!modal.editing}
+                hint={
+                  <>
+                    Envie uma foto sua durante a atuação como Guia de Turismo
+                    <br />
+                    (PNG, JPG ou WEBP)
+                  </>
+                }
+                onFileChange={(url, file) => {
+                  setField("fotoUrl", url);
+                  setFiles((p) => ({ ...p, foto: file }));
+                }}
+                onClear={() => setField("fotoUrl", "")}
+              />
+            )}
           </div>
           {requerComprovante && (
             <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-4">

@@ -478,12 +478,15 @@ export default function AdminGastronomiaPage() {
               label="Nome"
               value={form.nome}
               onChange={set("nome")}
+              placeholder="Ex: Restaurante Mar Aberto"
+              maxLength={120}
               required
             />
             <AdminFormField
               label="Telefone"
               value={form.telefone}
               onChange={set("telefone")}
+              placeholder="(21) 99999-9999"
               mask={maskPhone}
               maxLength={15}
               {...numericInputProps}
@@ -494,6 +497,8 @@ export default function AdminGastronomiaPage() {
             label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
+            placeholder="Rua, número, bairro — Saquarema, RJ"
+            maxLength={191}
             required
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -501,11 +506,15 @@ export default function AdminGastronomiaPage() {
               label="Especialidade"
               value={form.especialidade ?? ""}
               onChange={set("especialidade")}
+              placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
+              maxLength={90}
+              showCharCount
             />
             <AdminFormField
               label="CNPJ"
               value={form.cnpj}
               onChange={set("cnpj")}
+              placeholder="00.000.000/0001-00"
               mask={maskCnpj}
               maxLength={18}
               {...numericInputProps}
@@ -517,13 +526,16 @@ export default function AdminGastronomiaPage() {
               label="Responsável (Nome)"
               value={form.responsavelNome}
               onChange={set("responsavelNome")}
+              placeholder="Nome completo do responsável"
               mask={maskPersonName}
+              maxLength={120}
               required
             />
             <AdminFormField
               label="Responsável (CPF)"
               value={form.responsavelCpf}
               onChange={set("responsavelCpf")}
+              placeholder="000.000.000-00"
               mask={maskCpf}
               maxLength={14}
               {...numericInputProps}
@@ -534,6 +546,8 @@ export default function AdminGastronomiaPage() {
             label="Instagram"
             value={form.instagram ?? ""}
             onChange={set("instagram")}
+            placeholder="@seurestaurante"
+            maxLength={31}
           />
 
           <FileUploadField

@@ -448,18 +448,21 @@ export default function AdminEventosPage() {
             label="Título"
             value={form.titulo}
             onChange={set("titulo")}
+            maxLength={150}
             required
           />
           <AdminFormField
             label="Local"
             value={form.local}
             onChange={set("local")}
+            maxLength={150}
             required
           />
           <AdminFormField
             label="Endereço"
             value={form.endereco}
             onChange={set("endereco")}
+            maxLength={191}
             placeholder="Rua Principal, 123 - Centro, Saquarema - RJ"
           />
           <AdminDateField
@@ -486,6 +489,8 @@ export default function AdminEventosPage() {
             label="Descrição"
             value={form.descricao}
             onChange={set("descricao")}
+            maxLength={2000}
+            showCharCount
             multiline
             required
           />

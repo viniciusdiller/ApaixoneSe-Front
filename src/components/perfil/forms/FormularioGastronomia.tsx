@@ -128,6 +128,15 @@ export function FormularioGastronomia({
       return;
     }
 
+    if (!dadosIniciais?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória.");
+      return;
+    }
+    if (!dadosIniciais?.documentoPdfUrl && !files.comprovante) {
+      setError("O comprovante do Cadastur é obrigatório.");
+      return;
+    }
+
     if (modo === "criar" && !termoAceito) {
       setTermoError(
         "É necessário aceitar o Termo de Adesão para enviar o cadastro.",
@@ -270,6 +279,7 @@ export function FormularioGastronomia({
                 value={form.nome}
                 onChange={set("nome")}
                 placeholder="Ex: Restaurante Mar Aberto"
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -290,16 +300,20 @@ export function FormularioGastronomia({
               value={form.endereco}
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
               required
             />
 
+            <PerfilFormField
+              label="Especialidade"
+              value={form.especialidade}
+              onChange={set("especialidade")}
+              placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
+              maxLength={90}
+              showCharCount
+            />
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PerfilFormField
-                label="Especialidade"
-                value={form.especialidade}
-                onChange={set("especialidade")}
-                placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
-              />
               <PerfilFormField
                 label="CNPJ"
                 value={form.cnpj}
@@ -310,6 +324,14 @@ export function FormularioGastronomia({
                 error={fieldErrors.cnpj}
                 {...numericInputProps}
                 required
+              />
+              <PerfilFormField
+                label="Instagram"
+                value={form.instagram}
+                onChange={set("instagram")}
+                placeholder="@seurestaurante"
+                maxLength={31}
+                error={fieldErrors.instagram}
               />
             </div>
           </section>
@@ -331,6 +353,7 @@ export function FormularioGastronomia({
                 onChange={set("responsavelNome")}
                 placeholder="Nome completo do responsável"
                 mask={maskPersonName}
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -345,14 +368,6 @@ export function FormularioGastronomia({
                 required
               />
             </div>
-
-            <PerfilFormField
-              label="Instagram"
-              value={form.instagram}
-              onChange={set("instagram")}
-              placeholder="@seurestaurante"
-              error={fieldErrors.instagram}
-            />
           </section>
 
           {/* ── Bloco 3: Arquivos ── */}
@@ -360,7 +375,7 @@ export function FormularioGastronomia({
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
-                Identidade Visual e Comprovação
+                Documentação e identificação visual
               </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
@@ -384,6 +399,9 @@ export function FormularioGastronomia({
             <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <FileText size={13} /> Comprovante Cadastur (PDF ou Imagem)
+                {!comprovanteExistente && (
+                  <span className="text-red-500" aria-hidden="true">*</span>
+                )}
               </p>
               <div className="space-y-2">
                 {comprovantePreviewUrl && (

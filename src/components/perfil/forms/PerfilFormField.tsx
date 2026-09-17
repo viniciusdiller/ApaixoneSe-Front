@@ -12,6 +12,7 @@ interface PerfilFormFieldProps extends Omit<
   rows?: number;
   mask?: (value: string) => string;
   onChange?: (value: string) => void;
+  showCharCount?: boolean;
 }
 
 // Trocamos o nome da Função
@@ -19,10 +20,32 @@ export const PerfilFormField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   PerfilFormFieldProps
 >(function PerfilFormField(
-  { label, error, multiline, rows = 3, mask, onChange, type, ...props },
+  {
+    label,
+    error,
+    multiline,
+    rows = 3,
+    mask,
+    onChange,
+    type,
+    showCharCount = false,
+    ...props
+  },
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  const focusHandlers = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFocused(true);
+      props.onFocus?.(e as any);
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFocused(false);
+      props.onBlur?.(e as any);
+    },
+  };
 
   const base =
     "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition";
@@ -35,13 +58,20 @@ export const PerfilFormField = forwardRef<
     }
   };
 
+  const displayValue =
+    mask && typeof props.value === "string" ? mask(props.value) : props.value;
+
   const isPassword = type === "password";
   const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+  const valueLength = typeof displayValue === "string" ? displayValue.length : 0;
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
+      <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label.replace(/\s*\*\s*$/, '')}
+        {props.required && (
+          <span className="text-red-500" aria-hidden="true">*</span>
+        )}
       </label>
       {multiline ? (
         <textarea
@@ -50,6 +80,8 @@ export const PerfilFormField = forwardRef<
           ref={ref as React.Ref<HTMLTextAreaElement>}
           onChange={handleChange}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+          {...focusHandlers}
+          value={displayValue}
         />
       ) : (
         <div className="relative">
@@ -59,6 +91,8 @@ export const PerfilFormField = forwardRef<
             ref={ref as React.Ref<HTMLInputElement>}
             onChange={handleChange}
             {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+            {...focusHandlers}
+            value={displayValue}
           />
 
           {isPassword && (
@@ -71,6 +105,14 @@ export const PerfilFormField = forwardRef<
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           )}
+        </div>
+      )}
+      {showCharCount && typeof props.maxLength === "number" && (
+        <div
+          className={`flex justify-end text-[10px] overflow-hidden transition-all duration-200 ease-in-out ${valueLength >= props.maxLength - 10 ? "text-red-500 font-medium" : "text-muted-foreground"}`}
+          style={{ opacity: focused ? 1 : 0, maxHeight: focused ? "1.25rem" : "0" }}
+        >
+          <span>{valueLength}/{props.maxLength}</span>
         </div>
       )}
       {error && <p className="text-xs text-red-500">{error}</p>}

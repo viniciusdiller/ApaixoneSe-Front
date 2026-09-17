@@ -11,16 +11,40 @@ interface AdminFormFieldProps extends Omit<
   rows?: number;
   mask?: (value: string) => string;
   onChange?: (value: string) => void;
+  showCharCount?: boolean;
 }
 
 export const AdminFormField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   AdminFormFieldProps
 >(function AdminFormField(
-  { label, error, multiline, rows = 3, mask, onChange, type, maxLength, ...props },
+  {
+    label,
+    error,
+    multiline,
+    rows = 3,
+    mask,
+    onChange,
+    type,
+    maxLength,
+    showCharCount = false,
+    ...props
+  },
   ref,
 ) {
   const [showPassword, setShowPassword] = useState(false);
+  const [focused, setFocused] = useState(false);
+
+  const focusHandlers = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFocused(true);
+      props.onFocus?.(e as any);
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setFocused(false);
+      props.onBlur?.(e as any);
+    },
+  };
 
   const base =
     "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/60 transition-all duration-150";
@@ -48,9 +72,9 @@ export const AdminFormField = forwardRef<
   return (
     <div className="flex flex-col gap-1.5">
       <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
+        {label.replace(/\s*\*\s*$/, '')}
         {props.required && (
-          <span className="text-red-400" aria-hidden="true">*</span>
+          <span className="text-red-500" aria-hidden="true">*</span>
         )}
       </label>
       {multiline ? (
@@ -61,6 +85,7 @@ export const AdminFormField = forwardRef<
           ref={ref as React.Ref<HTMLTextAreaElement>}
           onChange={handleChange}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+          {...focusHandlers}
           value={displayValue}
         />
       ) : (
@@ -72,6 +97,7 @@ export const AdminFormField = forwardRef<
             ref={ref as React.Ref<HTMLInputElement>}
             onChange={handleChange}
             {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+            {...focusHandlers}
             value={displayValue}
           />
 
@@ -87,11 +113,12 @@ export const AdminFormField = forwardRef<
           )}
         </div>
       )}
-      {typeof maxLength === "number" && (
-        <div className="flex justify-end text-[10px] text-muted-foreground">
-          <span>
-            {valueLength}/{maxLength}
-          </span>
+      {showCharCount && typeof maxLength === "number" && (
+        <div
+          className={`flex justify-end text-[10px] overflow-hidden transition-all duration-200 ease-in-out ${valueLength >= maxLength - 10 ? "text-red-500 font-medium" : "text-muted-foreground"}`}
+          style={{ opacity: focused ? 1 : 0, maxHeight: focused ? "1.25rem" : "0" }}
+        >
+          <span>{valueLength}/{maxLength}</span>
         </div>
       )}
       {error && (

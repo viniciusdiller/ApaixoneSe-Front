@@ -168,6 +168,15 @@ export function FormularioHospedagem({
       return;
     }
 
+    if (!dadosIniciais?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória.");
+      return;
+    }
+    if (!dadosIniciais?.documentoPdfUrl && !files.comprovante) {
+      setError("O comprovante do Cadastur é obrigatório.");
+      return;
+    }
+
     if (modo === "criar" && !termoAceito) {
       setTermoError(
         "É necessário aceitar o Termo de Adesão para enviar o cadastro.",
@@ -314,6 +323,7 @@ export function FormularioHospedagem({
                 value={form.nome}
                 onChange={set("nome")}
                 placeholder="Ex: Pousada Praia de Itaúna"
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -334,6 +344,7 @@ export function FormularioHospedagem({
               value={form.endereco}
               onChange={set("endereco")}
               placeholder="Rua, número, bairro — Saquarema, RJ"
+              maxLength={191}
               required
             />
 
@@ -344,6 +355,8 @@ export function FormularioHospedagem({
               placeholder="Descreva os diferenciais da sua hospedagem, localização, estrutura e benefícios para o hóspede..."
               multiline
               rows={4}
+              maxLength={300}
+              showCharCount
               required
             />
 
@@ -364,6 +377,7 @@ export function FormularioHospedagem({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@suahospedagem"
+                maxLength={31}
                 error={fieldErrors.instagram}
               />
             </div>
@@ -373,6 +387,7 @@ export function FormularioHospedagem({
               value={form.site}
               onChange={set("site")}
               placeholder="www.suahospedagem.com.br"
+              maxLength={191}
               error={fieldErrors.site}
             />
           </section>
@@ -394,6 +409,7 @@ export function FormularioHospedagem({
                 onChange={set("responsavelNome")}
                 placeholder="Nome completo do responsável"
                 mask={maskPersonName}
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -451,7 +467,7 @@ export function FormularioHospedagem({
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
-                Identidade Visual e Documentação
+                Documentação e identificação visual
               </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
@@ -475,6 +491,9 @@ export function FormularioHospedagem({
             <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <FileText size={13} /> Comprovante Cadastur (PDF ou Imagem)
+                {!comprovanteExistente && (
+                  <span className="text-red-500" aria-hidden="true">*</span>
+                )}
               </p>
               <div className="space-y-2">
                 {comprovantePreviewUrl && (

@@ -46,6 +46,16 @@ const TIPOS_SERVICO = [
   { value: "LOCADORA_VEICULOS", label: "Locadora de Veículos" },
 ];
 
+const IDIOMAS_DISPONIVEIS = [
+  "Português",
+  "Inglês",
+  "Espanhol",
+  "Francês",
+  "Alemão",
+  "Italiano",
+  "Outro",
+];
+
 const ROTEIROS = [
   { value: "A_PE", label: "A Pé" },
   { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
@@ -217,6 +227,21 @@ export function FormularioServico({
       return;
     }
 
+    if (form.tipo === "GUIA_TURISMO" && !dadosIniciais?.fotoUrl && !files.foto) {
+      setError("A foto é obrigatória para Guias de Turismo.");
+      return;
+    }
+
+    if (form.tipo === "GUIA_TURISMO" && !form.idiomas) {
+      setError("Os idiomas são obrigatórios para Guias.");
+      return;
+    }
+
+    if (form.tipo !== "GUIA_TURISMO" && !dadosIniciais?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória para este tipo de serviço.");
+      return;
+    }
+
     const precisaComprovante = REQUER_COMPROVANTE.includes(form.tipo);
     if (
       precisaComprovante &&
@@ -226,11 +251,6 @@ export function FormularioServico({
       setError(
         "O comprovante Cadastur é obrigatório para este tipo de serviço.",
       );
-      return;
-    }
-
-    if (form.tipo === "GUIA_TURISMO" && form.roteiros.length === 0) {
-      setError("Selecione ao menos um roteiro especializado.");
       return;
     }
 
@@ -261,7 +281,7 @@ export function FormularioServico({
       fd.append("tipo", form.tipo);
       fd.append("nome", form.nome);
       fd.append("telefone", form.telefone);
-      if (form.endereco) fd.append("endereco", form.endereco);
+      if (form.endereco && form.tipo !== "GUIA_TURISMO") fd.append("endereco", form.endereco);
       if (form.descricao) fd.append("descricao", form.descricao);
       if (form.cnpj) fd.append("cnpj", form.cnpj);
       if (form.instagram) fd.append("instagram", form.instagram);
@@ -273,8 +293,8 @@ export function FormularioServico({
         fd.append("modalidades", JSON.stringify(form.modalidades));
       if (modo === "criar") fd.append("termoAceite", "true");
 
-      if (files.logo) fd.append("logo", files.logo);
-      if (files.foto) fd.append("foto", files.foto);
+      if (files.logo && form.tipo !== "GUIA_TURISMO") fd.append("logo", files.logo);
+      if (files.foto && form.tipo === "GUIA_TURISMO") fd.append("foto", files.foto);
       if (files.comprovante) fd.append("comprovante", files.comprovante);
       if (files.documentoCnpj)
         fd.append("documentoCnpj", files.documentoCnpj);
@@ -404,7 +424,7 @@ export function FormularioServico({
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Building2 className="h-3.5 w-3.5 text-primary" />
-                TIPO *
+                TIPO <span className="text-red-500" aria-hidden="true">*</span>
               </label>
               <select
                 value={form.tipo}
@@ -422,10 +442,11 @@ export function FormularioServico({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField
-                label="NOME"
+                label={form.tipo === "GUIA_TURISMO" ? "SEU NOME" : "NOME"}
                 value={form.nome}
                 onChange={set("nome")}
-                placeholder="Ex: Surf Experience Saquarema"
+                placeholder={form.tipo === "GUIA_TURISMO" ? "Ex: João da Silva" : "Ex: Surf Experience Saquarema"}
+                maxLength={120}
                 required
               />
               <PerfilFormField
@@ -447,22 +468,59 @@ export function FormularioServico({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@seuservico"
+                maxLength={31}
                 error={fieldErrors.instagram}
               />
-              <PerfilFormField
-                label="IDIOMAS"
-                value={form.idiomas}
-                onChange={set("idiomas")}
-                placeholder="Ex: Português, Inglês, Espanhol"
-              />
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Idiomas
+                  {form.tipo === "GUIA_TURISMO" && (
+                    <span className="text-red-500" aria-hidden="true">*</span>
+                  )}
+                </label>
+                <div className="grid grid-cols-1 gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
+                  {IDIOMAS_DISPONIVEIS.map((idioma) => {
+                    const idiomasArray = form.idiomas
+                      ? form.idiomas.split(", ")
+                      : [];
+                    const isChecked = idiomasArray.includes(idioma);
+                    return (
+                      <label
+                        key={idioma}
+                        className="flex cursor-pointer items-center gap-2 text-sm transition-colors hover:text-primary"
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const current = form.idiomas
+                              ? form.idiomas.split(", ")
+                              : [];
+                            const updated = e.target.checked
+                              ? [...current, idioma]
+                              : current.filter((item) => item !== idioma);
+                            setField("idiomas", updated.join(", "));
+                          }}
+                        />
+                        {idioma}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            <PerfilFormField
-              label="ENDEREÇO"
-              value={form.endereco}
-              onChange={set("endereco")}
-              placeholder="Rua, número, bairro — Saquarema, RJ"
-            />
+            {form.tipo !== "GUIA_TURISMO" && (
+              <PerfilFormField
+                label="ENDEREÇO"
+                value={form.endereco}
+                onChange={set("endereco")}
+                placeholder="Rua, número, bairro — Saquarema, RJ"
+                maxLength={191}
+              />
+            )}
 
             <PerfilFormField
               label="CNPJ"
@@ -473,6 +531,7 @@ export function FormularioServico({
               maxLength={18}
               error={fieldErrors.cnpj}
               {...numericInputProps}
+              required
             />
 
             <PerfilFormField
@@ -480,6 +539,7 @@ export function FormularioServico({
               value={form.site}
               onChange={set("site")}
               placeholder="www.seusite.com.br"
+              maxLength={191}
               error={fieldErrors.site}
             />
 
@@ -490,6 +550,9 @@ export function FormularioServico({
               placeholder="Descreva seu serviço, diferenciais e o que o turista pode esperar..."
               multiline
               rows={4}
+              maxLength={400}
+              showCharCount
+              required
             />
 
             {/* Roteiros (apenas Guia e Agência) */}
@@ -497,8 +560,9 @@ export function FormularioServico({
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Route className="h-3.5 w-3.5 text-primary" />
-                  ROTEIROS{" "}
-                  {form.tipo === "GUIA_TURISMO" ? "*" : "(OPCIONAL)"}
+                  {form.tipo === "AGENCIA_TURISMO"
+                    ? "A agência é especializada em algum dos roteiros abaixo? Se sim, selecione qual(is):"
+                    : "Você é especializado em algum dos roteiros abaixo? Se sim, selecione qual(is):"}
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {ROTEIROS.map((r) => {
@@ -527,7 +591,7 @@ export function FormularioServico({
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Tag className="h-3.5 w-3.5 text-primary" />
-                  MODALIDADES *
+                  MODALIDADES <span className="text-red-500" aria-hidden="true">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2.5">
                   {MODALIDADES_ESPORTE.map((modalidade) => {
@@ -557,41 +621,52 @@ export function FormularioServico({
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
-                Identidade Visual
+                Documentação e identificação visual
               </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
 
-            <div className="grid grid-cols-1 gap-6 pt-1 md:grid-cols-2">
-              <FileUploadField
-                label="LOGO *"
-                accept="image"
-                currentUrl={form.logoUrl}
-                required={modo === "criar"}
-                hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => {
-                  setField("logoUrl", url);
-                  setFiles((p) => ({ ...p, logo: file }));
-                }}
-                onClear={() => {
-                  setField("logoUrl", "");
-                  setFiles((p) => ({ ...p, logo: undefined }));
-                }}
-              />
-              <FileUploadField
-                label="FOTO DO SERVIÇO"
-                accept="image"
-                currentUrl={form.fotoUrl}
-                hint="PNG, JPG ou WEBP"
-                onFileChange={(url, file) => {
-                  setField("fotoUrl", url);
-                  setFiles((p) => ({ ...p, foto: file }));
-                }}
-                onClear={() => {
-                  setField("fotoUrl", "");
-                  setFiles((p) => ({ ...p, foto: undefined }));
-                }}
-              />
+            <div className="grid grid-cols-1 gap-6 pt-1">
+              {form.tipo !== "GUIA_TURISMO" && (
+                <FileUploadField
+                  label="LOGO"
+                  accept="image"
+                  currentUrl={form.logoUrl}
+                  required={modo === "criar"}
+                  hint="PNG, JPG ou WEBP"
+                  onFileChange={(url, file) => {
+                    setField("logoUrl", url);
+                    setFiles((p) => ({ ...p, logo: file }));
+                  }}
+                  onClear={() => {
+                    setField("logoUrl", "");
+                    setFiles((p) => ({ ...p, logo: undefined }));
+                  }}
+                />
+              )}
+              {form.tipo === "GUIA_TURISMO" && (
+                <FileUploadField
+                  label="FOTO"
+                  accept="image"
+                  currentUrl={form.fotoUrl}
+                  required={modo === "criar"}
+                  hint={
+                    <>
+                      Envie uma foto sua durante a atuação como Guia de Turismo
+                      <br />
+                      (PNG, JPG ou WEBP)
+                    </>
+                  }
+                  onFileChange={(url, file) => {
+                    setField("fotoUrl", url);
+                    setFiles((p) => ({ ...p, foto: file }));
+                  }}
+                  onClear={() => {
+                    setField("fotoUrl", "");
+                    setFiles((p) => ({ ...p, foto: undefined }));
+                  }}
+                />
+              )}
             </div>
 
             {/* Comprovante Cadastur */}
