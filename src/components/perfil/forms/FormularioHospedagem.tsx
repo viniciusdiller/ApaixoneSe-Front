@@ -191,7 +191,7 @@ export function FormularioHospedagem({
       if (form.site) fd.append("site", form.site);
       if (form.tags && form.tags.length > 0)
         fd.append("tags", JSON.stringify(form.tags));
-      // if (modo === "criar") fd.append("termoAceite", "true");
+      if (modo === "criar") fd.append("termoAceite", "true");
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 

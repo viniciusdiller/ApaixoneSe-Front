@@ -148,7 +148,7 @@ export function FormularioGastronomia({
       fd.append("responsavelNome", form.responsavelNome);
       fd.append("responsavelCpf", form.responsavelCpf);
       if (form.instagram) fd.append("instagram", form.instagram);
-      // if (modo === "criar") fd.append("termoAceite", "true");
+      if (modo === "criar") fd.append("termoAceite", "true");
       if (files.logo) fd.append("logo", files.logo);
       if (files.comprovante) fd.append("documentoPdf", files.comprovante);
 

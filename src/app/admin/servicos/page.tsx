@@ -273,6 +273,21 @@ export default function AdminServicosPage() {
     const requerComprovante = REQUER_COMPROVANTE.includes(
       form.tipo as TipoServicoTurista,
     );
+
+    if (form.tipo === "GUIA_TURISMO" && !modal.editing?.fotoUrl && !files.foto) {
+      setError("A foto é obrigatória para Guias de Turismo.");
+      return;
+    }
+
+    if (form.tipo === "GUIA_TURISMO" && !form.idiomas) {
+      setError("Os idiomas são obrigatórios para Guias.");
+      return;
+    }
+
+    if (form.tipo !== "GUIA_TURISMO" && !modal.editing?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória para este tipo de serviço.");
+      return;
+    }
     if (requerComprovante && !modal.editing && !files.comprovante) {
       setError(
         "O comprovante Cadastur é obrigatório para este tipo de serviço.",
@@ -692,8 +707,11 @@ export default function AdminServicosPage() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Idiomas
+              {form.tipo === "GUIA_TURISMO" && (
+                <span className="text-red-500" aria-hidden="true">*</span>
+              )}
             </label>
             <div className="grid grid-cols-1 gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
               {IDIOMAS_DISPONIVEIS.map((idioma) => {
@@ -835,6 +853,7 @@ export default function AdminServicosPage() {
               label="Logo"
               accept="image"
               currentUrl={form.logoUrl ?? ""}
+              required={!modal.editing && form.tipo !== "GUIA_TURISMO"}
               hint="PNG, JPG ou WEBP"
               onFileChange={(url, file) => {
                 setField("logoUrl", url);
@@ -846,6 +865,7 @@ export default function AdminServicosPage() {
               label="Foto do Serviço"
               accept="image"
               currentUrl={form.fotoUrl ?? ""}
+              required={!modal.editing && form.tipo === "GUIA_TURISMO"}
               hint="PNG, JPG ou WEBP"
               onFileChange={(url, file) => {
                 setField("fotoUrl", url);

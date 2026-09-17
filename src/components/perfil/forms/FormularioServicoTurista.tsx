@@ -227,6 +227,21 @@ export function FormularioServico({
       return;
     }
 
+    if (form.tipo === "GUIA_TURISMO" && !dadosIniciais?.fotoUrl && !files.foto) {
+      setError("A foto é obrigatória para Guias de Turismo.");
+      return;
+    }
+
+    if (form.tipo === "GUIA_TURISMO" && !form.idiomas) {
+      setError("Os idiomas são obrigatórios para Guias.");
+      return;
+    }
+
+    if (form.tipo !== "GUIA_TURISMO" && !dadosIniciais?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória para este tipo de serviço.");
+      return;
+    }
+
     const precisaComprovante = REQUER_COMPROVANTE.includes(form.tipo);
     if (
       precisaComprovante &&
@@ -276,7 +291,7 @@ export function FormularioServico({
         fd.append("roteiros", JSON.stringify(form.roteiros));
       if (form.modalidades.length > 0)
         fd.append("modalidades", JSON.stringify(form.modalidades));
-      // if (modo === "criar") fd.append("termoAceite", "true");
+      if (modo === "criar") fd.append("termoAceite", "true");
 
       if (files.logo) fd.append("logo", files.logo);
       if (files.foto) fd.append("foto", files.foto);
@@ -458,8 +473,11 @@ export function FormularioServico({
               />
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Idiomas
+                  {form.tipo === "GUIA_TURISMO" && (
+                    <span className="text-red-500" aria-hidden="true">*</span>
+                  )}
                 </label>
                 <div className="grid grid-cols-1 gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
                   {IDIOMAS_DISPONIVEIS.map((idioma) => {
@@ -609,7 +627,7 @@ export function FormularioServico({
                 label="LOGO"
                 accept="image"
                 currentUrl={form.logoUrl}
-                required={modo === "criar"}
+                required={modo === "criar" && form.tipo !== "GUIA_TURISMO"}
                 hint="PNG, JPG ou WEBP"
                 onFileChange={(url, file) => {
                   setField("logoUrl", url);
@@ -624,6 +642,7 @@ export function FormularioServico({
                 label="FOTO DO SERVIÇO"
                 accept="image"
                 currentUrl={form.fotoUrl}
+                required={modo === "criar" && form.tipo === "GUIA_TURISMO"}
                 hint="PNG, JPG ou WEBP"
                 onFileChange={(url, file) => {
                   setField("fotoUrl", url);
