@@ -542,7 +542,7 @@ export default function AdminGastronomiaPage() {
             label="Instagram"
             value={form.instagram ?? ""}
             onChange={set("instagram")}
-            maxLength={60}
+            maxLength={31}
             showCharCount
           />
 

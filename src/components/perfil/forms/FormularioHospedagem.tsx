@@ -370,7 +370,7 @@ export function FormularioHospedagem({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@suahospedagem"
-                maxLength={60}
+                maxLength={31}
                 showCharCount
                 error={fieldErrors.instagram}
               />

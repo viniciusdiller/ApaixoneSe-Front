@@ -323,7 +323,7 @@ export function FormularioGastronomia({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@seurestaurante"
-                maxLength={60}
+                maxLength={31}
                 showCharCount
                 error={fieldErrors.instagram}
               />

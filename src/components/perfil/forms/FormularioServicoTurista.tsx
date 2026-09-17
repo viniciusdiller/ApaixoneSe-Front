@@ -449,7 +449,7 @@ export function FormularioServico({
                 value={form.instagram}
                 onChange={set("instagram")}
                 placeholder="@seuservico"
-                maxLength={60}
+                maxLength={31}
                 showCharCount
                 error={fieldErrors.instagram}
               />
@@ -509,7 +509,7 @@ export function FormularioServico({
               <div className="space-y-1.5">
                 <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <Route className="h-3.5 w-3.5 text-primary" />
-                  ROTEIROS{" "}
+                  Você é especializado em algum dos roteiros abaixo? Se sim, marque qual(is):{" "}
                   {form.tipo === "GUIA_TURISMO" ? "*" : "(OPCIONAL)"}
                 </label>
                 <div className="flex flex-wrap gap-2.5">
@@ -576,7 +576,7 @@ export function FormularioServico({
 
             <div className="grid grid-cols-1 gap-6 pt-1 md:grid-cols-2">
               <FileUploadField
-                label="LOGO *"
+                label="LOGO"
                 accept="image"
                 currentUrl={form.logoUrl}
                 required={modo === "criar"}
