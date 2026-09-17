@@ -300,7 +300,7 @@ export function FormularioGastronomia({
               value={form.especialidade}
               onChange={set("especialidade")}
               placeholder="Ex: Frutos do Mar, Churrasco, Vegano..."
-              maxLength={80}
+              maxLength={90}
               showCharCount
             />
 
