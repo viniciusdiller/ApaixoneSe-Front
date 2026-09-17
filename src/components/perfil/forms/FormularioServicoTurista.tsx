@@ -619,7 +619,7 @@ export function FormularioServico({
             <div className="flex items-center gap-3 pb-1">
               <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
               <p className="shrink-0 text-xs font-bold uppercase tracking-[0.28em] text-primary">
-                Identidade Visual e Comprovação
+                Documentação e identificação visual
               </p>
               <div className="h-px flex-1 bg-gradient-to-l from-primary/30 to-transparent" />
             </div>
