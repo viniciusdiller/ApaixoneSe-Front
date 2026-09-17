@@ -46,6 +46,16 @@ const TIPOS_SERVICO = [
   { value: "LOCADORA_VEICULOS", label: "Locadora de Veículos" },
 ];
 
+const IDIOMAS_DISPONIVEIS = [
+  "Português",
+  "Inglês",
+  "Espanhol",
+  "Francês",
+  "Alemão",
+  "Italiano",
+  "Outro",
+];
+
 const ROTEIROS = [
   { value: "A_PE", label: "A Pé" },
   { value: "ESPORTE_E_AVENTURA", label: "Esporte e Aventura" },
@@ -453,14 +463,42 @@ export function FormularioServico({
                 showCharCount
                 error={fieldErrors.instagram}
               />
-              <PerfilFormField
-                label="IDIOMAS"
-                value={form.idiomas}
-                onChange={set("idiomas")}
-                placeholder="Ex: Português, Inglês, Espanhol"
-                maxLength={150}
-                showCharCount
-              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Idiomas
+              </label>
+              <div className="grid grid-cols-1 gap-2 rounded-lg border border-border p-3 sm:grid-cols-2">
+                {IDIOMAS_DISPONIVEIS.map((idioma) => {
+                  const idiomasArray = form.idiomas
+                    ? form.idiomas.split(", ")
+                    : [];
+                  const isChecked = idiomasArray.includes(idioma);
+                  return (
+                    <label
+                      key={idioma}
+                      className="flex cursor-pointer items-center gap-2 text-sm transition-colors hover:text-primary"
+                    >
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          const current = form.idiomas
+                            ? form.idiomas.split(", ")
+                            : [];
+                          const updated = e.target.checked
+                            ? [...current, idioma]
+                            : current.filter((item) => item !== idioma);
+                          setField("idiomas", updated.join(", "));
+                        }}
+                      />
+                      {idioma}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             <PerfilFormField
