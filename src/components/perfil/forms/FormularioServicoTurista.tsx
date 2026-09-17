@@ -442,10 +442,10 @@ export function FormularioServico({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <PerfilFormField
-                label="NOME"
+                label={form.tipo === "GUIA_TURISMO" ? "SEU NOME" : "NOME"}
                 value={form.nome}
                 onChange={set("nome")}
-                placeholder="Ex: Surf Experience Saquarema"
+                placeholder={form.tipo === "GUIA_TURISMO" ? "Ex: João da Silva" : "Ex: Surf Experience Saquarema"}
                 maxLength={120}
                 required
               />

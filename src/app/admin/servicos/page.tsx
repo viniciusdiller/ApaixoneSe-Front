@@ -679,10 +679,10 @@ export default function AdminServicosPage() {
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <AdminFormField
-              label="Nome"
+              label={form.tipo === "GUIA_TURISMO" ? "Seu Nome" : "Nome"}
               value={form.nome}
               onChange={set("nome")}
-              placeholder="Ex: Surf Experience Saquarema"
+              placeholder={form.tipo === "GUIA_TURISMO" ? "Ex: João da Silva" : "Ex: Surf Experience Saquarema"}
               maxLength={120}
               required
             />
