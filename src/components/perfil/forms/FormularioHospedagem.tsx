@@ -168,6 +168,15 @@ export function FormularioHospedagem({
       return;
     }
 
+    if (!dadosIniciais?.logoUrl && !files.logo) {
+      setError("A logo é obrigatória.");
+      return;
+    }
+    if (!dadosIniciais?.documentoPdfUrl && !files.comprovante) {
+      setError("O comprovante do Cadastur é obrigatório.");
+      return;
+    }
+
     if (modo === "criar" && !termoAceito) {
       setTermoError(
         "É necessário aceitar o Termo de Adesão para enviar o cadastro.",
@@ -482,6 +491,9 @@ export function FormularioHospedagem({
             <div className="rounded-[22px] border border-dashed border-primary/25 bg-[linear-gradient(135deg,rgba(1,105,111,0.05),rgba(218,113,1,0.04))] p-5 space-y-4">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <FileText size={13} /> Comprovante Cadastur (PDF ou Imagem)
+                {!comprovanteExistente && (
+                  <span className="text-red-500" aria-hidden="true">*</span>
+                )}
               </p>
               <div className="space-y-2">
                 {comprovantePreviewUrl && (
