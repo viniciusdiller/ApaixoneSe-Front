@@ -18,6 +18,7 @@ import { hospedagemApi } from "@/lib/api/hospedagem";
 import { servicoTuristaApi } from "@/lib/api/servico-turista";
 import type {
   ItemPlanoViagem,
+  CreateItemPlanoViagemInlineDto,
   Atividade,
   Evento,
   Gastronomia,
@@ -40,13 +41,36 @@ const CATEGORIAS: { key: Categoria; label: string; icon: React.ReactNode }[] = [
   { key: "servico", label: "Serviço", icon: <Compass className="h-4 w-4" /> },
 ];
 
+/** Item ainda não salvo, montado durante a criação de um plano novo */
+export interface ItemRascunho {
+  dto: CreateItemPlanoViagemInlineDto;
+  /** Valor original do datetime-local, para checar o período sem depender de fuso */
+  dataHoraLocal: string;
+  categoria: string;
+  nome: string;
+  detalhe?: string;
+}
+
 interface Props {
-  planoViagemId: string;
-  onSuccess: (item: ItemPlanoViagem) => void;
+  /** Modo persistido: salva direto no plano existente e chama onSuccess */
+  planoViagemId?: string;
+  onSuccess?: (item: ItemPlanoViagem) => void;
+  /** Modo rascunho (plano ainda não existe): não chama a API */
+  onAddRascunho?: (item: ItemRascunho) => void;
+  /** Período do plano (YYYY-MM-DD) — restringe a data do item */
+  dataMin?: string;
+  dataMax?: string;
   onCancel: () => void;
 }
 
-export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
+export function ItemPlanoForm({
+  planoViagemId,
+  onSuccess,
+  onAddRascunho,
+  dataMin,
+  dataMax,
+  onCancel,
+}: Props) {
   const [categoria, setCategoria] = useState<Categoria>("gastronomia");
   const [dataHora, setDataHora] = useState("");
   const [anotacao, setAnotacao] = useState("");
@@ -130,36 +154,53 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
     }
   }
 
+  const opcoes = getOpcoes();
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!referenciaId) {
       setErro("Selecione um item da lista.");
       return;
     }
+    const dia = dataHora.slice(0, 10);
+    if ((dataMin && dia < dataMin) || (dataMax && dia > dataMax)) {
+      setErro("A data do item deve estar dentro do período do plano.");
+      return;
+    }
     setErro(null);
-    setLoading(true);
 
+    const dto: CreateItemPlanoViagemInlineDto = {
+      dataHoraAgendada: new Date(dataHora).toISOString(),
+      anotacao: anotacao || undefined,
+      ...(categoria === "gastronomia" && { gastronomiaId: referenciaId }),
+      ...(categoria === "hospedagem" && { hospedagemId: referenciaId }),
+      ...(categoria === "evento" && { eventoId: referenciaId }),
+      ...(categoria === "atividade" && { atividadeId: referenciaId }),
+      ...(categoria === "servico" && { servicoTuristaId: referenciaId }),
+    };
+
+    if (!planoViagemId) {
+      const op = opcoes.find((o) => o.id === referenciaId);
+      onAddRascunho?.({
+        dto,
+        dataHoraLocal: dataHora,
+        categoria: CATEGORIAS.find((c) => c.key === categoria)!.label,
+        nome: op?.label ?? "",
+        detalhe: op?.sublabel,
+      });
+      return;
+    }
+
+    setLoading(true);
     try {
-      const dto = {
-        planoViagemId,
-        dataHoraAgendada: new Date(dataHora).toISOString(),
-        anotacao: anotacao || undefined,
-        ...(categoria === "gastronomia" && { gastronomiaId: referenciaId }),
-        ...(categoria === "hospedagem" && { hospedagemId: referenciaId }),
-        ...(categoria === "evento" && { eventoId: referenciaId }),
-        ...(categoria === "atividade" && { atividadeId: referenciaId }),
-        ...(categoria === "servico" && { servicoTuristaId: referenciaId }),
-      };
-      const item = await itemPlanoViagemApi.create(dto);
-      onSuccess(item);
+      const item = await itemPlanoViagemApi.create({ ...dto, planoViagemId });
+      onSuccess?.(item);
     } catch {
       setErro("Não foi possível adicionar o item. Tente novamente.");
     } finally {
       setLoading(false);
     }
   }
-
-  const opcoes = getOpcoes();
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -236,6 +277,8 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
           id="dataHora"
           type="datetime-local"
           required
+          min={dataMin ? `${dataMin}T00:00` : undefined}
+          max={dataMax ? `${dataMax}T23:59` : undefined}
           value={dataHora}
           onChange={(e) => setDataHora(e.target.value)}
           className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -278,7 +321,7 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
           className="flex items-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          Adicionar ao plano
+          {planoViagemId ? "Adicionar ao plano" : "Adicionar à lista"}
         </button>
       </div>
     </form>
