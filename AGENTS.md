@@ -22,7 +22,8 @@ Instruções agnósticas de ferramenta. Backend em `../ApaixoneSe-Back` (NestJS,
 ## Planeje sua Viagem (`src/components/planeje-sua-viagem/`)
 
 - Entradas: `hero-section.tsx` (modal via `PlanejeSuaViagemTrigger`) e `app/perfil/page.tsx`; ambas renderizam `PlanoViagemList`
-- Criar plano: `PlanoViagemForm` já monta os itens como rascunho (`ItemPlanoForm` em modo rascunho, sem `planoViagemId`) e envia tudo em um único `POST /plano-viagem`
-- `ItemPlanoForm` com `planoViagemId` = modo persistido (usado pelo card de plano existente)
-- `ItemPlanoForm` é um `<form>`: nunca aninhar dentro de outro `<form>` (por isso o submit de `PlanoViagemForm` usa o atributo `form=`)
+- Criar plano: `PlanoViagemForm` é um único `<form>`; cada item é uma linha editável (`ItemPlanoRow`) e tudo vai em um único `POST /plano-viagem`. Sem sub-formulário nem etapa intermediária
+- `ItemPlanoForm` = adicionar item a plano já existente (card); `lugares.ts` concentra categorias, carga das opções e o filtro por período
+- Eventos só aparecem se ocorrem dentro do período do plano (`opcoesNoPeriodo`); a data do evento segue a convenção do site (`data.slice(0, 10)`)
+- Erros do backend: `mensagemDeErro` mostra a mensagem de negócio e cai num texto genérico para erro técnico (detalhe no console)
 - Item deve cair dentro de `dataInicio`–`dataFim` (Front exato em horário local; Back com folga de fuso)

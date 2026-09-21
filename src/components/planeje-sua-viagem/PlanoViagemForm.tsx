@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Loader2, Plus, Trash2, Clock } from "lucide-react";
+import { CalendarDays, Loader2, Plus } from "lucide-react";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
-import type { PlanoViagem } from "@/lib/api/types";
-import { ItemPlanoForm, type ItemRascunho } from "./ItemPlanoForm";
+import type {
+  CreateItemPlanoViagemInlineDto,
+  PlanoViagem,
+} from "@/lib/api/types";
+import { ItemPlanoRow, type LinhaItem } from "./ItemPlanoRow";
+import {
+  mensagemDeErro,
+  opcoesNoPeriodo,
+  useOpcoesLugares,
+  type Categoria,
+} from "./lugares";
 
 interface Props {
   /** Plano a ser editado. Undefined = criar novo */
@@ -13,35 +22,81 @@ interface Props {
   onCancel: () => void;
 }
 
-const FORM_ID = "plano-viagem-form";
+const campo =
+  "rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
+const CAMPO_POR_CATEGORIA: Record<
+  Categoria,
+  keyof CreateItemPlanoViagemInlineDto
+> = {
+  gastronomia: "gastronomiaId",
+  hospedagem: "hospedagemId",
+  evento: "eventoId",
+  atividade: "atividadeId",
+  servico: "servicoTuristaId",
+};
+
+let proximaChave = 0;
 
 export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
   const [titulo, setTitulo] = useState(plano?.titulo ?? "");
   const [dataInicio, setDataInicio] = useState(
-    plano?.dataInicio?.slice(0, 10) ?? "",
+    plano?.dataInicio?.slice(0, 10) ?? ""
   );
   const [dataFim, setDataFim] = useState(plano?.dataFim?.slice(0, 10) ?? "");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  // Itens só são montados na criação; a edição de itens de um plano existente
-  // continua no card do plano.
-  const [itens, setItens] = useState<ItemRascunho[]>([]);
-  const [adicionando, setAdicionando] = useState(false);
+  // Itens só na criação; itens de um plano existente são geridos no card do plano
+  const [linhas, setLinhas] = useState<LinhaItem[]>([]);
+  const { opcoes, carregar } = useOpcoesLugares();
 
   const periodoDefinido = Boolean(
-    dataInicio && dataFim && dataFim >= dataInicio,
+    dataInicio && dataFim && dataFim >= dataInicio
   );
-  const foraDoPeriodo = itens.filter((i) => {
-    const dia = i.dataHoraLocal.slice(0, 10);
-    return dia < dataInicio || dia > dataFim;
-  });
+
+  function opcoesDaLinha(l: LinhaItem) {
+    const todas = opcoes[l.categoria];
+    return todas && opcoesNoPeriodo(l.categoria, todas, dataInicio, dataFim);
+  }
+
+  /** Recalculado a cada render: mudar as datas invalida linhas que ficaram fora */
+  function problemaDaLinha(l: LinhaItem): string | null {
+    const dia = l.dataHora.slice(0, 10);
+    if (dia && (dia < dataInicio || dia > dataFim))
+      return "Data fora do período do plano.";
+    const lista = opcoesDaLinha(l);
+    if (l.referenciaId && lista && !lista.some((o) => o.id === l.referenciaId))
+      return "Este item não está disponível no período do plano.";
+    return null;
+  }
+
+  function adicionarLinha() {
+    carregar("gastronomia");
+    setLinhas((prev) => [
+      ...prev,
+      {
+        key: proximaChave++,
+        categoria: "gastronomia",
+        referenciaId: "",
+        dataHora: "",
+        anotacao: "",
+      },
+    ]);
+  }
+
+  function atualizarLinha(key: number, patch: Partial<LinhaItem>) {
+    if (patch.categoria) carregar(patch.categoria);
+    setLinhas((prev) =>
+      prev.map((l) => (l.key === key ? { ...l, ...patch } : l))
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
-    if (foraDoPeriodo.length > 0) {
-      setErro("Há itens fora do período. Ajuste as datas ou remova-os.");
+    if (linhas.some((l) => problemaDaLinha(l))) {
+      setErro("Há itens fora do período do plano. Ajuste ou remova-os.");
       return;
     }
     setLoading(true);
@@ -54,172 +109,127 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
         ? await planoViagemApi.update(plano.id, dto)
         : await planoViagemApi.create({
             ...dto,
-            itens: itens.map((i) => i.dto),
+            itens: linhas.map((l) => ({
+              dataHoraAgendada: new Date(l.dataHora).toISOString(),
+              anotacao: l.anotacao || undefined,
+              [CAMPO_POR_CATEGORIA[l.categoria]]: l.referenciaId,
+            })),
           });
 
       onSuccess(resultado);
-    } catch {
-      setErro("Não foi possível salvar o plano. Tente novamente.");
+    } catch (e) {
+      setErro(
+        mensagemDeErro(e, "Não foi possível salvar o plano. Tente novamente.")
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <form
-        id={FORM_ID}
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-5"
-      >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="titulo" className="text-sm font-medium text-foreground">
+          Nome do plano
+        </label>
+        <input
+          id="titulo"
+          type="text"
+          required
+          maxLength={80}
+          placeholder="Ex: Final de semana em Saquarema"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          className={`${campo} placeholder:text-muted-foreground`}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <label
-            htmlFor="titulo"
-            className="text-sm font-medium text-foreground"
+            htmlFor="dataInicio"
+            className="flex items-center gap-1.5 text-sm font-medium text-foreground"
           >
-            Nome do plano
+            <CalendarDays className="h-4 w-4 text-primary" />
+            Data de início
           </label>
           <input
-            id="titulo"
-            type="text"
+            id="dataInicio"
+            type="date"
             required
-            maxLength={80}
-            placeholder="Ex: Final de semana em Saquarema"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            value={dataInicio}
+            onChange={(e) => setDataInicio(e.target.value)}
+            className={campo}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="dataInicio"
-              className="flex items-center gap-1.5 text-sm font-medium text-foreground"
-            >
-              <CalendarDays className="h-4 w-4 text-primary" />
-              Data de início
-            </label>
-            <input
-              id="dataInicio"
-              type="date"
-              required
-              value={dataInicio}
-              onChange={(e) => setDataInicio(e.target.value)}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="dataFim"
-              className="flex items-center gap-1.5 text-sm font-medium text-foreground"
-            >
-              <CalendarDays className="h-4 w-4 text-primary" />
-              Data de fim
-            </label>
-            <input
-              id="dataFim"
-              type="date"
-              required
-              min={dataInicio}
-              value={dataFim}
-              onChange={(e) => setDataFim(e.target.value)}
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="dataFim"
+            className="flex items-center gap-1.5 text-sm font-medium text-foreground"
+          >
+            <CalendarDays className="h-4 w-4 text-primary" />
+            Data de fim
+          </label>
+          <input
+            id="dataFim"
+            type="date"
+            required
+            min={dataInicio}
+            value={dataFim}
+            onChange={(e) => setDataFim(e.target.value)}
+            className={campo}
+          />
         </div>
-      </form>
+      </div>
 
-      {/* Fora do <form> de propósito: ItemPlanoForm é um <form> e forms não aninham */}
       {!plano && (
-        <section className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <p className="text-sm font-medium text-foreground">
-            Itens do plano{" "}
+            O que você vai fazer?{" "}
             <span className="text-muted-foreground">(opcional)</span>
           </p>
 
-          {itens.map((item, idx) => {
-            const fora = foraDoPeriodo.includes(item);
-            return (
-              <div
-                key={idx}
-                className={`flex items-start gap-3 rounded-xl border bg-background p-3 ${
-                  fora ? "border-destructive/50" : "border-border"
-                }`}
-              >
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-xs font-semibold text-primary">
-                    {item.categoria}
-                  </span>
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    {item.nome}
-                  </p>
-                  {item.detalhe && (
-                    <p className="truncate text-xs text-muted-foreground">
-                      {item.detalhe}
-                    </p>
-                  )}
-                  <span
-                    className={`mt-1 flex items-center gap-1 text-xs ${
-                      fora ? "text-destructive" : "text-muted-foreground"
-                    }`}
-                  >
-                    <Clock className="h-3.5 w-3.5" />
-                    {new Date(item.dataHoraLocal).toLocaleString("pt-BR", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                    {fora && " — fora do período"}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setItens((prev) => prev.filter((_, i) => i !== idx))
-                  }
-                  aria-label="Remover item"
-                  className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            );
-          })}
+          {linhas.map((l) => (
+            <ItemPlanoRow
+              key={l.key}
+              linha={l}
+              opcoes={opcoesDaLinha(l)}
+              dataMin={dataInicio}
+              dataMax={dataFim}
+              problema={problemaDaLinha(l)}
+              onChange={(patch) => atualizarLinha(l.key, patch)}
+              onRemove={() =>
+                setLinhas((prev) => prev.filter((x) => x.key !== l.key))
+              }
+            />
+          ))}
 
-          {adicionando ? (
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
-                Adicionar item ao plano
-              </p>
-              <ItemPlanoForm
-                dataMin={dataInicio}
-                dataMax={dataFim}
-                onAddRascunho={(item) => {
-                  setItens((prev) => [...prev, item]);
-                  setAdicionando(false);
-                }}
-                onCancel={() => setAdicionando(false)}
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setAdicionando(true)}
-              disabled={!periodoDefinido}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:text-muted-foreground"
-            >
-              <Plus className="h-4 w-4" />
-              {periodoDefinido
-                ? "Adicionar item"
-                : "Defina as datas para adicionar itens"}
-            </button>
+          <button
+            type="button"
+            onClick={adicionarLinha}
+            disabled={!periodoDefinido}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-border disabled:hover:text-muted-foreground"
+          >
+            <Plus className="h-4 w-4" />
+            {periodoDefinido
+              ? "Adicionar item"
+              : "Defina as datas para adicionar itens"}
+          </button>
+          {linhas.length > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Este plano é só um organizador: adicionar um lugar não faz reserva
+              nem garante disponibilidade.
+            </p>
           )}
-        </section>
+        </div>
       )}
 
       {erro && (
-        <p className="rounded-lg bg-destructive/10 px-4 py-2.5 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg bg-destructive/10 px-4 py-2.5 text-sm text-destructive"
+        >
           {erro}
         </p>
       )}
@@ -234,14 +244,13 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
         </button>
         <button
           type="submit"
-          form={FORM_ID}
-          disabled={loading || foraDoPeriodo.length > 0}
+          disabled={loading}
           className="flex items-center gap-2 rounded-full bg-accent px-6 py-2 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           {plano ? "Salvar alterações" : "Criar plano"}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
