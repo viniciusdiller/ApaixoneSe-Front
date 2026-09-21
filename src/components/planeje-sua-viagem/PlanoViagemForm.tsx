@@ -32,7 +32,7 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
 
       const resultado = plano
         ? await planoViagemApi.update(plano.id, dto)
-        : await planoViagemApi.create(dto as never);
+        : await planoViagemApi.create(dto);
 
       onSuccess(resultado);
     } catch {

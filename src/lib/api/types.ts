@@ -271,10 +271,13 @@ export interface CreatePlanoViagemDto {
   titulo: string;
   dataInicio: string;
   dataFim: string;
-  usuarioId: string;
+  /** Itens criados junto com o plano, de forma atômica (o usuário vem do JWT) */
+  itens?: CreateItemPlanoViagemInlineDto[];
 }
 
-export type UpdatePlanoViagemDto = Partial<CreatePlanoViagemDto>;
+export type UpdatePlanoViagemDto = Partial<
+  Omit<CreatePlanoViagemDto, "itens">
+>;
 
 // ─── Item Plano Viagem ────────────────────────────────────────────────────────
 export interface ItemPlanoViagem {
@@ -313,6 +316,11 @@ export interface CreateItemPlanoViagemDto {
   atividadeId?: string;
   servicoTuristaId?: string;
 }
+
+export type CreateItemPlanoViagemInlineDto = Omit<
+  CreateItemPlanoViagemDto,
+  "planoViagemId"
+>;
 
 // ─── Cat ──────────────────────────────────────────────────────────────────────
 export interface Cat {
