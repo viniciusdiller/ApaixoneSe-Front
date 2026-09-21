@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { eventosApi } from "@/lib/api";
 import type { Evento } from "@/lib/api";
-import type { MesData } from "@/lib/eventos";
+import { mesesDoEvento, type MesData } from "@/lib/eventos";
 import MesClient from "./MesClient";
 
 // Mapa de slug (pt-BR lowercase) para número do mês (1–12)
@@ -46,10 +46,10 @@ export function MesPageClient({ mes, mesAtual }: Props) {
     eventosApi
       .getAll()
       .then((data) => {
-        const filtrados = data.filter((e) => {
-          const mesEvento = Number(e.data?.slice(5, 7));
-          return mesEvento === mesNumero;
-        });
+        // Evento que atravessa meses aparece em todos eles
+        const filtrados = data.filter(
+          (e) => e.data && mesesDoEvento(e.data, e.dataFim).includes(mesNumero)
+        );
         filtrados.sort(
           (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
         );

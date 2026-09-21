@@ -6,6 +6,7 @@ import { motion, Variants } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { eventosApi } from "@/lib/api/eventos";
+import { mesesDoEvento } from "@/lib/eventos";
 
 export default function EventosPage() {
   const router = useRouter();
@@ -59,10 +60,12 @@ export default function EventosPage() {
         const agrupados: Record<string, string[]> = {};
         eventos.forEach((evento: any) => {
           if (evento.data && evento.titulo) {
-            const mesIndex = Number(evento.data.slice(5, 7)) - 1;
-            const slugMes = slugs[mesIndex];
-            if (!agrupados[slugMes]) agrupados[slugMes] = [];
-            agrupados[slugMes].push(evento.titulo);
+            // Evento que atravessa meses conta em todos eles
+            mesesDoEvento(evento.data, evento.dataFim).forEach((mes) => {
+              const slugMes = slugs[mes - 1];
+              if (!agrupados[slugMes]) agrupados[slugMes] = [];
+              agrupados[slugMes].push(evento.titulo);
+            });
           }
         });
         const novasDescricoes: Record<string, string> = {};

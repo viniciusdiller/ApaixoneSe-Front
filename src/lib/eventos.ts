@@ -38,6 +38,28 @@ export function mesSlugFromData(dataIso: string): string {
   return MESES_ORDEM[mesNumero - 1] ?? "";
 }
 
+/**
+ * Meses (1–12) em que o evento aparece: do mês de início ao mês de fim, inclusive.
+ * Mesma convenção de mesSlugFromData (mês lido da string ISO, sem fuso). Sem
+ * dataFim, ou com dataFim inválida/anterior, só o mês de início.
+ */
+export function mesesDoEvento(
+  data: string,
+  dataFim?: string | null,
+): number[] {
+  const total = (iso: string) =>
+    Number(iso.slice(0, 4)) * 12 + Number(iso.slice(5, 7));
+  const inicio = total(data);
+  const fimBruto = dataFim ? total(dataFim) : inicio;
+  const fim = Number.isNaN(fimBruto) ? inicio : Math.max(fimBruto, inicio);
+
+  const meses = new Set<number>();
+  for (let t = inicio; t <= fim && meses.size < 12; t++) {
+    meses.add(((t - 1) % 12) + 1);
+  }
+  return [...meses];
+}
+
 export const dadosDosMeses: Record<string, MesData> = {
   janeiro: {
     titulo: "Janeiro",
