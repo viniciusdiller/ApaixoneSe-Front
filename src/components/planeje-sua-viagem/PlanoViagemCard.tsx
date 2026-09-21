@@ -161,7 +161,11 @@ export function PlanoViagemCard({ plano, index, onDeleted, onUpdated }: Props) {
             className="overflow-hidden"
           >
             <div className="border-t border-border px-5 pb-5 pt-4">
-              <ItemPlanoList planoId={plano.id} />
+              <ItemPlanoList
+                planoId={plano.id}
+                dataInicio={plano.dataInicio.slice(0, 10)}
+                dataFim={plano.dataFim.slice(0, 10)}
+              />
             </div>
           </motion.div>
         )}

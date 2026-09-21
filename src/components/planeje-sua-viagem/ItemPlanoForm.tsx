@@ -10,43 +10,41 @@ import {
   Bike,
   Compass,
 } from "lucide-react";
+import { DateTimeField } from "./DateField";
 import { itemPlanoViagemApi } from "@/lib/api/plano-viagem";
-import { atividadesApi } from "@/lib/api/atividades";
-import { eventosApi } from "@/lib/api/eventos";
-import { gastronomiaApi } from "@/lib/api/gastronomia";
-import { hospedagemApi } from "@/lib/api/hospedagem";
-import { servicoTuristaApi } from "@/lib/api/servico-turista";
-import type {
-  ItemPlanoViagem,
-  Atividade,
-  Evento,
-  Gastronomia,
-  Hospedagem,
-  ServicoTurista,
-} from "@/lib/api/types";
-
-type Categoria =
-  | "gastronomia"
-  | "hospedagem"
-  | "evento"
-  | "atividade"
-  | "servico";
+import type { ItemPlanoViagem } from "@/lib/api/types";
+import {
+  CATEGORIA_LABEL,
+  mensagemDeErro,
+  opcoesNoPeriodo,
+  useOpcoesLugares,
+  type Categoria,
+} from "./lugares";
 
 const CATEGORIAS: { key: Categoria; label: string; icon: React.ReactNode }[] = [
-  { key: "gastronomia", label: "Restaurante", icon: <Utensils className="h-4 w-4" /> },
-  { key: "hospedagem", label: "Hospedagem", icon: <BedDouble className="h-4 w-4" /> },
-  { key: "evento", label: "Evento", icon: <CalendarDays className="h-4 w-4" /> },
-  { key: "atividade", label: "Atividade", icon: <Bike className="h-4 w-4" /> },
-  { key: "servico", label: "Serviço", icon: <Compass className="h-4 w-4" /> },
+  { key: "gastronomia", label: CATEGORIA_LABEL.gastronomia, icon: <Utensils className="h-4 w-4" /> },
+  { key: "hospedagem", label: CATEGORIA_LABEL.hospedagem, icon: <BedDouble className="h-4 w-4" /> },
+  { key: "evento", label: CATEGORIA_LABEL.evento, icon: <CalendarDays className="h-4 w-4" /> },
+  { key: "atividade", label: CATEGORIA_LABEL.atividade, icon: <Bike className="h-4 w-4" /> },
+  { key: "servico", label: CATEGORIA_LABEL.servico, icon: <Compass className="h-4 w-4" /> },
 ];
 
 interface Props {
   planoViagemId: string;
+  /** Período do plano (YYYY-MM-DD): restringe a data do item e filtra eventos */
+  dataMin?: string;
+  dataMax?: string;
   onSuccess: (item: ItemPlanoViagem) => void;
   onCancel: () => void;
 }
 
-export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
+export function ItemPlanoForm({
+  planoViagemId,
+  dataMin,
+  dataMax,
+  onSuccess,
+  onCancel,
+}: Props) {
   const [categoria, setCategoria] = useState<Categoria>("gastronomia");
   const [dataHora, setDataHora] = useState("");
   const [anotacao, setAnotacao] = useState("");
@@ -54,81 +52,15 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  // Opções de cada categoria
-  const [gastronomias, setGastronomias] = useState<Gastronomia[]>([]);
-  const [hospedagens, setHospedagens] = useState<Hospedagem[]>([]);
-  const [eventos, setEventos] = useState<Evento[]>([]);
-  const [atividades, setAtividades] = useState<Atividade[]>([]);
-  const [servicos, setServicos] = useState<ServicoTurista[]>([]);
-  const [loadingOpcoes, setLoadingOpcoes] = useState(false);
+  const { opcoes: todas, carregar } = useOpcoesLugares();
+  const carregadas = todas[categoria];
+  const loadingOpcoes = carregadas === undefined;
+  const opcoes = opcoesNoPeriodo(categoria, carregadas ?? [], dataMin, dataMax);
 
-  // Carrega a lista da categoria selecionada
   useEffect(() => {
+    carregar(categoria);
     setReferenciaId("");
-    setLoadingOpcoes(true);
-
-    const fetches: Record<Categoria, () => Promise<void>> = {
-      gastronomia: async () => {
-        const data = await gastronomiaApi.getAll();
-        setGastronomias(data.filter((g) => g.status === "APROVADO"));
-      },
-      hospedagem: async () => {
-        const data = await hospedagemApi.getAll();
-        setHospedagens(data.filter((h) => h.status === "APROVADO"));
-      },
-      evento: async () => {
-        const data = await eventosApi.getAll();
-        setEventos(data);
-      },
-      atividade: async () => {
-        const data = await atividadesApi.getAll();
-        setAtividades(data);
-      },
-      servico: async () => {
-        const data = await servicoTuristaApi.getAll();
-        setServicos(data.filter((s) => s.status === "APROVADO"));
-      },
-    };
-
-    fetches[categoria]()
-      .catch(() => {})
-      .finally(() => setLoadingOpcoes(false));
-  }, [categoria]);
-
-  function getOpcoes(): { id: string; label: string; sublabel?: string }[] {
-    switch (categoria) {
-      case "gastronomia":
-        return gastronomias.map((g) => ({
-          id: g.id,
-          label: g.nome,
-          sublabel: g.especialidade ?? g.endereco,
-        }));
-      case "hospedagem":
-        return hospedagens.map((h) => ({
-          id: h.id,
-          label: h.nome,
-          sublabel: h.endereco,
-        }));
-      case "evento":
-        return eventos.map((e) => ({
-          id: e.id,
-          label: e.titulo,
-          sublabel: e.local,
-        }));
-      case "atividade":
-        return atividades.map((a) => ({
-          id: a.id,
-          label: a.titulo,
-          sublabel: a.local,
-        }));
-      case "servico":
-        return servicos.map((s) => ({
-          id: s.id,
-          label: s.nome,
-          sublabel: s.tipo.replace(/_/g, " "),
-        }));
-    }
-  }
+  }, [categoria, carregar]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -136,11 +68,16 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
       setErro("Selecione um item da lista.");
       return;
     }
+    const dia = dataHora.split("T")[0];
+    if ((dataMin && dia < dataMin) || (dataMax && dia > dataMax)) {
+      setErro("A data do item deve estar dentro do período do plano.");
+      return;
+    }
     setErro(null);
     setLoading(true);
 
     try {
-      const dto = {
+      const item = await itemPlanoViagemApi.create({
         planoViagemId,
         dataHoraAgendada: new Date(dataHora).toISOString(),
         anotacao: anotacao || undefined,
@@ -149,17 +86,14 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
         ...(categoria === "evento" && { eventoId: referenciaId }),
         ...(categoria === "atividade" && { atividadeId: referenciaId }),
         ...(categoria === "servico" && { servicoTuristaId: referenciaId }),
-      };
-      const item = await itemPlanoViagemApi.create(dto);
+      });
       onSuccess(item);
-    } catch {
-      setErro("Não foi possível adicionar o item. Tente novamente.");
+    } catch (e) {
+      setErro(mensagemDeErro(e, "Não foi possível adicionar o item. Tente novamente."));
     } finally {
       setLoading(false);
     }
   }
-
-  const opcoes = getOpcoes();
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -215,7 +149,9 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
           >
             <option value="" disabled>
               {opcoes.length === 0
-                ? "Nenhum item cadastrado"
+                ? categoria === "evento"
+                  ? "Nenhum evento neste período"
+                  : "Nenhum item cadastrado"
                 : `Selecione um(a) ${CATEGORIAS.find((c) => c.key === categoria)?.label?.toLowerCase()}...`}
             </option>
             {opcoes.map((op) => (
@@ -232,13 +168,13 @@ export function ItemPlanoForm({ planoViagemId, onSuccess, onCancel }: Props) {
         <label htmlFor="dataHora" className="text-sm font-medium text-foreground">
           Data e hora (planejada)
         </label>
-        <input
+        <DateTimeField
           id="dataHora"
-          type="datetime-local"
           required
+          min={dataMin}
+          max={dataMax}
           value={dataHora}
-          onChange={(e) => setDataHora(e.target.value)}
-          className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          onChange={setDataHora}
         />
       </div>
 

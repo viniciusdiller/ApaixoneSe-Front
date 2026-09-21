@@ -10,9 +10,12 @@ import { ItemPlanoForm } from "./ItemPlanoForm";
 
 interface Props {
   planoId: string;
+  /** Período do plano (YYYY-MM-DD) */
+  dataInicio: string;
+  dataFim: string;
 }
 
-export function ItemPlanoList({ planoId }: Props) {
+export function ItemPlanoList({ planoId, dataInicio, dataFim }: Props) {
   const [itens, setItens] = useState<ItemPlanoViagem[]>([]);
   const [loading, setLoading] = useState(true);
   const [adicionando, setAdicionando] = useState(false);
@@ -86,6 +89,8 @@ export function ItemPlanoList({ planoId }: Props) {
             </p>
             <ItemPlanoForm
               planoViagemId={planoId}
+              dataMin={dataInicio}
+              dataMax={dataFim}
               onSuccess={handleItemAdded}
               onCancel={() => setAdicionando(false)}
             />
