@@ -13,7 +13,8 @@ interface Props {
 export function PlanejeSuaViagemModal({ isOpen, onClose, children }: Props) {
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      // Escape já tratado por um popover/calendário aberto não deve fechar o modal
+      if (e.key === "Escape" && !e.defaultPrevented) onClose();
     },
     [onClose],
   );

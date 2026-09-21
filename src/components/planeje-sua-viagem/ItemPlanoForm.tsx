@@ -10,6 +10,7 @@ import {
   Bike,
   Compass,
 } from "lucide-react";
+import { DateTimeField } from "./DateField";
 import { itemPlanoViagemApi } from "@/lib/api/plano-viagem";
 import type { ItemPlanoViagem } from "@/lib/api/types";
 import {
@@ -67,7 +68,7 @@ export function ItemPlanoForm({
       setErro("Selecione um item da lista.");
       return;
     }
-    const dia = dataHora.slice(0, 10);
+    const dia = dataHora.split("T")[0];
     if ((dataMin && dia < dataMin) || (dataMax && dia > dataMax)) {
       setErro("A data do item deve estar dentro do período do plano.");
       return;
@@ -167,15 +168,13 @@ export function ItemPlanoForm({
         <label htmlFor="dataHora" className="text-sm font-medium text-foreground">
           Data e hora (planejada)
         </label>
-        <input
+        <DateTimeField
           id="dataHora"
-          type="datetime-local"
           required
-          min={dataMin ? `${dataMin}T00:00` : undefined}
-          max={dataMax ? `${dataMax}T23:59` : undefined}
+          min={dataMin}
+          max={dataMax}
           value={dataHora}
-          onChange={(e) => setDataHora(e.target.value)}
-          className="rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          onChange={setDataHora}
         />
       </div>
 

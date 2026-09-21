@@ -26,4 +26,5 @@ Instruções agnósticas de ferramenta. Backend em `../ApaixoneSe-Back` (NestJS,
 - `ItemPlanoForm` = adicionar item a plano já existente (card); `lugares.ts` concentra categorias, carga das opções e o filtro por período
 - Eventos só aparecem se ocorrem dentro do período do plano (`opcoesNoPeriodo`); a data do evento segue a convenção do site (`data.slice(0, 10)`)
 - Erros do backend: `mensagemDeErro` mostra a mensagem de negócio e cai num texto genérico para erro técnico (detalhe no console)
+- Datas: sempre `DateField`/`DateTimeField` (shadcn Popover + Calendar, anos 2000–2100), nunca `<input type="date|datetime-local">`, que aceita ano de 6 dígitos. O popover usa `z-[80]` para ficar acima do modal (`z-[70]`)
 - Item deve cair dentro de `dataInicio`–`dataFim` (Front exato em horário local; Back com folga de fuso)

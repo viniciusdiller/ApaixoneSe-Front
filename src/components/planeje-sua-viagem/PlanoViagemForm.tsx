@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Loader2, Plus } from "lucide-react";
+import { CalendarDays, Info, Loader2, Plus } from "lucide-react";
 import { planoViagemApi } from "@/lib/api/plano-viagem";
 import type {
   CreateItemPlanoViagemInlineDto,
   PlanoViagem,
 } from "@/lib/api/types";
+import { DateField } from "./DateField";
 import { ItemPlanoRow, type LinhaItem } from "./ItemPlanoRow";
 import {
   mensagemDeErro,
@@ -62,7 +63,7 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
 
   /** Recalculado a cada render: mudar as datas invalida linhas que ficaram fora */
   function problemaDaLinha(l: LinhaItem): string | null {
-    const dia = l.dataHora.slice(0, 10);
+    const dia = l.dataHora.split("T")[0];
     if (dia && (dia < dataInicio || dia > dataFim))
       return "Data fora do período do plano.";
     const lista = opcoesDaLinha(l);
@@ -153,13 +154,14 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
             <CalendarDays className="h-4 w-4 text-primary" />
             Data de início
           </label>
-          <input
+          <DateField
             id="dataInicio"
-            type="date"
             required
             value={dataInicio}
-            onChange={(e) => setDataInicio(e.target.value)}
-            className={campo}
+            onChange={(v) => {
+              setDataInicio(v);
+              if (dataFim && dataFim < v) setDataFim("");
+            }}
           />
         </div>
 
@@ -171,14 +173,12 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
             <CalendarDays className="h-4 w-4 text-primary" />
             Data de fim
           </label>
-          <input
+          <DateField
             id="dataFim"
-            type="date"
             required
-            min={dataInicio}
+            min={dataInicio || undefined}
             value={dataFim}
-            onChange={(e) => setDataFim(e.target.value)}
-            className={campo}
+            onChange={setDataFim}
           />
         </div>
       </div>
@@ -189,6 +189,18 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
             O que você vai fazer?{" "}
             <span className="text-muted-foreground">(opcional)</span>
           </p>
+
+          {linhas.length > 0 && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-50 px-4 py-3 dark:bg-amber-900/20">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+              <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-300">
+                <strong>Atenção:</strong> Este plano é apenas um organizador
+                pessoal. Adicionar um lugar aqui <strong>não faz reserva</strong>{" "}
+                nem garante disponibilidade. Contate o estabelecimento
+                diretamente.
+              </p>
+            </div>
+          )}
 
           {linhas.map((l) => (
             <ItemPlanoRow
@@ -216,12 +228,7 @@ export function PlanoViagemForm({ plano, onSuccess, onCancel }: Props) {
               ? "Adicionar item"
               : "Defina as datas para adicionar itens"}
           </button>
-          {linhas.length > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Este plano é só um organizador: adicionar um lugar não faz reserva
-              nem garante disponibilidade.
-            </p>
-          )}
+
         </div>
       )}
 
