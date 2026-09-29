@@ -18,6 +18,7 @@ import { ROTEIROS } from "@/lib/roteiros";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DateField } from "@/components/planeje-sua-viagem/DateField";
 
 const ITENS_VISIVEIS_PADRAO = 8;
 // Busca tudo de uma vez (sem categoria) e agrupa no client - cardinalidade
@@ -534,22 +535,22 @@ export default function AdminClicksPage() {
             <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <CalendarRange className="h-3 w-3" /> Data início
             </label>
-            <input
-              type="date"
+            <DateField
               value={dataInicio}
-              onChange={(e) => setDataInicio(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+              onChange={setDataInicio}
+              max={dataFim || undefined}
+              ariaLabel="Data início"
             />
           </div>
           <div className="flex flex-col gap-1">
             <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <CalendarRange className="h-3 w-3" /> Data fim
             </label>
-            <input
-              type="date"
+            <DateField
               value={dataFim}
-              onChange={(e) => setDataFim(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+              onChange={setDataFim}
+              min={dataInicio || undefined}
+              ariaLabel="Data fim"
             />
           </div>
           <button
