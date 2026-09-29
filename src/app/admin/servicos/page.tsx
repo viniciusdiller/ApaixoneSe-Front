@@ -18,6 +18,7 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { TermoAceiteBadge } from "@/components/admin/TermoAceiteBadge";
+import { DateField } from "@/components/planeje-sua-viagem/DateField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import {
   Plus,
@@ -947,13 +948,11 @@ export default function AdminServicosPage() {
                 <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                   <CalendarClock size={13} /> Data de validade do Cadastur
                 </label>
-                <input
-                  type="date"
-                  min="1900-01-01"
-                  max="3000-12-31"
+                <DateField
                   value={form.validade ?? ""}
                   onChange={set("validade")}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  ariaLabel="Data de validade do Cadastur"
+                  placeholder="Selecionar validade"
                 />
                 {form.validade && (
                   <div className="pt-1">
