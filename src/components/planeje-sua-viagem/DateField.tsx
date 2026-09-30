@@ -36,7 +36,9 @@ function toValue(d: Date) {
 }
 
 function toDate(v: string) {
-  return new Date(`${v}T00:00:00`);
+  if (!v) return undefined;
+  const [y, m, d] = v.split("-").map(Number);
+  return new Date(y, m - 1, d);
 }
 
 export function DateField({

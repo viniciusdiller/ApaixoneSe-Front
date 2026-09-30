@@ -13,7 +13,7 @@ import { FileUploadField } from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { TermoAceiteBadge } from "@/components/admin/TermoAceiteBadge";
-import { DateField } from "@/components/planeje-sua-viagem/DateField";
+import { AdminDateField } from "@/components/admin/AdminDateField";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import {
   Plus,
@@ -23,7 +23,6 @@ import {
   ExternalLink,
   FileText,
   AlertTriangle,
-  CalendarClock,
   CheckCircle2,
   Clock,
   Globe,
@@ -54,10 +53,14 @@ function validadeStatus(dateStr?: string | null): ValidadeStatus {
   return "ok";
 }
 
+/** Formata "YYYY-MM-DD..." como data pura (sem passar por Date/timezone
+ * local, que rola a data para o dia anterior em fusos negativos como o
+ * do Brasil). */
 function formatDate(dateStr?: string | null): string {
   if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("pt-BR");
+  const [ano, mes, dia] = dateStr.slice(0, 10).split("-");
+  if (!ano || !mes || !dia) return "—";
+  return `${dia}/${mes}/${ano}`;
 }
 
 function ValidityBadge({ validade }: { validade?: string | null }) {
@@ -792,15 +795,10 @@ export default function AdminHospedagemPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                <CalendarClock size={13} /> Data de validade do comprovante
-                cadastur
-              </label>
-              <DateField
+              <AdminDateField
+                label="Data de validade do comprovante cadastur"
                 value={form.validade ?? ""}
-                onChange={set("validade")}
-                ariaLabel="Data de validade do comprovante cadastur"
-                placeholder="Selecionar validade"
+                onChange={(v) => setField("validade", v)}
               />
               {form.validade && (
                 <div className="pt-1">

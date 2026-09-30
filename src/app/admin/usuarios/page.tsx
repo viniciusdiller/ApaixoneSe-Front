@@ -498,7 +498,7 @@ export default function AdminUsuariosPage() {
                         {details.planos.map((p) => (
                           <div key={p.id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
                             <span className="min-w-0 truncate font-medium text-foreground">{p.titulo}</span>
-                            <span className="shrink-0 text-xs text-muted-foreground">{new Date(p.dataInicio).toLocaleDateString("pt-BR")} {" → "} {new Date(p.dataFim).toLocaleDateString("pt-BR")}</span>
+                            <span className="shrink-0 text-xs text-muted-foreground">{new Date(p.dataInicio).toLocaleDateString("pt-BR", { timeZone: "UTC" })} {" → "} {new Date(p.dataFim).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</span>
                           </div>
                         ))}
                       </div>

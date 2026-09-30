@@ -6,7 +6,12 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
-import { DayPicker, getDefaultClassNames, type DayButton } from "react-day-picker";
+import {
+  DayPicker,
+  getDefaultClassNames,
+  type DayButton,
+  type DropdownProps,
+} from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -96,7 +101,7 @@ function Calendar({
           defaultClassNames.today,
         ),
         outside: cn(
-          "text-muted-foreground aria-selected:text-muted-foreground",
+          "opacity-40 aria-selected:opacity-100",
           defaultClassNames.outside,
         ),
         disabled: cn("text-muted-foreground opacity-50", defaultClassNames.disabled),
@@ -112,6 +117,7 @@ function Calendar({
           return <ChevronDownIcon className={cn("h-4 w-4", className)} {...props} />;
         },
         DayButton: CalendarDayButton,
+        Dropdown: CalendarDropdown,
         ...components,
       }}
       {...props}
@@ -119,6 +125,75 @@ function Calendar({
   );
 }
 Calendar.displayName = "Calendar";
+
+/** Substitui o <select> nativo (cuja altura da lista o navegador controla) por uma lista de 5 itens visíveis com scroll */
+function CalendarDropdown({ options, value, onChange, disabled }: DropdownProps) {
+  const [open, setOpen] = React.useState(false);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const selectedRef = React.useRef<HTMLButtonElement>(null);
+  const current = options?.find((o) => o.value === value);
+
+  React.useEffect(() => {
+    if (!open) return;
+    selectedRef.current?.scrollIntoView({ block: "center" });
+    const close = (e: Event) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !rootRef.current?.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
+  const pick = (optionValue: number) => {
+    onChange?.({
+      target: { value: String(optionValue) },
+    } as React.ChangeEvent<HTMLSelectElement>);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-8 items-center gap-1 rounded-md border border-border pl-2 pr-1 text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      >
+        {current?.label}
+        <ChevronDownIcon className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+      {open && (
+        <ul
+          role="listbox"
+          className="absolute left-1/2 top-full z-50 mt-1 max-h-40 min-w-full -translate-x-1/2 overflow-y-auto rounded-md border border-border bg-card p-1 shadow-md"
+        >
+          {options?.map((o) => (
+            <li key={o.value} role="option" aria-selected={o.value === value}>
+              <button
+                type="button"
+                ref={o.value === value ? selectedRef : undefined}
+                disabled={o.disabled}
+                onClick={() => pick(o.value)}
+                className={cn(
+                  "flex h-8 w-full items-center justify-center whitespace-nowrap rounded px-3 text-sm hover:bg-muted disabled:opacity-40",
+                  o.value === value && "bg-primary text-primary-foreground hover:bg-primary",
+                )}
+              >
+                {o.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function CalendarDayButton({
   className,

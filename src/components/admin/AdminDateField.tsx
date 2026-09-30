@@ -24,6 +24,7 @@ interface AdminDateFieldProps {
   onChange: (value: DateValue) => void;
   required?: boolean;
   minDate?: DateValue;
+  maxDate?: DateValue;
   error?: string;
 }
 
@@ -38,10 +39,17 @@ export function AdminDateField({
   onChange,
   required,
   minDate,
+  maxDate,
   error,
 }: AdminDateFieldProps) {
-  const selected = value ? new Date(`${value}T00:00:00`) : undefined;
-  const minSelected = minDate ? new Date(`${minDate}T00:00:00`) : undefined;
+  const parseLocal = (v: string) => {
+    if (!v) return undefined;
+    const [y, m, d] = v.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const selected = value ? parseLocal(value) : undefined;
+  const minSelected = minDate ? parseLocal(minDate) : undefined;
+  const maxSelected = maxDate ? parseLocal(maxDate) : undefined;
 
   const handleDaySelect = (day: Date | undefined) => {
     if (!day) return;
@@ -86,7 +94,10 @@ export function AdminDateField({
               captionLayout="dropdown"
               startMonth={new Date(2000, 0)}
               endMonth={new Date(MAX_YEAR, 11)}
-              disabled={minSelected ? { before: minSelected } : undefined}
+              disabled={[
+                ...(minSelected ? [{ before: minSelected }] : []),
+                ...(maxSelected ? [{ after: maxSelected }] : []),
+              ]}
               locale={ptBR}
             />
           </PopoverContent>
