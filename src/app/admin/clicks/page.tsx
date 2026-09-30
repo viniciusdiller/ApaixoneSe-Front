@@ -5,7 +5,6 @@ import {
   BarChart3,
   Filter,
   RotateCcw,
-  CalendarRange,
   ChevronDown,
   ChevronUp,
   Search,
@@ -18,7 +17,7 @@ import { ROTEIROS } from "@/lib/roteiros";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DateField } from "@/components/planeje-sua-viagem/DateField";
+import { AdminDateField } from "@/components/admin/AdminDateField";
 
 const ITENS_VISIVEIS_PADRAO = 8;
 // Busca tudo de uma vez (sem categoria) e agrupa no client - cardinalidade
@@ -532,25 +531,19 @@ export default function AdminClicksPage() {
 
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              <CalendarRange className="h-3 w-3" /> Data início
-            </label>
-            <DateField
+            <AdminDateField
+              label="Data início"
               value={dataInicio}
               onChange={setDataInicio}
-              max={dataFim || undefined}
-              ariaLabel="Data início"
+              maxDate={dataFim || undefined}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              <CalendarRange className="h-3 w-3" /> Data fim
-            </label>
-            <DateField
+            <AdminDateField
+              label="Data fim"
               value={dataFim}
               onChange={setDataFim}
-              min={dataInicio || undefined}
-              ariaLabel="Data fim"
+              minDate={dataInicio || undefined}
             />
           </div>
           <button

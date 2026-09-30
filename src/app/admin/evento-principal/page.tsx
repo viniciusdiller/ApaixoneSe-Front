@@ -20,7 +20,7 @@ import {
   type EventoPrincipal,
   type EventoPrincipalCreateDTO,
 } from "@/lib/api/eventoPrincipal";
-import { DateField } from "@/components/planeje-sua-viagem/DateField";
+import { AdminDateField } from "@/components/admin/AdminDateField";
 
 function diasRestantes(dataIso: string): number {
   return Math.max(
@@ -307,15 +307,11 @@ export default function AdminEventoPrincipalPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-foreground" htmlFor="data">
-                Data do evento <span className="text-destructive">*</span>
-              </label>
-              <DateField
-                id="data"
+              <AdminDateField
+                label="Data do evento"
                 value={form.data}
                 onChange={(v) => setForm((f) => ({ ...f, data: v }))}
                 required
-                ariaLabel="Data do evento"
               />
             </div>
           </div>
