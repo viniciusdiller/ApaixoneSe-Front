@@ -13,8 +13,9 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, refreshUser } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [perfilVerificado, setPerfilVerificado] = useState(false);
 
   const isLoginPage = pathname === "/admin/login";
 
@@ -26,13 +27,25 @@ export default function AdminLayout({
     }
   }, [user, isLoading, isLoginPage, router]);
 
+  // Revalida o perfil a cada navegação no painel (o do localStorage pode estar velho)
+  useEffect(() => {
+    if (isLoading || isLoginPage) return;
+    let ativo = true;
+    refreshUser().finally(() => {
+      if (ativo) setPerfilVerificado(true);
+    });
+    return () => {
+      ativo = false;
+    };
+  }, [pathname, isLoading, isLoginPage, refreshUser]);
   // fecha a gaveta mobile automaticamente ao trocar de rota
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
   if (isLoginPage) return <>{children}</>;
-  if (isLoading || !user || user.perfil !== "ADMIN") return null;
+  if (isLoading || !user || user.perfil !== "ADMIN" || !perfilVerificado)
+    return null;
 
   return (
     <div className="flex min-h-screen bg-background">

@@ -1,7 +1,20 @@
-import { getToken } from "./auth";
+import { clearToken, getToken } from "./auth";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://172.17.56.58:3001/";
+
+// Erro da API com o status HTTP exposto
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+let redirecionandoParaLogin = false;
 
 /**
  * Wrapper central para todas as chamadas à API.
@@ -36,8 +49,20 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
+    // 401 fora do login = sessão inválida: limpa a sessão e vai para /login
+    if (res.status === 401 && token && path !== "/users/login") {
+      clearToken();
+      if (
+        typeof window !== "undefined" &&
+        !redirecionandoParaLogin &&
+        window.location.pathname !== "/login"
+      ) {
+        redirecionandoParaLogin = true;
+        window.location.assign("/login");
+      }
+    }
     const error = await res.text();
-    throw new Error(error || `HTTP ${res.status}`);
+    throw new ApiError(error || `HTTP ${res.status}`, res.status);
   }
 
   const text = await res.text();
