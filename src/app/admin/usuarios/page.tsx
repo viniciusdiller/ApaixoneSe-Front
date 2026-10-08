@@ -229,7 +229,7 @@ export default function AdminUsuariosPage() {
         active: editForm.active,
       };
       if (editForm.senha.trim()) payload.senha = editForm.senha.trim();
-      await usersApi.update(editUser.id, payload);
+      await usersApi.updateAsAdmin(editUser.id, payload);
       setEditUser(null);
       load();
     } catch (err: unknown) {

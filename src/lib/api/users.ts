@@ -26,6 +26,12 @@ export const usersApi = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
+  // Edição completa pelo admin (inclui perfil e active)
+  updateAsAdmin: (id: string, data: Partial<RegisterUserDto> & { active?: boolean }) =>
+    apiFetch<User>(`/users/${id}/admin`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
   delete: (id: string) => apiFetch<void>(`/users/${id}`, { method: "DELETE" }),
 
   setActive: (id: string, active: boolean) =>
