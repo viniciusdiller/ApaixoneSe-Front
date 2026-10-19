@@ -181,7 +181,7 @@ export default function ServicosPage() {
               </div>
 
               <h2 className="text-2xl font-bold mb-2 text-white text-center">
-                Secretaria Municipal de Esporte, Lazer e Turismo
+                Secretaria Municipal de Turismo e Eventos
               </h2>
 
               <span className="inline-block px-3 py-1 bg-white/20 text-white text-xs font-semibold rounded-full mb-4 backdrop-blur-sm">

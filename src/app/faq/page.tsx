@@ -19,7 +19,7 @@ export default function FAQPage() {
       answer: (
         <>
           Nos canais de atendimento online, pelo e-mail institucional da
-          Secretaria Municipal de Esporte, Lazer e Turismo:{" "}
+          Secretaria Municipal de Turismo e Eventos:{" "}
           <a
             href="mailto:turismo@saquarema.rj.gov.br"
             className="text-primary "
@@ -110,7 +110,7 @@ export default function FAQPage() {
     {
       question: "Como posso entrar em contato com o suporte?",
       answer:
-        "Você pode entrar em contato com o suporte através do nosso formulário de contato ou enviando um e-mail para a Secretaria Municipal de Esporte, Lazer e Turismo.",
+        "Você pode entrar em contato com o suporte através do nosso formulário de contato ou enviando um e-mail para a Secretaria Municipal de Turismo e Eventos.",
     },
   ];
   const toggleFaq = (index: number) => {

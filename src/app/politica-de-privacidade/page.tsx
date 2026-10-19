@@ -12,7 +12,7 @@ const sections = [
   {
     title: "1. Quem somos",
     content:
-      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria Municipal de Esporte, Lazer e Turismo, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 32.147.670/0001-21, com sede na Rua Coronel Madureira, 77, Centro, Saquarema - RJ, CEP 28990-756.',
+      'O portal "Apaixone-se por Saquarema" é uma iniciativa da Prefeitura Municipal de Saquarema, por meio da Secretaria Municipal de Turismo e Eventos, com o objetivo de promover o turismo e facilitar o planejamento de viagens ao município. O responsável pelo tratamento de dados é a Prefeitura Municipal de Saquarema, CNPJ 32.147.670/0001-21, com sede na Rua Coronel Madureira, 77, Centro, Saquarema - RJ, CEP 28990-756.',
   },
   {
     title: "2. Dados que coletamos",

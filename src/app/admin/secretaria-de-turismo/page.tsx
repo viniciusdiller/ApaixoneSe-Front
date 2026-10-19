@@ -271,7 +271,7 @@ export default function SecretariaTurismoAdminPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Secretaria Municipal de Esporte, Lazer e Turismo
+            Secretaria Municipal de Turismo e Eventos
           </h1>
           <p className="text-sm text-muted-foreground">
             Gerencie o conteúdo institucional, Turistando e Projetos.
