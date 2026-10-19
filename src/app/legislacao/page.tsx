@@ -75,7 +75,7 @@ const spheres = [
       {
         name: "Política Municipal de Fomento ao Turismo",
         content:
-          "Conjunto de leis e decretos que estruturam a atuação da Secretaria Municipal de Esporte, Lazer e Turismo, incluindo o cadastro de prestadores de serviços turísticos e a promoção de eventos oficiais de calendário turístico.",
+          "Conjunto de leis e decretos que estruturam a atuação da Secretaria Municipal de Turismo e Eventos, incluindo o cadastro de prestadores de serviços turísticos e a promoção de eventos oficiais de calendário turístico.",
       },
       {
         name: "Decreto nº 2.572/2023 — Acesso de Veículos de Turismo",
