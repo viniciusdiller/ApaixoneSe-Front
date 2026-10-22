@@ -49,7 +49,7 @@ const links = [
   { label: "Serviços Turista", href: "/admin/servicos", icon: Wrench },
   { label: "Casa de Câmbio", href: "/admin/casa-de-cambio", icon: Banknote },
   {
-    label: "Secretaria de Esporte, Lazer e Turismo",
+    label: "Secretaria Municipal de Turismo e Eventos",
     href: "/admin/secretaria-de-turismo",
     icon: Landmark,
   },

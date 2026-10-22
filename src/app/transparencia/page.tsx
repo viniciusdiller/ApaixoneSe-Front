@@ -11,7 +11,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Transparência | Apaixone-se por Saquarema",
   description:
-    "Acesso às informações públicas da Prefeitura Municipal de Saquarema e da Secretaria de Esporte, Lazer e Turismo.",
+    "Acesso às informações públicas da Prefeitura Municipal de Saquarema e da Secretaria Municipal de Turismo e Eventos.",
 };
 
 const portalLinks = [
@@ -77,8 +77,8 @@ export default function TransparenciaPage() {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg text-primary-foreground/80 md:text-xl">
-            A Prefeitura Municipal de Saquarema e a Secretaria de Esporte, Lazer
-            e Turismo comprometem-se com a transparência e o acesso à informação
+            A Prefeitura Municipal de Saquarema e a Secretaria Municipal de Turismo
+            e Eventos comprometem-se com a transparência e o acesso à informação
             pública.
           </p>
         </div>
