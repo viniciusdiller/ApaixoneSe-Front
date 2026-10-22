@@ -213,10 +213,10 @@ export default function SecretariaTurismoPage() {
             </span>
           </div>
           <h1 className="font-display text-5xl font-bold uppercase text-primary-foreground drop-shadow-lg md:text-6xl">
-            Secretaria de Esporte, Lazer e Turismo
+            Secretaria Municipal de Turismo e Eventos
           </h1>
           <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
-            Esporte, Lazer e Turismo — Prefeitura de Saquarema.
+            Turismo e Eventos | Prefeitura de Saquarema.
           </p>
         </div>
       </section>
@@ -253,7 +253,7 @@ export default function SecretariaTurismoPage() {
             <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
               <Info className="mb-4 h-10 w-10 text-muted-foreground/50" />
               <p className="text-base font-medium">
-                Informações da Secretaria de Esporte, Lazer e Turismo não
+                Informações da Secretaria Municipal de Turismo e Eventos não
                 disponíveis no momento.
               </p>
             </div>

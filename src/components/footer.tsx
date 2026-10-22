@@ -92,7 +92,7 @@ export function Footer() {
             <p className="text-sm leading-relaxed text-primary-foreground/70">
               Prefeitura Municipal de Saquarema
               <br />
-              Secretaria de Esporte, Lazer e Turismo
+              Secretaria Municipal de Turismo e Eventos
               <br />
               <span className="text-xs opacity-60">
                 Cidade dos Esportes - Costa do Sol
@@ -265,7 +265,7 @@ export function Footer() {
 
             <div>
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">
-                Secretaria de Esporte, Lazer e Turismo
+                Secretaria Municipal de Turismo e Eventos
               </span>
               <div className="flex gap-3">
                 <a

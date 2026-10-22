@@ -159,9 +159,9 @@ export default function ServicosPage() {
           ))}
         </div>
 
-        {/* ── Secretaria de Esporte, Lazer e Turismo (esq) + CAT (dir) — destaque lado a lado ── */}
+        {/* ── Secretaria Municipal de Turismo e Eventos (esq) + CAT (dir) — destaque lado a lado ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Secretaria de Esporte, Lazer e Turismo — esquerda */}
+          {/* Secretaria Municipal de Turismo e Eventos — esquerda */}
           <div
             onClick={() => router.push("/servicos/secretaria-de-turismo")}
             className="group relative flex flex-col items-center justify-center p-8 rounded-2xl cursor-pointer overflow-hidden transition-all hover:shadow-xl border border-border/50"
@@ -203,7 +203,7 @@ export default function ServicosPage() {
 
               {!secretariaLoading && !secretaria && (
                 <p className="text-white/80 text-sm text-center">
-                  Esporte, Lazer e Turismo de Saquarema. Projetos, informações e
+                  Turismo e Eventos de Saquarema. Projetos, informações e
                   iniciativas da Secretaria Municipal.
                 </p>
               )}

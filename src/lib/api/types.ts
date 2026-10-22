@@ -441,7 +441,7 @@ export interface UpdateCasaDeCambioDto extends Partial<CreateCasaDeCambioDto> {
   status?: StatusEstabelecimento;
 }
 
-// ─── Secretaria de Esporte, Lazer e Turismo ────────────────────────────────────────────────────
+// ─── Secretaria Municipal de Turismo e Eventos ────────────────────────────────────────────────────
 export interface SecretariaTurismo {
   id: string;
   textoExplicativo: string;
