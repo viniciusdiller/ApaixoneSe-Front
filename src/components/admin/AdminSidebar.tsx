@@ -13,6 +13,7 @@ import {
   BookOpen,
   Tag,
   Waves,
+  Flag,
   ChevronRight,
   LogOut,
   Banknote,
@@ -37,6 +38,7 @@ const links = [
   },
   { label: "Atividades", href: "/admin/atividades", icon: MapPin },
   { label: "Praias e Lagoas", href: "/admin/praias-lagoas", icon: Waves },
+  { label: "Bandeira Azul", href: "/admin/bandeira-azul", icon: Flag },
   { label: "História", href: "/admin/historia", icon: Palette },
   { label: "Eventos", href: "/admin/eventos", icon: Calendar },
   {
