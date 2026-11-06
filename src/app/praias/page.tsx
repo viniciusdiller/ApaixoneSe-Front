@@ -17,6 +17,7 @@ import type { PontoAgua } from "@/lib/api";
 import { LagoaCard } from "@/components/lagoa/LagoaCard";
 import { useWaveData } from "@/hooks/API-Marinha";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { BannerBandeiraAzul } from "@/components/bandeira-azul/BannerBandeiraAzul";
 
 const FILTER_OPTIONS = [
   { label: "Todas", value: "todas" },
@@ -95,6 +96,8 @@ export default function PraiasPage() {
           </p>
         </div>
       </section>
+
+      <BannerBandeiraAzul />
 
       {!loading && !erro && (
         <div className="relative z-10 container mx-auto -mt-6 px-4">

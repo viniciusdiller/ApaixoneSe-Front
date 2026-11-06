@@ -19,6 +19,14 @@ export {
   turistandoApi,
   projetoApi,
 } from "./secretaria-turismo";
+export { bandeiraAzulApi } from "./bandeira-azul";
+export type {
+  BandeiraAzul,
+  BandeiraAzulBloco,
+  BandeiraAzulBlocoTipo,
+  BandeiraAzulMidia,
+  SalvarBandeiraAzulDto,
+} from "./bandeira-azul";
 export { ondasNewsletterApi } from "./ondas-newsletter";
 export { pontosAguaApi } from "./pontos-agua";
 export { culturaApi } from "./cultura";
