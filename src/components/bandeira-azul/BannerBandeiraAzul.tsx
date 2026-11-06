@@ -2,14 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Flag } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { bandeiraAzulApi } from "@/lib/api";
 import type { BandeiraAzul } from "@/lib/api";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 
 const INTERVALO_MS = 5000;
 
-/** Banner da Bandeira Azul com fotos em rotação; some se o admin ainda não publicou a página. */
+/**
+ * Coluna lateral com o carrossel da Bandeira Azul; some se o admin ainda não
+ * publicou a página. Clicar na foto abre a página informativa.
+ */
 export function BannerBandeiraAzul() {
   const [pagina, setPagina] = useState<BandeiraAzul | null>(null);
   const [atual, setAtual] = useState(0);
@@ -23,21 +26,33 @@ export function BannerBandeiraAzul() {
   }, []);
 
   const fotos = pagina?.bannerImagens ?? [];
+  const total = fotos.length;
 
   useEffect(() => {
-    if (fotos.length < 2 || pausado) return;
-    // Quem prefere menos movimento vê a primeira foto fixa
+    if (total < 2 || pausado) return;
+    // Quem prefere menos movimento vê a foto fixa (a troca fica por conta das setas)
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = setInterval(() => setAtual((i) => (i + 1) % fotos.length), INTERVALO_MS);
+    const timer = setInterval(() => setAtual((i) => (i + 1) % total), INTERVALO_MS);
     return () => clearInterval(timer);
-  }, [fotos.length, pausado]);
+  }, [total, pausado]);
 
   if (!pagina) return null;
 
+  const anterior = () => setAtual((i) => (i - 1 + total) % total);
+  const proxima = () => setAtual((i) => (i + 1) % total);
+
   return (
-    <section className="px-4 pb-8 pt-10">
+    <aside className="order-first w-full pt-10 lg:order-last lg:sticky lg:top-24 lg:w-[26rem] lg:shrink-0 lg:pt-12">
+      <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-foreground">
+        <Flag className="h-5 w-5 text-primary" />
+        Bandeira Azul
+      </h2>
+      <p className="mb-4 mt-1 text-sm text-muted-foreground">
+        {pagina.subtitulo || "clique na foto para saber mais"}
+      </p>
+
       <div
-        className="group relative mx-auto min-h-[180px] max-w-6xl overflow-hidden rounded-2xl bg-gradient-to-r from-sky-700 to-cyan-500 shadow-md transition-shadow hover:shadow-xl md:min-h-[260px]"
+        className="relative h-[420px] overflow-hidden rounded-2xl border-2 border-primary bg-gradient-to-b from-sky-700 to-cyan-500 shadow-md transition-shadow hover:shadow-xl lg:h-[540px]"
         onMouseEnter={() => setPausado(true)}
         onMouseLeave={() => setPausado(false)}
       >
@@ -51,45 +66,50 @@ export function BannerBandeiraAzul() {
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${i === atual ? "opacity-100" : "opacity-0"}`}
           />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
         <Link
           href="/praias/bandeira-azul"
           aria-label={`${pagina.titulo} — saiba mais`}
-          className="relative z-10 flex min-h-[inherit] items-center justify-between gap-4 p-6 md:p-10"
+          className="absolute inset-0 z-10 flex items-end justify-center p-6 pb-12"
         >
-          <div>
-            <span className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-              <Flag className="h-3.5 w-3.5" />
-              Bandeira Azul
-            </span>
-            <h2 className="font-display text-3xl font-bold uppercase text-white md:text-4xl">
-              {pagina.titulo}
-            </h2>
-            {pagina.subtitulo && (
-              <p className="mt-2 max-w-xl text-white/85">{pagina.subtitulo}</p>
-            )}
-          </div>
-          <span className="hidden shrink-0 items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-sky-700 transition-transform group-hover:translate-x-1 sm:inline-flex">
-            Saiba mais
-            <ArrowRight className="h-4 w-4" />
+          <span className="rounded-2xl border-2 border-dashed border-white/80 bg-black/30 px-5 py-3 text-center text-sm font-bold uppercase text-white backdrop-blur-sm">
+            {pagina.titulo}
           </span>
         </Link>
 
-        {fotos.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-            {fotos.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setAtual(i)}
-                aria-label={`Ver foto ${i + 1}`}
-                className={`h-2 rounded-full transition-all ${i === atual ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/80"}`}
-              />
-            ))}
-          </div>
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={anterior}
+              aria-label="Foto anterior"
+              className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1.5 text-primary shadow hover:bg-white"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={proxima}
+              aria-label="Próxima foto"
+              className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1.5 text-primary shadow hover:bg-white"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+              {fotos.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setAtual(i)}
+                  aria-label={`Ver foto ${i + 1}`}
+                  className={`h-2 rounded-full transition-all ${i === atual ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/80"}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
-    </section>
+    </aside>
   );
 }
