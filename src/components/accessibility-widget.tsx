@@ -35,7 +35,6 @@ export function AccessibilityWidget() {
   const pathname = usePathname();
 
   const [aberto, setAberto] = useState(false);
-  const [recolhido, setRecolhido] = useState(false);
   const [librasPronto, setLibrasPronto] = useState(false);
   const [siennaPronto, setSiennaPronto] = useState(false);
   const [suportaVoz, setSuportaVoz] = useState(false);
@@ -52,7 +51,6 @@ export function AccessibilityWidget() {
   const botaoLerRef = useRef<HTMLButtonElement>(null);
   const botaoPausarRef = useRef<HTMLButtonElement>(null);
   const botaoContinuarRef = useRef<HTMLButtonElement>(null);
-  const temporizadorRecolherRef = useRef<number>(0);
 
   const trechosRef = useRef<string[]>([]);
   const posicaoRef = useRef<number>(0);
@@ -60,18 +58,6 @@ export function AccessibilityWidget() {
   const situacaoRef = useRef<SituacaoLeitura>("parado");
   const velocidadeRef = useRef<string>("1");
   const vozRef = useRef<SpeechSynthesisVoice | null>(null);
-
-  // Agenda o recolhimento do botão para a borda direita após alguns segundos
-  const agendarRecolhimento = useCallback((tempoMs: number) => {
-    window.clearTimeout(temporizadorRecolherRef.current);
-    setRecolhido(false);
-    if (!tempoMs) return;
-    temporizadorRecolherRef.current = window.setTimeout(() => {
-      if (situacaoRef.current === "parado") {
-        setRecolhido(true);
-      }
-    }, tempoMs);
-  }, []);
 
   // Remove tamanhos fixos em px gravados pelo Sienna 2.1.0 quando a escala está em 100%
   const liberarTamanhos = useCallback(() => {
@@ -192,13 +178,10 @@ export function AccessibilityWidget() {
       sintese.addEventListener?.("voiceschanged", escolherVoz);
     }
 
-    agendarRecolhimento(4000);
-
     return () => {
       cancelado = true;
-      window.clearTimeout(temporizadorRecolherRef.current);
     };
-  }, [agendarRecolhimento, liberarTamanhos]);
+  }, [liberarTamanhos]);
 
   // Escuta cliques no menu do Sienna (para liberar tamanhos em 100%) e teclado global (Esc / Enter)
   useEffect(() => {
@@ -214,7 +197,6 @@ export function AccessibilityWidget() {
         !caixaRef.current.contains(alvo)
       ) {
         setAberto(false);
-        agendarRecolhimento(3000);
       }
     };
 
@@ -233,7 +215,6 @@ export function AccessibilityWidget() {
       if (e.key === "Escape" && aberto) {
         e.preventDefault();
         setAberto(false);
-        agendarRecolhimento(3000);
         botaoRef.current?.focus();
         return;
       }
@@ -267,7 +248,7 @@ export function AccessibilityWidget() {
       document.removeEventListener("click", aoClicarNoDocumento);
       document.removeEventListener("keydown", aoPressionarTecla, true);
     };
-  }, [aberto, agendarRecolhimento, liberarTamanhos]);
+  }, [aberto, liberarTamanhos]);
 
   // Funções de leitura em voz alta ("Ouvir esta página")
   const silenciar = useCallback(() => {
@@ -466,7 +447,6 @@ export function AccessibilityWidget() {
   const alternarMenu = () => {
     const proximo = !aberto;
     setAberto(proximo);
-    agendarRecolhimento(proximo ? 0 : 3000);
     if (proximo) {
       window.setTimeout(() => {
         const primeiro = painelRef.current?.querySelector<HTMLElement>(
@@ -479,7 +459,6 @@ export function AccessibilityWidget() {
 
   const abrirLibras = () => {
     setAberto(false);
-    agendarRecolhimento(3000);
     window.VLibrasWidget?.open?.();
 
     if (window.matchMedia("(pointer: coarse)").matches) {
@@ -498,7 +477,6 @@ export function AccessibilityWidget() {
 
   const abrirAjustesSienna = () => {
     setAberto(false);
-    agendarRecolhimento(3000);
     const botaoSienna = document.querySelector<HTMLElement>(".asw-menu-btn");
     if (!botaoSienna) return;
     botaoSienna.click();
@@ -514,11 +492,7 @@ export function AccessibilityWidget() {
   if (!mostrarComponente) return null;
 
   return (
-    <div
-      ref={caixaRef}
-      id="acesso"
-      className={`acesso${recolhido && !aberto && situacao === "parado" ? " recolhido" : ""}`}
-    >
+    <div ref={caixaRef} id="acesso" className="acesso">
       <div
         ref={painelRef}
         id="acesso-painel"
