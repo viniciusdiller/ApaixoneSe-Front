@@ -8,7 +8,12 @@ import { servicoTuristaApi } from "@/lib/api";
 import { MODALIDADES_ESPORTE, MODALIDADE_LABELS } from "@/lib/api/servico-turista";
 import { PerfilFormField } from "@/components/perfil/forms/PerfilFormField";
 import { TermoAceiteField } from "@/components/perfil/forms/TermoAceiteField";
-import { FileUploadField } from "@/components/admin/FileUploadField";
+import {
+  FileUploadField,
+  ACCEPT_IMAGE_OR_PDF,
+  validarTipoArquivo,
+} from "@/components/admin/FileUploadField";
+import { ApiError } from "@/lib/api/config";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
 import {
   maskCnpj,
@@ -309,11 +314,17 @@ export function FormularioServico({
 
       router.push("/perfil");
     } catch (err: unknown) {
+      const fallback =
+        "Ocorreu um erro inesperado ao salvar. Tente novamente em instantes.";
       try {
         const p = JSON.parse((err as Error).message);
-        setError(Array.isArray(p.message) ? p.message.join(" ") : p.message);
+        const raw = Array.isArray(p.message) ? p.message.join(" ") : p.message;
+        const isServerDefault =
+          (err instanceof ApiError && err.status >= 500 && raw === "Internal server error") ||
+          raw === "Internal server error";
+        setError(!raw || isServerDefault ? fallback : raw);
       } catch {
-        setError("Erro ao salvar.");
+        setError(fallback);
       }
     } finally {
       setSaving(false);
@@ -689,7 +700,7 @@ export function FormularioServico({
                     {!comprovanteExistente && (
                       <span className="text-red-500">*</span>
                     )}{" "}
-                    — PDF ou imagem
+                    — PDF ou imagem (JPG, PNG ou WEBP)
                   </label>
                   {comprovantePreviewUrl && (
                     <div className="mb-2 mt-1">
@@ -720,11 +731,19 @@ export function FormularioServico({
                   <input
                     ref={comprovanteRef}
                     type="file"
-                    accept="application/pdf,image/*"
+                    accept={ACCEPT_IMAGE_OR_PDF}
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                      if (!f) return;
+                      const erro = validarTipoArquivo(f, "any");
+                      if (erro) {
+                        setError(erro);
+                        e.target.value = "";
+                        return;
+                      }
+                      setError("");
+                      setFiles((p) => ({ ...p, comprovante: f }));
                     }}
                   />
                 </div>
@@ -751,7 +770,7 @@ export function FormularioServico({
                     {!documentoCnpjExistente && (
                       <span className="text-red-500">*</span>
                     )}{" "}
-                    — PDF ou imagem
+                    — PDF ou imagem (JPG, PNG ou WEBP)
                   </label>
                   {documentoCnpjPreviewUrl && (
                     <div className="mb-2 mt-1">
@@ -782,11 +801,19 @@ export function FormularioServico({
                   <input
                     ref={documentoCnpjRef}
                     type="file"
-                    accept="application/pdf,image/*"
+                    accept={ACCEPT_IMAGE_OR_PDF}
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f) setFiles((p) => ({ ...p, documentoCnpj: f }));
+                      if (!f) return;
+                      const erro = validarTipoArquivo(f, "any");
+                      if (erro) {
+                        setError(erro);
+                        e.target.value = "";
+                        return;
+                      }
+                      setError("");
+                      setFiles((p) => ({ ...p, documentoCnpj: f }));
                     }}
                   />
                 </div>

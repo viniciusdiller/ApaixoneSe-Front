@@ -19,11 +19,55 @@ interface FileUploadFieldProps {
   hint?: React.ReactNode;
 }
 
+export const ACCEPT_IMAGE = "image/jpeg,image/png,image/webp";
+export const ACCEPT_IMAGE_OR_PDF = `${ACCEPT_IMAGE},application/pdf`;
+
 const ACCEPT_MAP: Record<Accept, string> = {
-  image: "image/*",
+  image: ACCEPT_IMAGE,
   pdf: "application/pdf",
-  any: "image/*,application/pdf",
+  any: ACCEPT_IMAGE_OR_PDF,
 };
+
+const IMAGE_MIMES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp"];
+
+function ehImagemSuportada(file: File): boolean {
+  const nome = file.name.toLowerCase();
+  const temExtensaoValida = IMAGE_EXTS.some((ext) => nome.endsWith(ext));
+  if (file.type) {
+    return IMAGE_MIMES.has(file.type.toLowerCase()) && temExtensaoValida;
+  }
+  return temExtensaoValida;
+}
+
+function ehPdfSuportado(file: File): boolean {
+  const nome = file.name.toLowerCase();
+  const temExtensaoPdf = nome.endsWith(".pdf");
+  if (file.type) {
+    return file.type.toLowerCase() === "application/pdf" && temExtensaoPdf;
+  }
+  return temExtensaoPdf;
+}
+
+/**
+ * Valida se o arquivo selecionado/arrastado corresponde ao tipo aceito.
+ * Retorna `null` quando válido ou a mensagem de erro a exibir ao usuário.
+ */
+export function validarTipoArquivo(file: File, accept: Accept): string | null {
+  if (accept === "image") {
+    return ehImagemSuportada(file)
+      ? null
+      : "Tipo de arquivo inválido. Envie uma imagem (JPG, PNG ou WEBP).";
+  }
+  if (accept === "pdf") {
+    return ehPdfSuportado(file)
+      ? null
+      : "Tipo de arquivo inválido. Envie um arquivo PDF.";
+  }
+  return ehImagemSuportada(file) || ehPdfSuportado(file)
+    ? null
+    : "Tipo de arquivo inválido. Envie um PDF ou uma imagem (JPG, PNG ou WEBP).";
+}
 
 export function FileUploadField({
   label,
@@ -39,6 +83,7 @@ export function FileUploadField({
   // Preview local (object URL gerado a partir do File selecionado)
   const [localPreview, setLocalPreview] = useState<string>("");
   const [localName, setLocalName] = useState<string>("");
+  const [fileError, setFileError] = useState<string>("");
 
   const serverPreview = safeMediaUrl(currentUrl);
   const previewUrl = localPreview || serverPreview;
@@ -47,6 +92,14 @@ export function FileUploadField({
     currentUrl.toLowerCase().endsWith(".pdf");
 
   function handleFile(file: File) {
+    const erro = validarTipoArquivo(file, accept);
+    if (erro) {
+      setFileError(erro);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    setFileError("");
+    if (localPreview) URL.revokeObjectURL(localPreview);
     setLocalName(file.name);
     // Usa object URL para preview — leve e não envia base64 ao backend
     const objectUrl = URL.createObjectURL(file);
@@ -70,6 +123,7 @@ export function FileUploadField({
     if (localPreview) URL.revokeObjectURL(localPreview);
     setLocalPreview("");
     setLocalName("");
+    setFileError("");
     if (inputRef.current) inputRef.current.value = "";
     onClear?.();
   }
@@ -77,9 +131,11 @@ export function FileUploadField({
   return (
     <div className="flex flex-col gap-1">
       <label className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label.replace(/\s*\*\s*$/, '')}
+        {label.replace(/\s*\*\s*$/, "")}
         {required && (
-          <span className="text-red-500" aria-hidden="true">*</span>
+          <span className="text-red-500" aria-hidden="true">
+            *
+          </span>
         )}
       </label>
 
@@ -128,7 +184,10 @@ export function FileUploadField({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 text-sm transition ${
@@ -143,11 +202,17 @@ export function FileUploadField({
             <ImageIcon className="h-6 w-6" />
           )}
           <span>
-            <span className="font-medium text-primary">Clique para selecionar</span>
-            {" "}ou arraste aqui
+            <span className="font-medium text-primary">
+              Clique para selecionar
+            </span>{" "}
+            ou arraste aqui
           </span>
           {hint && <span className="text-xs">{hint}</span>}
         </button>
+      )}
+
+      {fileError && (
+        <p className="text-xs font-medium text-red-600">{fileError}</p>
       )}
 
       <input
