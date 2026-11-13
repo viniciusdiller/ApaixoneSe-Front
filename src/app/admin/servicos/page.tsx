@@ -14,7 +14,11 @@ import type {
 import { AdminTable } from "@/components/admin/AdminTable";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminFormField } from "@/components/admin/AdminFormField";
-import { FileUploadField } from "@/components/admin/FileUploadField";
+import {
+  FileUploadField,
+  ACCEPT_IMAGE_OR_PDF,
+  validarTipoArquivo,
+} from "@/components/admin/FileUploadField";
 import { MediaPreview } from "@/components/admin/MediaPreview";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { TermoAceiteBadge } from "@/components/admin/TermoAceiteBadge";
@@ -898,7 +902,7 @@ export default function AdminServicosPage() {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">
                   Arquivo <span className="text-red-500">*</span> — PDF ou
-                  imagem
+                  imagem (JPG, PNG ou WEBP)
                 </label>
                 {comprovantePreviewUrl && (
                   <div className="flex items-center gap-2">
@@ -934,16 +938,24 @@ export default function AdminServicosPage() {
                     ? "Trocar arquivo"
                     : comprovanteExistente
                       ? "Substituir comprovante"
-                      : "Selecionar comprovante (PDF ou imagem)"}
+                      : "Selecionar comprovante (PDF ou imagem JPG, PNG ou WEBP)"}
                 </button>
                 <input
                   ref={comprovanteInputRef}
                   type="file"
-                  accept="application/pdf,image/*"
+                  accept={ACCEPT_IMAGE_OR_PDF}
                   className="hidden"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f) setFiles((p) => ({ ...p, comprovante: f }));
+                    if (!f) return;
+                    const erro = validarTipoArquivo(f, "any");
+                    if (erro) {
+                      setError(erro);
+                      e.target.value = "";
+                      return;
+                    }
+                    setError("");
+                    setFiles((p) => ({ ...p, comprovante: f }));
                   }}
                 />
               </div>
@@ -969,7 +981,7 @@ export default function AdminServicosPage() {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground">
                   Arquivo <span className="text-red-500">*</span> — PDF ou
-                  imagem
+                  imagem (JPG, PNG ou WEBP)
                 </label>
                 {documentoCnpjPreviewUrl && (
                   <div className="flex items-center gap-2">
@@ -1005,16 +1017,24 @@ export default function AdminServicosPage() {
                     ? "Trocar arquivo"
                     : documentoCnpjExistente
                       ? "Substituir documento"
-                      : "Selecionar documento (PDF ou imagem)"}
+                      : "Selecionar documento (PDF ou imagem JPG, PNG ou WEBP)"}
                 </button>
                 <input
                   ref={documentoCnpjInputRef}
                   type="file"
-                  accept="application/pdf,image/*"
+                  accept={ACCEPT_IMAGE_OR_PDF}
                   className="hidden"
                   onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (f) setFiles((p) => ({ ...p, documentoCnpj: f }));
+                    if (!f) return;
+                    const erro = validarTipoArquivo(f, "any");
+                    if (erro) {
+                      setError(erro);
+                      e.target.value = "";
+                      return;
+                    }
+                    setError("");
+                    setFiles((p) => ({ ...p, documentoCnpj: f }));
                   }}
                 />
               </div>
