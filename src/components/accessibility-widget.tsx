@@ -727,7 +727,6 @@ export function AccessibilityWidget() {
           aria-hidden="true"
           focusable="false"
         >
-          <circle cx="12" cy="12" r="10" />
           <circle cx="12" cy="6.8" r="1.5" />
           <path d="M7 9.6 12 11l5-1.4M12 11v3.4M9.4 18.2 12 14.4l2.6 3.8" />
         </svg>
