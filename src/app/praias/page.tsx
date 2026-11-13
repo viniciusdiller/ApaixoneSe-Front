@@ -17,6 +17,7 @@ import type { PontoAgua } from "@/lib/api";
 import { LagoaCard } from "@/components/lagoa/LagoaCard";
 import { useWaveData } from "@/hooks/API-Marinha";
 import { safeMediaUrl } from "@/lib/safeMediaUrl";
+import { BannerBandeiraAzul } from "@/components/bandeira-azul/BannerBandeiraAzul";
 
 const FILTER_OPTIONS = [
   { label: "Todas", value: "todas" },
@@ -96,108 +97,119 @@ export default function PraiasPage() {
         </div>
       </section>
 
-      {!loading && !erro && (
-        <div className="relative z-10 container mx-auto -mt-6 px-4">
-          <div className="flex flex-wrap justify-center gap-3">
-            {FILTER_OPTIONS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setActiveFilter(f.value)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeFilter === f.value ? "bg-primary text-primary-foreground shadow-lg" : "border border-border bg-card text-foreground hover:border-primary"}`}
-              >
-                {f.value === "todas" ? (
-                  <Filter className="mr-1 inline h-4 w-4" />
-                ) : null}
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Banner da Bandeira Azul fica na coluna da direita (acima da lista no mobile) */}
+      <div className="container mx-auto flex max-w-7xl flex-col px-4 lg:flex-row lg:items-start lg:gap-8">
+        <BannerBandeiraAzul />
 
-      <section className="px-4 py-16">
-        <div className="container mx-auto max-w-6xl">
-          {loading ? (
-            <p className="text-center text-muted-foreground">
-              Carregando praias...
-            </p>
-          ) : erro ? (
-            <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
-              <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
-              <p className="font-display text-2xl font-bold text-foreground">
-                Ops! Tivemos um imprevisto.
-              </p>
-              <p className="mt-2 text-muted-foreground">
-                Não conseguimos carregar os dados. Tente novamente mais tarde.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((praia, i) => {
-                const src = safeMediaUrl(praia.imagemUrl);
-                return (
-                  <motion.div
-                    key={praia.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
+        <div className="min-w-0 flex-1">
+          {!loading && !erro && (
+            <div className="relative z-10 pt-6 lg:-mt-6 lg:pt-0">
+              <div className="flex flex-wrap justify-center gap-3">
+                {FILTER_OPTIONS.map((f) => (
+                  <button
+                    key={f.value}
+                    onClick={() => setActiveFilter(f.value)}
+                    className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${activeFilter === f.value ? "bg-primary text-primary-foreground shadow-lg" : "border border-border bg-card text-foreground hover:border-primary"}`}
                   >
-                    <Link
-                      href={`/praias/${praia.slug}`}
-                      className="group block overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-xl"
-                    >
-                      <div className="relative h-48 overflow-hidden bg-primary/20">
-                        {src && (
-                          <Image
-                            src={src}
-                            alt={praia.nome}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        <WaveBadge lat={praia.latitude} lng={praia.longitude} />
-                        <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
-                          {(praia.filtros ?? []).map((f) => (
-                            <span
-                              key={f}
-                              className="rounded-md bg-restinga/20 px-2 py-0.5 text-xs font-medium text-restinga backdrop-blur-sm"
-                            >
-                              {f}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-5">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-display text-xl font-bold uppercase text-foreground transition-colors group-hover:text-primary">
-                              {praia.nome}
-                            </h3>
-                            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              <span>Saquarema, RJ</span>
-                            </div>
-                          </div>
-                          <ArrowRight className="mt-1 h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
-                        </div>
-                        <p className="mt-3 text-sm text-muted-foreground">
-                          {praia.descricaoCurta}
-                        </p>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-              {filtered.length === 0 && (
-                <p className="col-span-full text-center text-muted-foreground">
-                  Nenhuma praia encontrada para este filtro.
-                </p>
-              )}
+                    {f.value === "todas" ? (
+                      <Filter className="mr-1 inline h-4 w-4" />
+                    ) : null}
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
+
+          <section className="py-16">
+            <div className="w-full">
+              {loading ? (
+                <p className="text-center text-muted-foreground">
+                  Carregando praias...
+                </p>
+              ) : erro ? (
+                <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
+                  <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive/60" />
+                  <p className="font-display text-2xl font-bold text-foreground">
+                    Ops! Tivemos um imprevisto.
+                  </p>
+                  <p className="mt-2 text-muted-foreground">
+                    Não conseguimos carregar os dados. Tente novamente mais
+                    tarde.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filtered.map((praia, i) => {
+                    const src = safeMediaUrl(praia.imagemUrl);
+                    return (
+                      <motion.div
+                        key={praia.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                      >
+                        <Link
+                          href={`/praias/${praia.slug}`}
+                          className="group block overflow-hidden rounded-2xl border border-border bg-card transition-shadow hover:shadow-xl"
+                        >
+                          <div className="relative h-48 overflow-hidden bg-primary/20">
+                            {src && (
+                              <Image
+                                src={src}
+                                alt={praia.nome}
+                                fill
+                                className="object-cover"
+                              />
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                            <WaveBadge
+                              lat={praia.latitude}
+                              lng={praia.longitude}
+                            />
+                            <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
+                              {(praia.filtros ?? []).map((f) => (
+                                <span
+                                  key={f}
+                                  className="rounded-md bg-restinga/20 px-2 py-0.5 text-xs font-medium text-restinga backdrop-blur-sm"
+                                >
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="p-5">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h3 className="font-display text-xl font-bold uppercase text-foreground transition-colors group-hover:text-primary">
+                                  {praia.nome}
+                                </h3>
+                                <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                                  <MapPin className="h-3 w-3" />
+                                  <span>Saquarema, RJ</span>
+                                </div>
+                              </div>
+                              <ArrowRight className="mt-1 h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
+                            </div>
+                            <p className="mt-3 text-sm text-muted-foreground">
+                              {praia.descricaoCurta}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <p className="col-span-full text-center text-muted-foreground">
+                      Nenhuma praia encontrada para este filtro.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {!loading && !erro && lagoas.length > 0 && (
         <section className="px-4 pb-16 pt-8 bg-muted/20">
