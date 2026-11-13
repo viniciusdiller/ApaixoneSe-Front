@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { AccessibilityWidget } from "@/components/accessibility-widget";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { useWaveData } from "@/hooks/API-Marinha";
@@ -29,6 +30,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
       />
       <main>{children}</main>
       <Footer />
+      <AccessibilityWidget />
     </>
   );
 }
