@@ -59,7 +59,6 @@ export function AccessibilityWidget() {
   const velocidadeRef = useRef<string>("1");
   const vozRef = useRef<SpeechSynthesisVoice | null>(null);
 
-  // Remove tamanhos fixos em px gravados pelo Sienna 2.1.0 quando a escala está em 100%
   const liberarTamanhos = useCallback(() => {
     let escala = 1;
     try {
@@ -76,7 +75,6 @@ export function AccessibilityWidget() {
     });
   }, []);
 
-  // Traduz os aria-label internos do Sienna 2.1.0 para português
   const traduzirRotulosSienna = useCallback(() => {
     const menu = document.querySelector<HTMLElement>(".asw-menu");
     if (!menu) return;
@@ -104,11 +102,9 @@ export function AccessibilityWidget() {
     });
   }, []);
 
-  // Inicializa Sienna 2.1.0 e VLibras no cliente
   useEffect(() => {
     let cancelado = false;
 
-    // 1. Carrega Sienna 2.1.0
     import("sienna-accessibility")
       .then(() => {
         if (cancelado) return;
@@ -130,7 +126,6 @@ export function AccessibilityWidget() {
         console.error("Falha ao carregar o widget Sienna:", err);
       });
 
-    // 2. Carrega VLibras oficial (vlibras.gov.br)
     const iniciarVLibras = () => {
       if (cancelado || !window.VLibras) return;
       try {
@@ -163,7 +158,6 @@ export function AccessibilityWidget() {
       }
     }
 
-    // 3. Verifica suporte à Web Speech API ("Ouvir esta página")
     if ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) {
       setSuportaVoz(true);
       const sintese = window.speechSynthesis;
@@ -183,7 +177,6 @@ export function AccessibilityWidget() {
     };
   }, [liberarTamanhos]);
 
-  // Escuta cliques no menu do Sienna (para liberar tamanhos em 100%) e teclado global (Esc / Enter)
   useEffect(() => {
     const aoClicarNoDocumento = (e: MouseEvent) => {
       const alvo = e.target as HTMLElement | null;
@@ -250,7 +243,6 @@ export function AccessibilityWidget() {
     };
   }, [aberto, liberarTamanhos]);
 
-  // Funções de leitura em voz alta ("Ouvir esta página")
   const silenciar = useCallback(() => {
     rodadaRef.current += 1;
     if ("speechSynthesis" in window) {
@@ -426,7 +418,6 @@ export function AccessibilityWidget() {
     }
   };
 
-  // Para a leitura ao navegar entre rotas no Next.js ou ao sair da página
   useEffect(() => {
     liberarTamanhos();
     if (situacaoRef.current !== "parado") {
@@ -443,7 +434,6 @@ export function AccessibilityWidget() {
     };
   }, [silenciar]);
 
-  // Ações do menu rápido
   const alternarMenu = () => {
     const proximo = !aberto;
     setAberto(proximo);
@@ -469,9 +459,7 @@ export function AccessibilityWidget() {
             toast("Dica: arraste o avatar pela barra azul para tirá-lo da frente.");
           }, 1500);
         }
-      } catch {
-        // Sem localStorage disponível
-      }
+      } catch {}
     }
   };
 

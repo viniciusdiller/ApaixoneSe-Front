@@ -75,15 +75,6 @@ html, body {
     display: none !important;
 }
 
-/* ==========================================================================
-   ACESSIBILIDADE (Menu rápido + VLibras + Sienna 2.1.0 com cores ApaixoneSe)
-   Hexadecimais do tema:
-   - Primária (Mar): #006e6d | Hover: #005251
-   - Espuma (fundo claro selecionado): #e6f4f4
-   - Destaque (Sol / Accent): #f4a261
-   - Texto escuro (Noite): #142e38 | Texto secundário: #4b6570
-   ========================================================================== */
-
 .acesso {
   position: fixed;
   left: 20px;
@@ -130,7 +121,6 @@ html, body {
   border-radius: 50%;
 }
 
-/* Leitura em voz alta ativa (lendo ou pausada): botão fica em destaque */
 .acesso-botao.ativo {
   background: #f4a261;
   color: #142e38;
@@ -217,7 +207,6 @@ html, body {
   background: #ffffff;
 }
 
-/* Seção "Ouvir esta página" */
 .ouvir {
   display: grid;
   gap: 10px;
@@ -306,13 +295,11 @@ html, body {
   }
 }
 
-/* Esconde os botões flutuantes originais do VLibras e do Sienna 2.1.0 */
 #vlibras-access-wrapper,
 body .asw-menu-btn {
   display: none !important;
 }
 
-/* Sienna 2.1.0: cores trocadas pelos hexadecimais do ApaixoneSe (#006e6d / #e6f4f4) */
 body .asw-menu-header {
   background: #006e6d !important;
 }
