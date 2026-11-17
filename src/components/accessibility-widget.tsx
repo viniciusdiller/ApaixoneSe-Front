@@ -35,22 +35,19 @@ export function AccessibilityWidget() {
   const pathname = usePathname();
 
   const [aberto, setAberto] = useState(false);
+  const [ouvirExpandido, setOuvirExpandido] = useState(false);
   const [librasPronto, setLibrasPronto] = useState(false);
   const [siennaPronto, setSiennaPronto] = useState(false);
   const [suportaVoz, setSuportaVoz] = useState(false);
 
   const [situacao, setSituacao] = useState<SituacaoLeitura>("parado");
-  const [mensagemVoz, setMensagemVoz] = useState(
-    "Lê em voz alta o conteúdo principal, sem menus nem rodapé."
-  );
+  const [mensagemVoz, setMensagemVoz] = useState("Pronto para ler a página.");
   const [velocidade, setVelocidade] = useState("1");
 
   const caixaRef = useRef<HTMLDivElement>(null);
   const painelRef = useRef<HTMLDivElement>(null);
   const botaoRef = useRef<HTMLButtonElement>(null);
-  const botaoLerRef = useRef<HTMLButtonElement>(null);
-  const botaoPausarRef = useRef<HTMLButtonElement>(null);
-  const botaoContinuarRef = useRef<HTMLButtonElement>(null);
+  const botaoOuvirRef = useRef<HTMLButtonElement>(null);
 
   const trechosRef = useRef<string[]>([]);
   const posicaoRef = useRef<number>(0);
@@ -183,11 +180,12 @@ export function AccessibilityWidget() {
       if (alvo?.closest?.(".asw-menu")) {
         window.setTimeout(liberarTamanhos, 50);
       }
+      const clicouDentroDoWidget =
+        caixaRef.current && e.composedPath().includes(caixaRef.current);
       if (
         aberto &&
-        caixaRef.current &&
-        alvo &&
-        !caixaRef.current.contains(alvo)
+        !clicouDentroDoWidget &&
+        !alvo?.closest("[data-acesso-trigger]")
       ) {
         setAberto(false);
       }
@@ -258,17 +256,8 @@ export function AccessibilityWidget() {
 
       window.setTimeout(() => {
         const focado = document.activeElement as HTMLButtonElement | null;
-        if (
-          focado &&
-          focado.disabled &&
-          painelRef.current?.contains(focado)
-        ) {
-          const mapaFoco: Record<SituacaoLeitura, HTMLButtonElement | null> = {
-            parado: botaoLerRef.current,
-            lendo: botaoPausarRef.current,
-            pausado: botaoContinuarRef.current,
-          };
-          mapaFoco[novaSituacao]?.focus();
+        if (focado && focado.disabled && painelRef.current?.contains(focado)) {
+          botaoOuvirRef.current?.focus();
         }
       }, 0);
     },
@@ -434,18 +423,46 @@ export function AccessibilityWidget() {
     };
   }, [silenciar]);
 
-  const alternarMenu = () => {
-    const proximo = !aberto;
-    setAberto(proximo);
-    if (proximo) {
-      window.setTimeout(() => {
-        const primeiro = painelRef.current?.querySelector<HTMLElement>(
-          ".acesso-opcao, .ouvir button:not(:disabled)"
-        );
-        primeiro?.focus();
-      }, 0);
+  const alternarLeitura = () => {
+    if (situacaoRef.current === "parado") {
+      iniciarLeitura();
+    } else if (situacaoRef.current === "lendo") {
+      pausarLeitura();
+    } else {
+      continuarLeitura();
     }
   };
+
+  const alternarMenu = useCallback(() => {
+    setAberto((atual) => {
+      const proximo = !atual;
+      if (proximo) {
+        window.setTimeout(() => {
+          const primeiro = painelRef.current?.querySelector<HTMLElement>(
+            ".acesso-pilula, .ouvir-acao"
+          );
+          primeiro?.focus();
+        }, 0);
+      }
+      return proximo;
+    });
+  }, []);
+
+  useEffect(() => {
+    const aoAlternarExterno = () => alternarMenu();
+    window.addEventListener("apaixonese:toggle-acesso", aoAlternarExterno);
+    return () => {
+      window.removeEventListener("apaixonese:toggle-acesso", aoAlternarExterno);
+    };
+  }, [alternarMenu]);
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("apaixonese:acesso-state", {
+        detail: { aberto, ativo: situacao !== "parado" },
+      })
+    );
+  }, [aberto, situacao]);
 
   const abrirLibras = () => {
     setAberto(false);
@@ -480,228 +497,161 @@ export function AccessibilityWidget() {
   if (!mostrarComponente) return null;
 
   return (
-    <div ref={caixaRef} id="acesso" className="acesso">
+    <div ref={caixaRef} id="acesso" className="acesso asw-widget">
       <div
         ref={painelRef}
         id="acesso-painel"
-        className="acesso-painel"
+        className="acesso-pilulas"
         role="group"
-        aria-labelledby="acesso-titulo"
+        aria-label="Ferramentas de acessibilidade"
         hidden={!aberto}
       >
-        <p className="acesso-titulo" id="acesso-titulo">
-          Acessibilidade
-        </p>
-
-        <div className="acesso-opcoes">
-          {librasPronto && (
-            <button
-              type="button"
-              className="acesso-opcao"
-              id="acesso-libras"
-              onClick={abrirLibras}
-            >
+        {librasPronto && (
+          <button
+            type="button"
+            className="acesso-pilula"
+            id="acesso-libras"
+            onClick={abrirLibras}
+          >
+            <span className="acesso-pilula-icone" aria-hidden="true">
               <svg
-                className="icone"
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                aria-hidden="true"
-                focusable="false"
               >
                 <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2" />
                 <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" />
                 <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8" />
                 <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
               </svg>
-              <span>
-                <strong>Libras</strong>
-                <small>Tradução da página com o VLibras</small>
-              </span>
-            </button>
-          )}
+            </span>
+            <span>Traduzir em Libras</span>
+          </button>
+        )}
 
-          {siennaPronto && (
-            <button
-              type="button"
-              className="acesso-opcao"
-              id="acesso-ajustes"
-              onClick={abrirAjustesSienna}
-            >
+        {siennaPronto && (
+          <button
+            type="button"
+            className="acesso-pilula"
+            id="acesso-ajustes"
+            onClick={abrirAjustesSienna}
+          >
+            <span className="acesso-pilula-icone" aria-hidden="true">
               <svg
-                className="icone"
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                aria-hidden="true"
-                focusable="false"
               >
                 <path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4" />
               </svg>
-              <span>
-                <strong>Ajustes de leitura</strong>
-                <small>Tamanho da fonte, contraste, links e animações</small>
-              </span>
-            </button>
-          )}
-        </div>
-
-        {suportaVoz && (
-          <section
-            className="ouvir"
-            id="ouvir"
-            aria-labelledby="ouvir-titulo"
-          >
-            <p className="ouvir-titulo" id="ouvir-titulo">
-              <svg
-                className="icone"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
-                <path d="M16 9a5 5 0 0 1 0 6" />
-                <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
-              </svg>
-              Ouvir esta página
-            </p>
-            <p className="ouvir-estado" id="ouvir-estado" aria-live="polite">
-              {mensagemVoz}
-            </p>
-            <div className="ouvir-botoes">
-              <button
-                ref={botaoLerRef}
-                type="button"
-                className="ouvir-acao"
-                id="ouvir-ler"
-                disabled={situacao !== "parado"}
-                onClick={iniciarLeitura}
-              >
-                <svg
-                  className="icone"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <path d="M6 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L7.5 3.64A1 1 0 0 0 6 4.5Z" />
-                </svg>
-                Ouvir
-              </button>
-              <button
-                ref={botaoPausarRef}
-                type="button"
-                className="ouvir-acao"
-                id="ouvir-pausar"
-                disabled={situacao !== "lendo"}
-                onClick={pausarLeitura}
-              >
-                <svg
-                  className="icone"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <rect x="14" y="4" width="4" height="16" rx="1" />
-                  <rect x="6" y="4" width="4" height="16" rx="1" />
-                </svg>
-                Pausar
-              </button>
-              <button
-                ref={botaoContinuarRef}
-                type="button"
-                className="ouvir-acao"
-                id="ouvir-continuar"
-                disabled={situacao !== "pausado"}
-                onClick={continuarLeitura}
-              >
-                <svg
-                  className="icone"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <path d="M6 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L7.5 3.64A1 1 0 0 0 6 4.5Z" />
-                </svg>
-                Continuar
-              </button>
-              <button
-                type="button"
-                className="ouvir-acao"
-                id="ouvir-parar"
-                disabled={situacao === "parado"}
-                onClick={() => pararLeitura()}
-              >
-                <svg
-                  className="icone"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <rect width="14" height="14" x="5" y="5" rx="2" />
-                </svg>
-                Parar
-              </button>
-            </div>
-            <label className="ouvir-velocidade" htmlFor="ouvir-velocidade">
-              Velocidade
-              <select
-                id="ouvir-velocidade"
-                value={velocidade}
-                onChange={(e) => aoMudarVelocidade(e.target.value)}
-              >
-                <option value="0.75">0,75× (mais devagar)</option>
-                <option value="1">1× (normal)</option>
-                <option value="1.25">1,25×</option>
-                <option value="1.5">1,5× (mais rápido)</option>
-              </select>
-            </label>
-          </section>
+            </span>
+            <span>Menu de acessibilidade</span>
+          </button>
         )}
+
+        {suportaVoz &&
+          (!ouvirExpandido ? (
+            <button
+              type="button"
+              className="acesso-pilula"
+              id="acesso-ouvir"
+              aria-expanded={false}
+              onClick={() => setOuvirExpandido(true)}
+            >
+              <span className="acesso-pilula-icone" aria-hidden="true">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
+                  <path d="M16 9a5 5 0 0 1 0 6" />
+                  <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
+                </svg>
+              </span>
+              <span>Ouvir página</span>
+              {situacao !== "parado" && (
+                <span className="acesso-pilula-badge">
+                  {situacao === "lendo" ? "Lendo" : "Pausado"}
+                </span>
+              )}
+            </button>
+          ) : (
+            <section
+              className="acesso-pilula-player"
+              id="ouvir"
+              aria-label="Ouvir esta página"
+            >
+              <div className="acesso-player-topo">
+                <span className="acesso-player-titulo">Ouvir página</span>
+                <button
+                  type="button"
+                  className="acesso-player-fechar"
+                  aria-label="Recolher controles de leitura"
+                  onClick={() => setOuvirExpandido(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="acesso-player-controles">
+                <button
+                  ref={botaoOuvirRef}
+                  type="button"
+                  className="ouvir-acao ouvir-acao-principal"
+                  onClick={alternarLeitura}
+                >
+                  {situacao === "lendo"
+                    ? "Pausar"
+                    : situacao === "pausado"
+                      ? "Continuar"
+                      : "Ouvir"}
+                </button>
+
+                {situacao !== "parado" && (
+                  <button
+                    type="button"
+                    className="ouvir-acao"
+                    onClick={() => pararLeitura()}
+                  >
+                    Parar
+                  </button>
+                )}
+
+                <select
+                  id="ouvir-velocidade"
+                  aria-label="Velocidade da leitura"
+                  className="ouvir-velocidade-compacta"
+                  value={velocidade}
+                  onChange={(e) => aoMudarVelocidade(e.target.value)}
+                >
+                  <option value="0.75">0,75×</option>
+                  <option value="1">1×</option>
+                  <option value="1.25">1,25×</option>
+                  <option value="1.5">1,5×</option>
+                </select>
+              </div>
+
+              <p className="ouvir-estado" id="ouvir-estado" aria-live="polite">
+                {mensagemVoz}
+              </p>
+            </section>
+          ))}
       </div>
 
       <button
