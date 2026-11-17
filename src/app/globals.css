@@ -92,16 +92,21 @@ html, body {
 }
 
 .acesso-botao {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 54px;
-  padding: 0;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  background: #006e6d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 110, 109, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #ffffff;
-  box-shadow: 0 6px 20px rgb(20 46 56 / 0.25);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgb(20 46 56 / 0.22);
   cursor: pointer;
   transition:
     transform 0.2s ease,
@@ -110,22 +115,22 @@ html, body {
 }
 
 .acesso-botao:hover {
-  background: #005251;
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgb(20 46 56 / 0.32);
+  background: rgba(0, 82, 81, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgb(20 46 56 / 0.28);
 }
 
 .acesso-botao:focus-visible {
   outline: 3px solid #142e38;
   outline-offset: 4px;
-  border-radius: 50%;
+  border-radius: 9999px;
 }
 
 .acesso-botao.ativo {
-  background: #f4a261;
+  background: rgba(244, 162, 97, 0.95);
   color: #142e38;
-  border-color: #142e38;
-  box-shadow: 0 6px 20px rgb(20 46 56 / 0.28);
+  border-color: rgba(20, 46, 56, 0.35);
+  box-shadow: 0 6px 20px rgb(20 46 56 / 0.26);
 }
 
 .acesso-painel {
@@ -290,34 +295,27 @@ html, body {
 
 @media (max-width: 768px) {
   .acesso {
-    left: 0;
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    left: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .acesso-botao {
-    width: 36px;
-    height: 44px;
-    border-radius: 0 12px 12px 0;
-    border-left: 0;
-    box-shadow: 2px 4px 14px rgb(20 46 56 / 0.24);
-  }
-
-  .acesso-botao:hover {
-    transform: none;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 12px;
   }
 
   .acesso-botao:focus-visible {
-    border-radius: 0 12px 12px 0;
+    border-radius: 12px;
   }
 
-  .acesso-botao .icone {
-    width: 22px;
-    height: 22px;
+  .acesso-botao-texto {
+    display: none;
   }
 
   .acesso-painel {
-    margin-left: 16px;
-    width: min(340px, calc(100vw - 32px));
+    width: min(340px, calc(100vw - 24px));
   }
 }
 
