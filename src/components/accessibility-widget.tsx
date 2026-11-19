@@ -1,437 +1,45 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
-import toast from "react-hot-toast";
-
-declare global {
-  interface Window {
-    VLibras?: {
-      Widget: new (options: { rootPath: string; position?: string }) => unknown;
-    };
-    VLibrasWidget?: {
-      open?: () => void;
-    };
-  }
-}
-
-type SituacaoLeitura = "parado" | "lendo" | "pausado";
-
-const IGNORAR_NA_LEITURA = [
-  "[aria-hidden='true']",
-  "[hidden]",
-  "script",
-  "style",
-  "template",
-  "dialog",
-  "form",
-  "select",
-  "#acesso",
-].join(",");
-
-const TAMANHO_TRECHO = 220;
+import { useAccessibilityVendors } from "@/hooks/useAccessibilityVendors";
+import { usePageReader } from "@/hooks/usePageReader";
 
 export function AccessibilityWidget() {
-  const pathname = usePathname();
-
   const [aberto, setAberto] = useState(false);
   const [ouvirExpandido, setOuvirExpandido] = useState(false);
-  const [librasPronto, setLibrasPronto] = useState(false);
-  const [siennaPronto, setSiennaPronto] = useState(false);
-  const [suportaVoz, setSuportaVoz] = useState(false);
-
-  const [situacao, setSituacao] = useState<SituacaoLeitura>("parado");
-  const [mensagemVoz, setMensagemVoz] = useState("Pronto para ler a página.");
-  const [velocidade, setVelocidade] = useState("1");
 
   const caixaRef = useRef<HTMLDivElement>(null);
   const painelRef = useRef<HTMLDivElement>(null);
   const botaoRef = useRef<HTMLButtonElement>(null);
   const botaoOuvirRef = useRef<HTMLButtonElement>(null);
 
-  const trechosRef = useRef<string[]>([]);
-  const posicaoRef = useRef<number>(0);
-  const rodadaRef = useRef<number>(0);
-  const situacaoRef = useRef<SituacaoLeitura>("parado");
-  const velocidadeRef = useRef<string>("1");
-  const vozRef = useRef<SpeechSynthesisVoice | null>(null);
-
-  const liberarTamanhos = useCallback(() => {
-    let escala = 1;
-    try {
-      const salvo = JSON.parse(localStorage.getItem("asw-user-settings") || "{}");
-      escala = Number(salvo?.states?.fontSize) || 1;
-    } catch {
-      escala = 1;
-    }
-    if (escala !== 1) return;
-
-    document.querySelectorAll<HTMLElement>("[data-asw-org-font-size]").forEach((el) => {
-      el.style.removeProperty("font-size");
-      el.removeAttribute("data-asw-org-font-size");
-    });
+  const focarBotaoPrincipalPlayer = useCallback(() => {
+    botaoOuvirRef.current?.focus();
   }, []);
 
-  const traduzirRotulosSienna = useCallback(() => {
-    const menu = document.querySelector<HTMLElement>(".asw-menu");
-    if (!menu) return;
+  const {
+    librasPronto,
+    siennaPronto,
+    leitorParagrafoAtivo,
+    definirLeitorParagrafo,
+    alternarLeitorParagrafo,
+    abrirLibras,
+    abrirAjustesSienna,
+  } = useAccessibilityVendors(botaoRef);
 
-    const fechar = menu.querySelector<HTMLElement>(".asw-menu-close");
-    if (fechar) {
-      fechar.setAttribute("aria-label", "Fechar os ajustes de leitura");
-      fechar.title = "Fechar";
-    }
+  const {
+    suportaVoz,
+    situacao,
+    mensagemVoz,
+    velocidade,
+    iniciarLeitura,
+    pausarLeitura,
+    continuarLeitura,
+    pararLeitura,
+    aoMudarVelocidade,
+  } = usePageReader(painelRef, focarBotaoPrincipalPlayer);
 
-    const restaurar = menu.querySelector<HTMLElement>(".asw-menu-reset");
-    if (restaurar) {
-      restaurar.setAttribute("aria-label", "Restaurar as configurações");
-      restaurar.title = "Restaurar as configurações";
-    }
-
-    menu.querySelectorAll<HTMLElement>("[aria-label]").forEach((elemento) => {
-      if (elemento === fechar || elemento === restaurar) return;
-      if (elemento.tagName === "SELECT") {
-        elemento.setAttribute("aria-label", "Idioma do menu");
-        return;
-      }
-      const texto = (elemento.innerText || "").trim().split("\n")[0];
-      if (texto) elemento.setAttribute("aria-label", texto);
-    });
-  }, []);
-
-  useEffect(() => {
-    let cancelado = false;
-
-    import("sienna-accessibility")
-      .then(() => {
-        if (cancelado) return;
-        const verificarBotaoSienna = () => {
-          const btn = document.querySelector(".asw-menu-btn");
-          if (!btn) return false;
-          setSiennaPronto(true);
-          liberarTamanhos();
-          return true;
-        };
-        if (!verificarBotaoSienna()) {
-          const obs = new MutationObserver(() => {
-            if (verificarBotaoSienna()) obs.disconnect();
-          });
-          obs.observe(document.body, { childList: true });
-        }
-      })
-      .catch((err) => {
-        console.error("Falha ao carregar o widget Sienna:", err);
-      });
-
-    const iniciarVLibras = () => {
-      if (cancelado || !window.VLibras) return;
-      try {
-        if (!document.getElementById("vlibras-access-wrapper")) {
-          new window.VLibras.Widget({
-            rootPath: "https://vlibras.gov.br/app",
-            position: "R",
-          });
-        }
-        setLibrasPronto(true);
-      } catch (err) {
-        console.error("Falha ao iniciar o VLibras:", err);
-      }
-    };
-
-    if (window.VLibras) {
-      iniciarVLibras();
-    } else {
-      const scriptExistente = document.querySelector<HTMLScriptElement>(
-        'script[src="https://vlibras.gov.br/app/vlibras-plugin.js"]'
-      );
-      if (scriptExistente) {
-        scriptExistente.addEventListener("load", iniciarVLibras);
-      } else {
-        const script = document.createElement("script");
-        script.src = "https://vlibras.gov.br/app/vlibras-plugin.js";
-        script.async = true;
-        script.onload = iniciarVLibras;
-        document.body.appendChild(script);
-      }
-    }
-
-    if ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) {
-      setSuportaVoz(true);
-      const sintese = window.speechSynthesis;
-      const escolherVoz = () => {
-        const vozes = sintese.getVoices();
-        vozRef.current =
-          vozes.find((v) => /^pt[-_]BR$/i.test(v.lang)) ||
-          vozes.find((v) => /^pt/i.test(v.lang)) ||
-          null;
-      };
-      escolherVoz();
-      sintese.addEventListener?.("voiceschanged", escolherVoz);
-    }
-
-    return () => {
-      cancelado = true;
-    };
-  }, [liberarTamanhos]);
-
-  useEffect(() => {
-    const aoClicarNoDocumento = (e: MouseEvent) => {
-      const alvo = e.target as HTMLElement | null;
-      if (alvo?.closest?.(".asw-menu")) {
-        window.setTimeout(liberarTamanhos, 50);
-      }
-      const clicouDentroDoWidget =
-        caixaRef.current && e.composedPath().includes(caixaRef.current);
-      if (
-        aberto &&
-        !clicouDentroDoWidget &&
-        !alvo?.closest("[data-acesso-trigger]")
-      ) {
-        setAberto(false);
-      }
-    };
-
-    const siennaAberto = () => {
-      const menu = document.querySelector<HTMLElement>(".asw-menu");
-      return !!menu && menu.parentElement?.style.display !== "none";
-    };
-
-    const fecharAjustesSienna = () => {
-      const fechar = document.querySelector<HTMLElement>(".asw-menu .asw-menu-close");
-      fechar?.click();
-      botaoRef.current?.focus();
-    };
-
-    const aoPressionarTecla = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && aberto) {
-        e.preventDefault();
-        setAberto(false);
-        botaoRef.current?.focus();
-        return;
-      }
-      if (!siennaAberto()) return;
-      if (e.key === "Escape") {
-        e.preventDefault();
-        fecharAjustesSienna();
-        return;
-      }
-      const alvo = e.target as HTMLElement | null;
-      const menu = document.querySelector<HTMLElement>(".asw-menu");
-      if (
-        (e.key === "Enter" || e.key === " ") &&
-        alvo?.getAttribute("role") === "button" &&
-        alvo.tagName !== "BUTTON" &&
-        alvo.tagName !== "A" &&
-        menu?.contains(alvo)
-      ) {
-        e.preventDefault();
-        if (alvo.classList.contains("asw-menu-close")) {
-          fecharAjustesSienna();
-        } else {
-          alvo.click();
-        }
-      }
-    };
-
-    document.addEventListener("click", aoClicarNoDocumento);
-    document.addEventListener("keydown", aoPressionarTecla, true);
-    return () => {
-      document.removeEventListener("click", aoClicarNoDocumento);
-      document.removeEventListener("keydown", aoPressionarTecla, true);
-    };
-  }, [aberto, liberarTamanhos]);
-
-  const silenciar = useCallback(() => {
-    rodadaRef.current += 1;
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  }, []);
-
-  const atualizarSituacao = useCallback(
-    (novaSituacao: SituacaoLeitura, mensagem: string) => {
-      situacaoRef.current = novaSituacao;
-      setSituacao(novaSituacao);
-      setMensagemVoz(mensagem);
-
-      window.setTimeout(() => {
-        const focado = document.activeElement as HTMLButtonElement | null;
-        if (focado && focado.disabled && painelRef.current?.contains(focado)) {
-          botaoOuvirRef.current?.focus();
-        }
-      }, 0);
-    },
-    []
-  );
-
-  const pararLeitura = useCallback(
-    (mensagem?: string) => {
-      silenciar();
-      posicaoRef.current = 0;
-      atualizarSituacao("parado", mensagem || "Leitura parada.");
-    },
-    [atualizarSituacao, silenciar]
-  );
-
-  const falarTrechoAtual = useCallback(() => {
-    if (!("speechSynthesis" in window)) return;
-    const trechos = trechosRef.current;
-    const pos = posicaoRef.current;
-
-    if (pos >= trechos.length) {
-      pararLeitura("Leitura concluída.");
-      return;
-    }
-
-    const minhaRodada = rodadaRef.current;
-    const fala = new SpeechSynthesisUtterance(trechos[pos]);
-    fala.lang = "pt-BR";
-    if (vozRef.current) fala.voice = vozRef.current;
-    fala.rate = Number(velocidadeRef.current) || 1;
-
-    fala.onend = () => {
-      if (minhaRodada !== rodadaRef.current || situacaoRef.current !== "lendo") {
-        return;
-      }
-      posicaoRef.current += 1;
-      falarTrechoAtual();
-    };
-
-    fala.onerror = (erro) => {
-      if (
-        minhaRodada !== rodadaRef.current ||
-        erro.error === "interrupted" ||
-        erro.error === "canceled"
-      ) {
-        return;
-      }
-      pararLeitura("Não foi possível ler a página neste navegador.");
-    };
-
-    atualizarSituacao(
-      "lendo",
-      `Lendo… trecho ${pos + 1} de ${trechos.length}.`
-    );
-    window.speechSynthesis.speak(fala);
-  }, [atualizarSituacao, pararLeitura]);
-
-  const extrairTextoDaPagina = useCallback(() => {
-    const raiz =
-      Array.from(document.querySelectorAll<HTMLElement>("main")).find(
-        (m) => !m.closest("[hidden]")
-      ) || document.body;
-
-    const percorrer = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
-    const blocos: string[] = [];
-    let blocoAtual: Element | null = null;
-    let paiAnterior: Element | null = null;
-    let noDeTexto: Node | null;
-
-    while ((noDeTexto = percorrer.nextNode())) {
-      const pai = noDeTexto.parentElement;
-      const conteudo = (noDeTexto.nodeValue || "").replace(/\s+/g, " ");
-      if (!conteudo.trim() || !pai || pai.closest(IGNORAR_NA_LEITURA)) continue;
-
-      const bloco =
-        pai.closest(
-          "h1, h2, h3, h4, h5, h6, p, li, dt, dd, button, a, td, th, small, strong"
-        ) || pai;
-
-      if (bloco !== blocoAtual) {
-        blocos.push("");
-        blocoAtual = bloco;
-      } else if (
-        pai !== paiAnterior &&
-        !/[\s,.;:]$/.test(blocos[blocos.length - 1])
-      ) {
-        blocos[blocos.length - 1] += ", ";
-      }
-
-      blocos[blocos.length - 1] += conteudo;
-      paiAnterior = pai;
-    }
-
-    const textoUnido = blocos
-      .map((b) => b.trim())
-      .filter(Boolean)
-      .map((b) => (/[.!?:…]$/.test(b) ? b : `${b}.`))
-      .join(" ");
-
-    const frases = textoUnido.match(/[^.!?…]+[.!?…]*\s*/g) || [];
-    const lista: string[] = [];
-    let atual = "";
-
-    frases.forEach((frase) => {
-      if ((atual + frase).length > TAMANHO_TRECHO && atual) {
-        lista.push(atual.trim());
-        atual = "";
-      }
-      atual += frase;
-    });
-    if (atual.trim()) lista.push(atual.trim());
-
-    return lista;
-  }, []);
-
-  const iniciarLeitura = () => {
-    silenciar();
-    trechosRef.current = extrairTextoDaPagina();
-    posicaoRef.current = 0;
-    if (!trechosRef.current.length) {
-      pararLeitura("Não há texto para ler nesta página.");
-      return;
-    }
-    falarTrechoAtual();
-  };
-
-  const pausarLeitura = () => {
-    if (situacaoRef.current !== "lendo") return;
-    silenciar();
-    atualizarSituacao(
-      "pausado",
-      `Pausado no trecho ${posicaoRef.current + 1} de ${trechosRef.current.length}.`
-    );
-  };
-
-  const continuarLeitura = () => {
-    if (situacaoRef.current !== "pausado") return;
-    falarTrechoAtual();
-  };
-
-  const aoMudarVelocidade = (novoValor: string) => {
-    setVelocidade(novoValor);
-    velocidadeRef.current = novoValor;
-    if (situacaoRef.current === "lendo") {
-      silenciar();
-      falarTrechoAtual();
-    }
-  };
-
-  useEffect(() => {
-    liberarTamanhos();
-    if (situacaoRef.current !== "parado") {
-      pararLeitura("A página mudou. Use “Ouvir” para ler a nova página.");
-    }
-  }, [pathname, liberarTamanhos, pararLeitura]);
-
-  useEffect(() => {
-    const aoSair = () => silenciar();
-    window.addEventListener("pagehide", aoSair);
-    return () => {
-      window.removeEventListener("pagehide", aoSair);
-      silenciar();
-    };
-  }, [silenciar]);
-
-  const alternarLeitura = () => {
-    if (situacaoRef.current === "parado") {
-      iniciarLeitura();
-    } else if (situacaoRef.current === "lendo") {
-      pausarLeitura();
-    } else {
-      continuarLeitura();
-    }
-  };
+  const algumLeitorAtivo = situacao !== "parado" || leitorParagrafoAtivo;
 
   const alternarMenu = useCallback(() => {
     setAberto((atual) => {
@@ -459,42 +67,74 @@ export function AccessibilityWidget() {
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent("apaixonese:acesso-state", {
-        detail: { aberto, ativo: situacao !== "parado" },
+        detail: { aberto, ativo: algumLeitorAtivo },
       })
     );
-  }, [aberto, situacao]);
+  }, [aberto, algumLeitorAtivo]);
 
-  const abrirLibras = () => {
+  useEffect(() => {
+    const aoClicarFora = (e: MouseEvent) => {
+      const alvo = e.target as HTMLElement | null;
+      const clicouDentro =
+        caixaRef.current && e.composedPath().includes(caixaRef.current);
+      if (
+        aberto &&
+        !clicouDentro &&
+        !alvo?.closest("[data-acesso-trigger]")
+      ) {
+        setAberto(false);
+      }
+    };
+
+    const aoPressionarEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && aberto) {
+        e.preventDefault();
+        setAberto(false);
+        botaoRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("click", aoClicarFora);
+    document.addEventListener("keydown", aoPressionarEsc, true);
+    return () => {
+      document.removeEventListener("click", aoClicarFora);
+      document.removeEventListener("keydown", aoPressionarEsc, true);
+    };
+  }, [aberto]);
+
+  useEffect(() => {
+    if (leitorParagrafoAtivo && situacao !== "parado") {
+      pararLeitura("Leitura da página pausada para usar o Ouvir por parágrafo.");
+    }
+  }, [leitorParagrafoAtivo, pararLeitura, situacao]);
+
+  const handleAlternarLeitorParagrafo = () => {
+    if (!leitorParagrafoAtivo && situacao !== "parado") {
+      pararLeitura();
+    }
+    alternarLeitorParagrafo();
     setAberto(false);
-    window.VLibrasWidget?.open?.();
+  };
 
-    if (window.matchMedia("(pointer: coarse)").matches) {
-      try {
-        if (!localStorage.getItem("apaixonese-dica-libras")) {
-          localStorage.setItem("apaixonese-dica-libras", "1");
-          window.setTimeout(() => {
-            toast("Dica: arraste o avatar pela barra azul para tirá-lo da frente.");
-          }, 1500);
-        }
-      } catch {}
+  const handleAlternarLeituraPagina = () => {
+    if (situacao === "parado") {
+      if (leitorParagrafoAtivo) {
+        definirLeitorParagrafo(false);
+      }
+      iniciarLeitura();
+    } else if (situacao === "lendo") {
+      pausarLeitura();
+    } else {
+      if (leitorParagrafoAtivo) {
+        definirLeitorParagrafo(false);
+      }
+      continuarLeitura();
     }
   };
 
-  const abrirAjustesSienna = () => {
-    setAberto(false);
-    const botaoSienna = document.querySelector<HTMLElement>(".asw-menu-btn");
-    if (!botaoSienna) return;
-    botaoSienna.click();
-    window.setTimeout(() => {
-      const menu = document.querySelector<HTMLElement>(".asw-menu");
-      if (!menu || menu.parentElement?.style.display === "none") return;
-      traduzirRotulosSienna();
-      menu.querySelector<HTMLElement>(".asw-menu-close")?.focus();
-    }, 60);
-  };
-
-  const mostrarComponente = librasPronto || siennaPronto || suportaVoz;
-  if (!mostrarComponente) return null;
+  if (!librasPronto && !siennaPronto && !suportaVoz) {
+    return null;
+  }
 
   return (
     <div ref={caixaRef} id="acesso" className="acesso asw-widget">
@@ -511,7 +151,10 @@ export function AccessibilityWidget() {
             type="button"
             className="acesso-pilula"
             id="acesso-libras"
-            onClick={abrirLibras}
+            onClick={() => {
+              setAberto(false);
+              abrirLibras();
+            }}
           >
             <span className="acesso-pilula-icone" aria-hidden="true">
               <svg
@@ -539,7 +182,10 @@ export function AccessibilityWidget() {
             type="button"
             className="acesso-pilula"
             id="acesso-ajustes"
-            onClick={abrirAjustesSienna}
+            onClick={() => {
+              setAberto(false);
+              abrirAjustesSienna();
+            }}
           >
             <span className="acesso-pilula-icone" aria-hidden="true">
               <svg
@@ -556,6 +202,36 @@ export function AccessibilityWidget() {
               </svg>
             </span>
             <span>Menu de acessibilidade</span>
+          </button>
+        )}
+
+        {siennaPronto && suportaVoz && (
+          <button
+            type="button"
+            className="acesso-pilula"
+            id="acesso-ouvir-paragrafo"
+            aria-pressed={leitorParagrafoAtivo}
+            onClick={handleAlternarLeitorParagrafo}
+          >
+            <span className="acesso-pilula-icone" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 9h.01M15 9h.01M8 13a4 4 0 0 0 8 0" />
+                <circle cx="12" cy="12" r="9" />
+              </svg>
+            </span>
+            <span>Ouvir por parágrafo</span>
+            {leitorParagrafoAtivo && (
+              <span className="acesso-pilula-badge">Ativo</span>
+            )}
           </button>
         )}
 
@@ -584,7 +260,7 @@ export function AccessibilityWidget() {
                   <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
                 </svg>
               </span>
-              <span>Ouvir página</span>
+              <span>Ouvir página inteira</span>
               {situacao !== "parado" && (
                 <span className="acesso-pilula-badge">
                   {situacao === "lendo" ? "Lendo" : "Pausado"}
@@ -595,10 +271,10 @@ export function AccessibilityWidget() {
             <section
               className="acesso-pilula-player"
               id="ouvir"
-              aria-label="Ouvir esta página"
+              aria-label="Ouvir página inteira"
             >
               <div className="acesso-player-topo">
-                <span className="acesso-player-titulo">Ouvir página</span>
+                <span className="acesso-player-titulo">Ouvir página inteira</span>
                 <button
                   type="button"
                   className="acesso-player-fechar"
@@ -614,7 +290,7 @@ export function AccessibilityWidget() {
                   ref={botaoOuvirRef}
                   type="button"
                   className="ouvir-acao ouvir-acao-principal"
-                  onClick={alternarLeitura}
+                  onClick={handleAlternarLeituraPagina}
                 >
                   {situacao === "lendo"
                     ? "Pausar"
@@ -657,7 +333,7 @@ export function AccessibilityWidget() {
       <button
         ref={botaoRef}
         type="button"
-        className={`acesso-botao${situacao !== "parado" ? " ativo" : ""}`}
+        className={`acesso-botao${algumLeitorAtivo ? " ativo" : ""}`}
         id="acesso-botao"
         aria-expanded={aberto}
         aria-controls="acesso-painel"

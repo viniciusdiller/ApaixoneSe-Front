@@ -181,6 +181,10 @@ html, body {
   animation-delay: 0.08s;
 }
 
+.acesso-pilula:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
 .acesso-pilula:hover {
   border-color: #006e6d;
   background: #e6f4f4;
@@ -343,8 +347,9 @@ body .asw-menu-btn {
   display: none !important;
 }
 
-.acesso svg,
-[data-acesso-trigger] svg {
+button svg,
+a svg,
+[role="button"] svg {
   pointer-events: none;
 }
 
