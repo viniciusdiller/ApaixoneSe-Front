@@ -41,6 +41,8 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [acessoAberto, setAcessoAberto] = useState(false);
+  const [acessoAtivo, setAcessoAtivo] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -66,6 +68,18 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const aoAtualizarAcesso = (e: Event) => {
+      const detail = (e as CustomEvent<{ aberto: boolean; ativo: boolean }>).detail;
+      if (!detail) return;
+      setAcessoAberto(detail.aberto);
+      setAcessoAtivo(detail.ativo);
+    };
+    window.addEventListener("apaixonese:acesso-state", aoAtualizarAcesso);
+    return () =>
+      window.removeEventListener("apaixonese:acesso-state", aoAtualizarAcesso);
   }, []);
 
   useEffect(() => {
@@ -242,6 +256,38 @@ export function Navbar({ weather }: { weather?: WeatherData }) {
         {/* Ações direita */}
         <div className="flex items-center gap-3 md:gap-4">
           <GoogleTranslate />
+
+          {/* Botão acessibilidade — mobile (integrado na barra) */}
+          <button
+            type="button"
+            data-acesso-trigger="true"
+            onClick={() => {
+              setMobileOpen(false);
+              window.dispatchEvent(new CustomEvent("apaixonese:toggle-acesso"));
+            }}
+            className={`asw-widget transition-colors md:hidden ${
+              acessoAtivo ? "text-accent" : "text-primary-foreground"
+            }`}
+            aria-expanded={acessoAberto}
+            aria-controls="acesso-painel"
+            aria-label="Acessibilidade: Libras, ajustes de leitura e ouvir a página"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="12" cy="6.8" r="1.5" />
+              <path d="M7 9.6 12 11l5-1.4M12 11v3.4M9.4 18.2 12 14.4l2.6 3.8" />
+            </svg>
+          </button>
 
           {/* Botão som — mobile (sempre visível na barra) */}
           <button
