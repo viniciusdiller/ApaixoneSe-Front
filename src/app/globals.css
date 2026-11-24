@@ -83,7 +83,8 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
+  line-height: 1.3;
 }
 
 .acesso[hidden],
@@ -91,20 +92,26 @@ html, body {
   display: none !important;
 }
 
+.acesso button:focus-visible,
+.acesso select:focus-visible {
+  outline: 3px solid #142e38;
+  outline-offset: 2px;
+}
+
 .acesso-botao {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 16px;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: rgba(0, 110, 109, 0.88);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #ffffff;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   box-shadow: 0 6px 20px rgb(20 46 56 / 0.22);
   cursor: pointer;
@@ -137,7 +144,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
 }
 
 @keyframes acesso-pilula-entrar {
@@ -154,15 +161,15 @@ html, body {
 .acesso-pilula {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 15px 7px 8px;
+  gap: 8px;
+  padding: 5px 13px 5px 6px;
   border-radius: 9999px;
   border: 1px solid rgba(0, 110, 109, 0.2);
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #142e38;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   box-shadow: 0 8px 22px rgb(20 46 56 / 0.16);
   cursor: pointer;
@@ -194,8 +201,8 @@ html, body {
 .acesso-pilula-icone {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: #e6f4f4;
   color: #006e6d;
@@ -207,19 +214,19 @@ html, body {
 }
 
 .acesso-pilula-badge {
-  padding: 2px 8px;
+  padding: 1px 7px;
   border-radius: 9999px;
   background: #f4a261;
   color: #142e38;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 
 .acesso-pilula-player {
   display: grid;
   gap: 8px;
-  width: min(300px, calc(100vw - 24px));
-  padding: 12px 14px;
+  width: min(280px, calc(100vw - 24px));
+  padding: 10px 12px;
   border-radius: 18px;
   border: 1px solid rgba(0, 110, 109, 0.25);
   background: rgba(255, 255, 255, 0.98);
@@ -267,14 +274,14 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
+  min-height: 32px;
   padding: 6px 12px;
   border: 1px solid #c6d4dc;
   border-radius: 9999px;
   background: #ffffff;
   color: #142e38;
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
 }
@@ -296,14 +303,14 @@ html, body {
 }
 
 .ouvir-velocidade-compacta {
-  min-height: 36px;
+  min-height: 32px;
   padding: 4px 10px;
   border: 1px solid #c6d4dc;
   border-radius: 9999px;
   background: #ffffff;
   color: #142e38;
   font-weight: 600;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .ouvir-estado {

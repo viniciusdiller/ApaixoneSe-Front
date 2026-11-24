@@ -136,7 +136,6 @@ export function useAccessibilityVendors(
   botaoRetornoRef: React.RefObject<HTMLButtonElement>
 ) {
   const pathname = usePathname();
-  const [librasPronto, setLibrasPronto] = useState(false);
   const [siennaPronto, setSiennaPronto] = useState(false);
   const [leitorParagrafoAtivo, setLeitorParagrafoAtivo] = useState(false);
 
@@ -174,6 +173,8 @@ export function useAccessibilityVendors(
 
   useEffect(() => {
     let cancelado = false;
+    let obsSienna: MutationObserver | null = null;
+    let scriptExistenteRef: HTMLScriptElement | null = null;
 
     instalarProtetorListenerSienna();
 
@@ -217,10 +218,13 @@ export function useAccessibilityVendors(
           return true;
         };
         if (!verificarBotaoSienna()) {
-          const obs = new MutationObserver(() => {
-            if (verificarBotaoSienna()) obs.disconnect();
+          obsSienna = new MutationObserver(() => {
+            if (verificarBotaoSienna()) {
+              obsSienna?.disconnect();
+              obsSienna = null;
+            }
           });
-          obs.observe(document.body, { childList: true });
+          obsSienna.observe(document.body, { childList: true });
         }
       })
       .catch((err) => {
@@ -236,7 +240,6 @@ export function useAccessibilityVendors(
             position: "R",
           });
         }
-        setLibrasPronto(true);
       } catch (err) {
         console.error("Falha ao iniciar o VLibras:", err);
       }
@@ -249,6 +252,7 @@ export function useAccessibilityVendors(
         `script[src="${VLIBRAS_SCRIPT_URL}"]`
       );
       if (scriptExistente) {
+        scriptExistenteRef = scriptExistente;
         scriptExistente.addEventListener("load", iniciarVLibras);
       } else {
         const script = document.createElement("script");
@@ -261,8 +265,10 @@ export function useAccessibilityVendors(
 
     return () => {
       cancelado = true;
+      obsSienna?.disconnect();
       obsHtml.disconnect();
       obsCorSienna.disconnect();
+      scriptExistenteRef?.removeEventListener("load", iniciarVLibras);
       window.clearTimeout(timerInterativoRef.current);
     };
   }, []);
@@ -414,7 +420,14 @@ export function useAccessibilityVendors(
   }, [botaoRetornoRef, definirLeitorParagrafo]);
 
   const abrirLibras = useCallback(() => {
-    window.VLibrasWidget?.open?.();
+    if (!window.VLibras || !window.VLibrasWidget?.open) {
+      toast(
+        "Libras indisponível no momento. Recarregue a página ou tente novamente mais tarde."
+      );
+      return;
+    }
+
+    window.VLibrasWidget.open();
 
     if (window.matchMedia("(pointer: coarse)").matches) {
       try {
@@ -445,7 +458,6 @@ export function useAccessibilityVendors(
   }, []);
 
   return {
-    librasPronto,
     siennaPronto,
     leitorParagrafoAtivo,
     definirLeitorParagrafo,
