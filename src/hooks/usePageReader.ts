@@ -110,6 +110,9 @@ export function usePageReader(
     };
     escolherVoz();
     sintese.addEventListener?.("voiceschanged", escolherVoz);
+    return () => {
+      sintese.removeEventListener?.("voiceschanged", escolherVoz);
+    };
   }, []);
 
   const silenciar = useCallback(() => {

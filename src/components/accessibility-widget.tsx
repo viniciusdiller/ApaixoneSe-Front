@@ -1,6 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Hand,
+  MousePointerClick,
+  SlidersHorizontal,
+  Volume2,
+} from "lucide-react";
 import { useAccessibilityVendors } from "@/hooks/useAccessibilityVendors";
 import { usePageReader } from "@/hooks/usePageReader";
 
@@ -18,7 +24,6 @@ export function AccessibilityWidget() {
   }, []);
 
   const {
-    librasPronto,
     siennaPronto,
     leitorParagrafoAtivo,
     definirLeitorParagrafo,
@@ -132,10 +137,6 @@ export function AccessibilityWidget() {
     }
   };
 
-  if (!librasPronto && !siennaPronto && !suportaVoz) {
-    return null;
-  }
-
   return (
     <div ref={caixaRef} id="acesso" className="acesso asw-widget">
       <div
@@ -146,36 +147,20 @@ export function AccessibilityWidget() {
         aria-label="Ferramentas de acessibilidade"
         hidden={!aberto}
       >
-        {librasPronto && (
-          <button
-            type="button"
-            className="acesso-pilula"
-            id="acesso-libras"
-            onClick={() => {
-              setAberto(false);
-              abrirLibras();
-            }}
-          >
-            <span className="acesso-pilula-icone" aria-hidden="true">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2" />
-                <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" />
-                <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8" />
-                <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
-              </svg>
-            </span>
-            <span>Traduzir em Libras</span>
-          </button>
-        )}
+        <button
+          type="button"
+          className="acesso-pilula"
+          id="acesso-libras"
+          onClick={() => {
+            setAberto(false);
+            abrirLibras();
+          }}
+        >
+          <span className="acesso-pilula-icone" aria-hidden="true">
+            <Hand size={16} strokeWidth={2} aria-hidden="true" />
+          </span>
+          <span>Traduzir em Libras</span>
+        </button>
 
         {siennaPronto && (
           <button
@@ -188,18 +173,7 @@ export function AccessibilityWidget() {
             }}
           >
             <span className="acesso-pilula-icone" aria-hidden="true">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4" />
-              </svg>
+              <SlidersHorizontal size={16} strokeWidth={2} aria-hidden="true" />
             </span>
             <span>Menu de acessibilidade</span>
           </button>
@@ -214,19 +188,7 @@ export function AccessibilityWidget() {
             onClick={handleAlternarLeitorParagrafo}
           >
             <span className="acesso-pilula-icone" aria-hidden="true">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 9h.01M15 9h.01M8 13a4 4 0 0 0 8 0" />
-                <circle cx="12" cy="12" r="9" />
-              </svg>
+              <MousePointerClick size={16} strokeWidth={2} aria-hidden="true" />
             </span>
             <span>Ouvir por parágrafo</span>
             {leitorParagrafoAtivo && (
@@ -245,20 +207,7 @@ export function AccessibilityWidget() {
               onClick={() => setOuvirExpandido(true)}
             >
               <span className="acesso-pilula-icone" aria-hidden="true">
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
-                  <path d="M16 9a5 5 0 0 1 0 6" />
-                  <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
-                </svg>
+                <Volume2 size={16} strokeWidth={2} aria-hidden="true" />
               </span>
               <span>Ouvir página inteira</span>
               {situacao !== "parado" && (
@@ -342,8 +291,8 @@ export function AccessibilityWidget() {
       >
         <svg
           className="icone"
-          width="22"
-          height="22"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
