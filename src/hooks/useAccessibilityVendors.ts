@@ -287,12 +287,36 @@ export function useAccessibilityVendors(
       }, 0);
     };
 
+    const ignorarCliqueNoSiennaUmaVez = () => {
+      const fnSienna = window.__asw__onClickScreenReader;
+      if (!fnSienna) return;
+      document.removeEventListener("click", fnSienna, true);
+      window.setTimeout(() => {
+        if (
+          document.documentElement.classList.contains("asw-screen-reader") &&
+          window.__asw__onClickScreenReader === fnSienna
+        ) {
+          document.addEventListener("click", fnSienna, true);
+        }
+      }, 0);
+    };
+
     const aoCapturarCliqueNaJanela = (e: MouseEvent) => {
       const alvo = e.target as HTMLElement | null;
       if (!alvo) return;
 
+      const dentroDoVLibras = !!alvo.closest(
+        "#vlibras-app-root, #vlibras-access-wrapper"
+      );
+
       const dentroDoMenuAcessibilidade =
-        !!alvo.closest("#acesso") || !!alvo.closest("[data-acesso-trigger]");
+        !!alvo.closest("#acesso") ||
+        !!alvo.closest("[data-acesso-trigger]") ||
+        !!alvo.closest(".asw-container") ||
+        !!alvo.closest(".asw-menu") ||
+        !!alvo.closest(".asw-menu-btn") ||
+        !!alvo.closest(".asw-widget") ||
+        !!alvo.closest(".asw-structure-modal");
 
       const interativo = alvo.closest<HTMLElement>(
         "a[href], button, [role='button'], input, select, label"
@@ -311,13 +335,13 @@ export function useAccessibilityVendors(
       if (!document.documentElement.classList.contains("asw-screen-reader")) {
         return;
       }
-      if (
-        dentroDoMenuAcessibilidade ||
-        alvo.closest(".asw-menu") ||
-        alvo.closest(".asw-menu-btn") ||
-        alvo.closest(".asw-widget") ||
-        alvo.closest(".asw-structure-modal")
-      ) {
+
+      if (dentroDoVLibras) {
+        ignorarCliqueNoSiennaUmaVez();
+        return;
+      }
+
+      if (dentroDoMenuAcessibilidade) {
         return;
       }
 
@@ -331,19 +355,7 @@ export function useAccessibilityVendors(
         window.clearTimeout(timerInterativoRef.current);
         window.speechSynthesis?.cancel();
         limparDestaquesLeituraSienna();
-
-        const fnSienna = window.__asw__onClickScreenReader;
-        if (fnSienna) {
-          document.removeEventListener("click", fnSienna, true);
-          window.setTimeout(() => {
-            if (
-              document.documentElement.classList.contains("asw-screen-reader") &&
-              window.__asw__onClickScreenReader === fnSienna
-            ) {
-              document.addEventListener("click", fnSienna, true);
-            }
-          }, 0);
-        }
+        ignorarCliqueNoSiennaUmaVez();
         return;
       }
 
